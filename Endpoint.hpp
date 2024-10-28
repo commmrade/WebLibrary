@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <thread>
+#include<fcntl.h>
 #include <unistd.h>
 #include <unordered_map>
 
@@ -171,6 +172,7 @@ public:
             exit(-1);
         } 
 
+
         if (listen(serv_socket, 999) < 0) { //Listening for incoming requests
             perror("Listening");
             exit(-1);
@@ -202,16 +204,49 @@ public:
         return base_url;
     }
     void handle_incoming_request(int client_socket) {
-        const int BUF_LEN = 4096;
-        char buf[BUF_LEN];
-        ssize_t read_bytes = read(client_socket, buf, BUF_LEN); //Writing incoming info to buffer (todo: use string\dynamic allocation)
-        if (read_bytes < 0) {
-            std::cerr << "ERRor\n";
-            close(client_socket);
-            return;
-        }
-        buf[read_bytes] = '\0'; //Null terminating buffer to avoid problems
-        std::string call = buf; //Turning buf to string
+        // const int BUF_LEN = 4096;
+        // char buf[BUF_LEN];
+        // ssize_t read_bytes = read(client_socket, buf, BUF_LEN); //Writing incoming info to buffer (todo: use string\dynamic allocation)
+        // if (read_bytes < 0) {
+        //     std::cerr << "ERRor\n";
+        //     close(client_socket);
+        //     return;
+        // }
+
+        std::string call = [client_socket]() {
+            std::string result;
+            result.reserve(4096); // Reserve some space to avoid multiple allocations
+            
+            int already_read = 0;
+            while (true) {
+                result.resize(already_read + 1);
+                auto rd_bytes = read(client_socket, result.data() + already_read, 1);
+               
+                if (rd_bytes == 0) {
+                    // End of stream
+                    break;
+                } else if (rd_bytes < 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+              
+                        std::cout << "Data ended" << std::endl;
+                        break; // or continue, depending on your logic
+                    } 
+                    std::cerr << "Error reading\n";
+                    break;
+                }
+
+                already_read += rd_bytes;
+            }
+
+            // Resize the string to the actual size read
+            result.resize(already_read);
+            return result;
+        }();
+
+         
+
+        //buf[read_bytes] = '\0'; //Null terminating buffer to avoid problems
+        //std::string call = buf; //Turning buf to string
 
         std::string method = call.substr(0, call.find("/") - 1); //Extracting method from request
         if (method == "GET") {
@@ -250,6 +285,12 @@ public:
             int client_socket = accept(serv_socket, nullptr, nullptr);
             if (client_socket < 0) {
                 perror("Client socket");
+                exit(-1);
+            }
+            int flags = fcntl(client_socket, F_GETFL, 0);
+            if (fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) == -1) {
+                std::cerr << "Error setting non-blocking mode: " << strerror(errno) << std::endl;
+                close(client_socket);
                 exit(-1);
             }
             

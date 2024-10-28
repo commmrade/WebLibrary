@@ -18,16 +18,16 @@ const int PORT = 0;
 void reg(HttpRequest&& req, ResponseWriter&& resp) {
     auto login = req.get_query("name");
     auto password = req.get_query("password");
-
+    std::cout << req.get_raw() << std::endl;
     if (login->empty() || password->empty()) {
         std::println("Empty");
         resp.set_header_raw("Content-Type", "text/plain");
-        resp.write_raw("", 400);
+        resp.write_raw("ne works", 400);
         return;
     }
 
     resp.set_header_raw("Content-Type", "text/plain");
-    resp.write_raw("", 200);
+    resp.write_raw("Works", 200);
 }
 void other(HttpRequest&& req, ResponseWriter&& resp) {
     

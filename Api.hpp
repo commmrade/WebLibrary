@@ -201,8 +201,6 @@ private:
 
                         already_read += rd_bytes;
                     }
-
-                    // Resize the string to the actual size read
                     result.resize(already_read);
                     return result;
                 }();

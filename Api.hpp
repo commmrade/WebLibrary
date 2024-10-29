@@ -176,16 +176,40 @@ private:
                     perror("Sending ");
                     exit(0);
                 }
-                std::string result{};
-                char buf[4096];
-                while (true) {
-                    ssize_t received_bytes = recv(sock, buf, sizeof(buf) - 1, 0); //Receiving info from server
-                    if (received_bytes <= 0) {
-                        break;
+
+
+                std::string buf = [this]() {
+                    std::string result;
+                    result.reserve(4096); // Reserve some space to avoid multiple allocations
+                    
+                    int already_read = 0;
+                    while (true) {
+                        result.resize(already_read + 1);
+                        auto rd_bytes = read(sock, result.data() + already_read, 1);
+                    
+                        if (rd_bytes == 0) {
+                            break;
+                        } else if (rd_bytes < 0) {
+                            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    
+                                std::cout << "Data ended" << std::endl;
+                                break; 
+                            } 
+                            std::cerr << "Error reading\n";
+                            break;
+                        }
+
+                        already_read += rd_bytes;
                     }
-                    buf[received_bytes] = '\0';
-                    result += buf;
-                }
+
+                    // Resize the string to the actual size read
+                    result.resize(already_read);
+                    return result;
+                }();
+
+
+
+
                 Response resp(buf);
 
                 close(sock);

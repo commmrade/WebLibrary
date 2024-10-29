@@ -204,15 +204,6 @@ public:
         return base_url;
     }
     void handle_incoming_request(int client_socket) {
-        // const int BUF_LEN = 4096;
-        // char buf[BUF_LEN];
-        // ssize_t read_bytes = read(client_socket, buf, BUF_LEN); //Writing incoming info to buffer (todo: use string\dynamic allocation)
-        // if (read_bytes < 0) {
-        //     std::cerr << "ERRor\n";
-        //     close(client_socket);
-        //     return;
-        // }
-
         std::string call = [client_socket]() {
             std::string result;
             result.reserve(4096); // Reserve some space to avoid multiple allocations
@@ -244,10 +235,6 @@ public:
         }();
 
          
-
-        //buf[read_bytes] = '\0'; //Null terminating buffer to avoid problems
-        //std::string call = buf; //Turning buf to string
-
         std::string method = call.substr(0, call.find("/") - 1); //Extracting method from request
         if (method == "GET") {
             std::string api_route = call.substr(call.find("GET") + 4, call.find("HTTP") - (call.find("GET") + 5)); //URL path that was called like /api/route
@@ -288,7 +275,7 @@ public:
                 exit(-1);
             }
             int flags = fcntl(client_socket, F_GETFL, 0);
-            if (fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) == -1) {
+            if (fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) == -1) { //So it outputs < 0 when all bytes are read and doesnt freeze at 1
                 std::cerr << "Error setting non-blocking mode: " << strerror(errno) << std::endl;
                 close(client_socket);
                 exit(-1);

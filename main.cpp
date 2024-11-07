@@ -42,6 +42,7 @@ int main() {
     Response resp = Request::get("official-joke-api.appspot.com/jokes/random");
 
     std::cout << resp.text() << std::endl;
+    std::cout << resp.get_header("Content-Length").value_or("NULL") << std::endl;
     
 
     return 0;

@@ -1,6 +1,7 @@
-#include <cstdio>
 #include <exception>
 #include <iostream>
+#include <istream>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -8,11 +9,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <system_error>
 #include<unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unordered_map>
+#include<boost/asio.hpp>
+
+#include <cstdio>
+
 
 
 enum ConnectionType {
@@ -26,15 +32,16 @@ class Response {
 private:
     int status;
     std::unordered_map<std::string, std::string> headers;
-    std::string raw_request;
+    std::string headers_raw;
+    std::string body;
+    
 public:
-    Response(const std::string &req) : raw_request(req) {
+    Response(int status_code, const std::string &headers, const std::string &body) : headers_raw(headers), body(body), status(status_code) {
         extract_headers();
-        extract_status_code();
     }
     
     std::string text() {
-        return raw_request.substr(raw_request.find("\r\n\r\n") + 4);
+        return body;
     }
     int status_code() {
         return status;
@@ -48,17 +55,9 @@ public:
     }
     
 private:
-    void extract_status_code() {
-        std::string str = raw_request.substr(0, raw_request.find("\r\n"));
-        std::string str_status_code = str.substr(str.find("1.1") + 4, str.find_last_of(" ") - (str.find("1.1") + 4));
-        try {
-            status = std::stoi(str_status_code);
-        } catch (std::exception &exception) {
-            std::cout << exception.what() << std::endl;
-        }
-    }
+   
     void extract_headers() {
-        std::string headers_section = raw_request.substr(raw_request.find("\r\n") + 2, raw_request.find("\r\n\r\n") - (raw_request.find("\r\n") + 2));
+        std::string headers_section = std::move(headers_raw);
 
         if (headers_section.empty()) {
             throw std::runtime_error("Headers are missing..");
@@ -85,72 +84,40 @@ private:
     std::string url_path;
     std::string host, api;
 
-    addrinfo *adres;
-    addrinfo hints = {0};
+    boost::asio::io_service io_service;
 
-    int sock;
+    std::unique_ptr<boost::asio::ip::tcp::socket> socket;
 
 public:
     Request(ConnectionType type, const std::string &url_path) : type(type), url_path(url_path) {
-        
         host = url_path.substr(0, url_path.find("/"));
         api = url_path.substr(url_path.find("/"));
         
-        addrinfo hints = {0};
 
-        int getaddr = getaddrinfo(host.c_str(), "80", &hints, &adres); //Getting ip from host name (str)
 
-        if (getaddr != 0) {
-            std::cerr << "Getting adres failed\n";
-            perror("Addr failed ");
-            exit(0);
-        }
+        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver::query query(host, "http");
+        boost::asio::ip::tcp::resolver::results_type endpoint_iter = resolver.resolve(query);
 
-        sock = socket(adres->ai_family, adres->ai_socktype, adres->ai_protocol); 
-        if (sock < 0) {
-            std::cerr << "Error socket\n";
-            exit(0);
-        }
-
-        int connection = connect(sock, adres->ai_addr, adres->ai_addrlen);
-        if (connection < 0) {
-            std::cerr << "Connection error\n";
-            close(sock);
-            exit(0);
-        }
-        
-
+        socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
+    
+        boost::asio::connect(*socket, endpoint_iter);
     }
     Request(ConnectionType type, std::string &&url_path) : type(type), url_path(url_path) {
         host = url_path.substr(0, url_path.find("/"));
         api = url_path.substr(url_path.find("/"));
         
-        addrinfo hints = {0};
 
-        int getaddr = getaddrinfo(host.c_str(), "80", &hints, &adres); //Getting ip from host name (str)
 
-        if (getaddr != 0) {
-            std::cerr << "Getting adres failed\n";
-            perror("Addr failed ");
-            exit(0);
-        }
+        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver::query query(host, "http");
+        boost::asio::ip::tcp::resolver::results_type endpoint_iter = resolver.resolve(query);
 
-        sock = socket(adres->ai_family, adres->ai_socktype, adres->ai_protocol); //Creating socket
-        if (sock < 0) {
-            std::cerr << "Error socket\n";
-            perror("Socket");
-            exit(0);
-        }
-
-        int connection = connect(sock, adres->ai_addr, adres->ai_addrlen); //Connecting to ip address
-        if (connection < 0) {
-            std::cerr << "Connection error\n";
-            perror("Connection");
-            close(sock);
-            exit(0);
-        }
-
+        socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
+    
+        boost::asio::connect(*socket, endpoint_iter);
     }  
+    
     ~Request() {
     }
     
@@ -161,65 +128,53 @@ public:
 
     
 private:
-    
+    void init() {
+    }
     Response connect_and_get_reply() {
         switch (type) {
             case GET: {
+              
                 std::string request_query{};
                 request_query += "GET " + api + " HTTP/1.1\r\n";
                 request_query += "Host: " + host + "\r\n";
                 request_query += "Connection: close\r\n\r\n";
 
-                int send_data = send(sock, request_query.c_str(), request_query.size(), 0); //Connecting to server
-                if (send_data < 0) {
-                    std::cerr << "Error sending\n";
-                    perror("Sending ");
-                    exit(0);
+                
+                boost::asio::write(*socket, boost::asio::buffer(request_query));
+               
+                boost::asio::streambuf response;
+                boost::asio::read_until(*socket, response, "\r\n");
+
+                int status_code;
+                std::string http_ver;
+                std::string status_message;
+
+                std::string headers_raw;
+
+                std::istream i_str(&response); 
+                std::getline(i_str, http_ver, ' ');
+                i_str >> status_code;
+                std::getline(i_str, status_message);
+                
+
+                //TURN IT INTO READ THE REST...
+                boost::asio::read_until(*socket, response, "\r\n\r\n");
+
+
+                std::string hdr;
+                while (std::getline(i_str, hdr)) {
+                    
+                    headers_raw += hdr + '\n';
                 }
+                
 
-
-                std::string buf = [this]() {
-                    std::string result;
-                    result.reserve(4096); // Reserve some space to avoid multiple allocations
-                    
-                    int already_read = 0;
-                    while (true) {
-                        result.resize(already_read + 1);
-                        auto rd_bytes = read(sock, result.data() + already_read, 1);
-                    
-                        if (rd_bytes == 0) {
-                            break;
-                        } else if (rd_bytes < 0) {
-                            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    
-                                std::cout << "Data ended" << std::endl;
-                                break; 
-                            } 
-                            std::cerr << "Error reading\n";
-                            break;
-                        }
-
-                        already_read += rd_bytes;
-                    }
-                    result.resize(already_read);
-                    return result;
-                }();
-
-
-
-
-                Response resp(buf);
-
-                close(sock);
-                freeaddrinfo(adres);
-                return resp;
+                return std::move(Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))});
 
                 break;
             }
             default: {
                 std::cerr << "Only GET is implemented\n";
-                close(sock);
-                freeaddrinfo(adres);
+                
                 exit(-1);
             }
         }

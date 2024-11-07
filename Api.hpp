@@ -3,6 +3,7 @@
 #include <istream>
 #include <memory>
 #include <optional>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -78,6 +79,44 @@ private:
     
 };
 
+class Client {
+protected:
+    std::string url;
+    std::unordered_map<std::string, std::string> headers;
+    std::string request_str;
+    std::string body;
+public:
+    virtual std::string prepare_request_str() = 0;
+    void set_header(const std::string &key, const std::string &value) {
+        headers[key] = value;
+    }
+    std::string get_url() { return url; }
+};
+
+class GetClient : public Client {
+public:
+    GetClient(const std::string &url_) {
+        url = url_;
+    }
+    std::string prepare_request_str() override {
+
+        std::string host = url.substr(0, url.find("/"));
+        std::string api = url.substr(url.find("/"));
+
+        std::string request_query{};
+        request_query += "GET " + api + " HTTP/1.1\r\n";
+        request_query += "Host: " + host + "\r\n";
+        for (auto start = headers.begin(); start != headers.end(); start++) {
+            request_query += (*start).first + ": " + (*start).second;
+        }
+        request_query += "Connection: close\r\n\r\n";
+
+        return request_query;
+    }
+};
+
+
+
 class Request {
 private:
     ConnectionType type;
@@ -89,7 +128,7 @@ private:
     std::unique_ptr<boost::asio::ip::tcp::socket> socket;
 
 public:
-    Request(ConnectionType type, const std::string &url_path) : type(type), url_path(url_path) {
+    Request(const std::string &url_path) : type(type), url_path(url_path) {
         host = url_path.substr(0, url_path.find("/"));
         api = url_path.substr(url_path.find("/"));
         
@@ -103,81 +142,47 @@ public:
     
         boost::asio::connect(*socket, endpoint_iter);
     }
-    Request(ConnectionType type, std::string &&url_path) : type(type), url_path(url_path) {
-        host = url_path.substr(0, url_path.find("/"));
-        api = url_path.substr(url_path.find("/"));
-        
-
-
-        boost::asio::ip::tcp::resolver resolver(io_service);
-        boost::asio::ip::tcp::resolver::query query(host, "http");
-        boost::asio::ip::tcp::resolver::results_type endpoint_iter = resolver.resolve(query);
-
-        socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-    
-        boost::asio::connect(*socket, endpoint_iter);
-    }  
     
     ~Request() {
     }
     
-    static Response get(const std::string &url) {
-        Request request(GET, url);
-        return request.connect_and_get_reply();
+    static Response execute(Client &client) {
+        Request req(client.get_url());
+        req.send(client.prepare_request_str());
+        return req.receive();
     }
 
     
 private:
-    void init() {
+    void send(const std::string &request) {
+        boost::asio::write(*socket, boost::asio::buffer(request));
     }
-    Response connect_and_get_reply() {
-        switch (type) {
-            case GET: {
-              
-                std::string request_query{};
-                request_query += "GET " + api + " HTTP/1.1\r\n";
-                request_query += "Host: " + host + "\r\n";
-                request_query += "Connection: close\r\n\r\n";
+    
+    Response receive() {
+        boost::asio::streambuf response;
+        boost::asio::read_until(*socket, response, "\r\n");
 
-                
-                boost::asio::write(*socket, boost::asio::buffer(request_query));
-               
-                boost::asio::streambuf response;
-                boost::asio::read_until(*socket, response, "\r\n");
+        int status_code;
+        std::string http_ver;
+        std::string status_message;
 
-                int status_code;
-                std::string http_ver;
-                std::string status_message;
+        std::string headers_raw;
 
-                std::string headers_raw;
+        std::istream i_str(&response); 
+        std::getline(i_str, http_ver, ' ');
+        i_str >> status_code;
+        std::getline(i_str, status_message);
+        
 
-                std::istream i_str(&response); 
-                std::getline(i_str, http_ver, ' ');
-                i_str >> status_code;
-                std::getline(i_str, status_message);
-                
+        //TURN IT INTO READ THE REST...
+        boost::asio::read_until(*socket, response, "\r\n\r\n");
 
-                //TURN IT INTO READ THE REST...
-                boost::asio::read_until(*socket, response, "\r\n\r\n");
-
-
-                std::string hdr;
-                while (std::getline(i_str, hdr)) {
-                    
-                    headers_raw += hdr + '\n';
-                }
-                
-
-                return std::move(Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))});
-
-                break;
-            }
-            default: {
-                std::cerr << "Only GET is implemented\n";
-                
-                exit(-1);
-            }
+        std::string hdr;
+        while (std::getline(i_str, hdr)) {
+            
+            headers_raw += hdr + '\n';
         }
         
+        return std::move(Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))});
     }
 };

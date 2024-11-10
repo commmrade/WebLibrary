@@ -97,15 +97,21 @@ public:
     std::string get_url() { return url; }
 };
 
-class GetClient : public Client {
+class GetClient final : public Client {
 public:
     GetClient(const std::string &url_) {
         url = url_;
     }
     std::string prepare_request_str() override {
 
+        if (url.find("https://") != url.npos) {
+            url.replace(url.find("https://"), 8, "");
+        } else if (url.find("http://") != url.npos) {
+            url.replace(url.find("http://"), 7, "");
+        }
         std::string host = url.substr(0, url.find("/"));
         std::string api = url.substr(url.find("/"));
+        
 
         std::string request_query{};
         request_query += "GET " + api + " HTTP/1.1\r\n";
@@ -118,12 +124,45 @@ public:
         return request_query;
     }
 };
+class PostClient final : public Client {
+private:
+    std::string body;
+public:
+    PostClient(const std::string &url_) {
+        url = url_;
+
+    }
+    std::string prepare_request_str() override {
+        if (url.find("https://") != url.npos) {
+            url.replace(url.find("https://"), 8, "");
+        } else if (url.find("http://") != url.npos) {
+            url.replace(url.find("http://"), 7, "");
+        }
+        std::string host = url.substr(0, url.find("/"));
+        std::string api = url.substr(url.find("/"));
+        
+
+        std::string request_query{};
+        request_query += "POST " + api + " HTTP/1.1\r\n";
+        request_query += "Host: " + host + "\r\n";
+        for (auto start = headers.begin(); start != headers.end(); start++) {
+            request_query += (*start).first + ": " + (*start).second;
+        }
+        request_query += "Connection: close\r\n\r\n";
+        request_query += body;
+
+        return request_query;
+    }
+    void set_body(const std::string &str) {
+        body = str;
+    }
+};
 
 
 
 class Request {
 private:
-    ConnectionType type;
+   
     std::string url_path;
     std::string host, api;
 
@@ -132,10 +171,19 @@ private:
     std::unique_ptr<boost::asio::ip::tcp::socket> socket;
 
 public:
-    Request(const std::string &url_path) : type(type), url_path(url_path) {
-        host = url_path.substr(0, url_path.find("/"));
-        api = url_path.substr(url_path.find("/"));
+    Request(const std::string &url_path_p) : url_path(url_path_p) {
         
+        if (url_path.find("https://") != url_path.npos) {
+            url_path.replace(url_path.find("https://"), 8, "");
+        } else if (url_path.find("http://") != url_path.npos) {
+            url_path.replace(url_path.find("http://"), 7, "");
+        }
+        host = url_path.substr(0, url_path.find("/"));
+        std::cout << host << std::endl;
+        
+
+        api = url_path.substr(url_path.find("/"));
+        std::cout << api << std::endl;
 
 
         boost::asio::ip::tcp::resolver resolver(io_service);
@@ -191,6 +239,6 @@ private:
             headers_raw += hdr + '\n';
         }
         
-        return std::move(Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))});
+        return Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))};
     }
 };

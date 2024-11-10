@@ -1,3 +1,7 @@
+#include <boost/asio/completion_condition.hpp>
+#include <boost/asio/error.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/system/detail/error_code.hpp>
 #include <exception>
 #include <iostream>
 #include <istream>
@@ -174,12 +178,16 @@ private:
         std::getline(i_str, status_message);
         
 
-        //TURN IT INTO READ THE REST...
-        boost::asio::read_until(*socket, response, "\r\n\r\n");
+      
+        boost::system::error_code error_code;
+        while (boost::asio::read(*socket, response, boost::asio::transfer_at_least(1), error_code)) {
+            if (error_code != boost::asio::error::eof) {
+                std::cout << error_code.what() << std::endl;
+            }
+        }
 
         std::string hdr;
         while (std::getline(i_str, hdr)) {
-            
             headers_raw += hdr + '\n';
         }
         

@@ -1,7 +1,4 @@
-#include <boost/asio/completion_condition.hpp>
-#include <boost/asio/error.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/system/detail/error_code.hpp>
+#include <cerrno>
 #include <exception>
 #include <iostream>
 #include <istream>
@@ -14,7 +11,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <system_error>
 #include<unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -25,13 +21,6 @@
 #include <cstdio>
 
 
-
-enum ConnectionType {
-    POST,
-    GET,
-    PUT,
-    DELETE
-};
 
 class Response {
 private:
@@ -159,43 +148,24 @@ public:
 };
 
 
-
 class Request {
 private:
    
-    std::string url_path;
+    
     std::string host, api;
 
-    boost::asio::io_service io_service;
-
-    std::unique_ptr<boost::asio::ip::tcp::socket> socket;
+    addrinfo *adres;
+    int sock;
 
 public:
-    Request(const std::string &url_path_p) : url_path(url_path_p) {
-        
-        if (url_path.find("https://") != url_path.npos) {
-            url_path.replace(url_path.find("https://"), 8, "");
-        } else if (url_path.find("http://") != url_path.npos) {
-            url_path.replace(url_path.find("http://"), 7, "");
-        }
-        host = url_path.substr(0, url_path.find("/"));
-        std::cout << host << std::endl;
-        
-
-        api = url_path.substr(url_path.find("/"));
-        std::cout << api << std::endl;
-
-
-        boost::asio::ip::tcp::resolver resolver(io_service);
-        boost::asio::ip::tcp::resolver::query query(host, "http");
-        boost::asio::ip::tcp::resolver::results_type endpoint_iter = resolver.resolve(query);
-
-        socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-    
-        boost::asio::connect(*socket, endpoint_iter);
+    Request(const std::string &url_path_p, int port = 80) {
+        process_route(url_path_p);
+        estabilish_connection(port);
     }
     
     ~Request() {
+        close(sock);
+        freeaddrinfo(adres);
     }
     
     static Response execute(Client &client) {
@@ -206,39 +176,97 @@ public:
 
     
 private:
-    void send(const std::string &request) {
-        boost::asio::write(*socket, boost::asio::buffer(request));
-    }
-    
-    Response receive() {
-        boost::asio::streambuf response;
-        boost::asio::read_until(*socket, response, "\r\n");
 
+    void process_route(std::string url_path) {
+         if (url_path.find("https://") != url_path.npos) {
+            url_path.replace(url_path.find("https://"), 8, "");
+        } else if (url_path.find("http://") != url_path.npos) {
+            url_path.replace(url_path.find("http://"), 7, "");
+        }
+        host = url_path.substr(0, url_path.find("/"));
+
+        api = url_path.substr(url_path.find("/"));
+    }
+
+    void estabilish_connection(int port) {
+        int getaddr = getaddrinfo(host.c_str(), std::to_string(port).c_str(), NULL, &adres); // Getting ip from DNS
+
+        if (getaddr != 0) {
+            perror("Addr failed");
+            exit(0);
+        }
+
+        sock = socket(adres->ai_family, adres->ai_socktype, adres->ai_protocol); // Creating a socket
+        if (sock < 0) {
+            perror("Socket error");
+            exit(0);
+        }
+
+        int connection = connect(sock, adres->ai_addr, adres->ai_addrlen); // Making a connection to the server
+        if (connection < 0) {
+            perror("Connection error");
+            exit(0);
+        }
+    }
+
+
+    void send(const std::string &request) {
+        int sent = ::send(sock, request.c_str(), request.size(), 0);
+        if (sent < 0) {
+            perror("Sending error");
+            exit(0);
+        }
+    }
+    Response receive() {
+        std::string buf = [this] -> std::string {
+            std::string result;
+            result.reserve(4096);
+
+            int already_read{};
+            while (true) { // Reading whole request
+                result.resize(already_read + 1);
+                
+                size_t rd_bytes = read(sock, result.data() + already_read, 1);
+
+                if (rd_bytes == 0) {
+                    break;
+                } else if (rd_bytes < 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        std::cout << "Data end\n";
+                        break;
+                    }
+                    std::cerr << "error reading\n";
+                    break;
+                }
+                already_read += rd_bytes;
+            }
+
+            return result;
+        }();
+        std::stringstream ss{buf};
+ 
         int status_code;
         std::string http_ver;
         std::string status_message;
 
         std::string headers_raw;
+        std::string body;
 
-        std::istream i_str(&response); 
-        std::getline(i_str, http_ver, ' ');
-        i_str >> status_code;
-        std::getline(i_str, status_message);
-        
+        std::getline(ss, http_ver, ' ');
+        ss >> status_code;
+        std::getline(ss, status_message);
 
-      
-        boost::system::error_code error_code;
-        while (boost::asio::read(*socket, response, boost::asio::transfer_at_least(1), error_code)) {
-            if (error_code != boost::asio::error::eof) {
-                std::cout << error_code.what() << std::endl;
-            }
-        }
 
-        std::string hdr;
-        while (std::getline(i_str, hdr)) {
-            headers_raw += hdr + '\n';
+        std::string line;
+        while (std::getline(ss, line) && !(line == "\r")) { // Extracting the response headers
+            headers_raw += line += '\n';
         }
         
-        return Response{status_code, headers_raw.substr(0, headers_raw.find("\r\n\r\n")), headers_raw.substr(headers_raw.find("\r\n\r\n") + 4, headers_raw.find_last_of("\r\n\r\n") - (headers_raw.find("\r\n\r\n") + 4))};
+        body += line;
+        while (std::getline(ss, line)) { // Extracting the response body
+            body += line;
+        }
+        
+        return Response{status_code, headers_raw, body};
     }
 };

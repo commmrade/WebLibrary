@@ -187,18 +187,18 @@ public:
     }
     std::string process_url_str(const std::string &url) {
         std::string base_url = url.substr(0, url.find("?")); //Base url without query part
-        std::string purl = url.substr(url.find("?") + 1); //query part of the url
+        std::string queries = url.substr(url.find("?") + 1); //query part of the url
         
 
-        purl = purl.replace(purl.find("=") + 1, purl.find("&") - purl.find("=") - 1, "?"); //Replacing first value with ?
+        queries = queries.replace(queries.find("=") + 1, queries.find("&") - queries.find("=") - 1, "?"); //Replacing first value with ?
         
-        base_url += "?" + purl.substr(0, purl.find("?") + 1);
+        base_url += "?" + queries.substr(0, queries.find("?") + 1);
 
         if (url.find("&") != url.npos) { //If there are other queries replace them one by one
-            for (auto i = 0; i <= std::count(purl.begin(), purl.end(), '&'); i++) {
-                purl = purl.substr(purl.find("&") + 1);
-                purl = purl.replace(purl.find("=") + 1, purl.find("&") - purl.find("=") - 1, "?");
-                base_url += "&" + purl.substr(0, purl.find("?") + 1);   
+            for (auto i = 0; i <= std::count(queries.begin(), queries.end(), '&'); i++) {
+                queries = queries.substr(queries.find("&") + 1);
+                queries = queries.replace(queries.find("=") + 1, queries.find("&") - queries.find("=") - 1, "?");
+                base_url += "&" + queries.substr(0, queries.find("?") + 1);   
             }
         }
         return base_url;
@@ -206,7 +206,7 @@ public:
     void handle_incoming_request(int client_socket) {
         std::string call = [client_socket]() {
             std::string result;
-            result.reserve(4096); // Reserve some space to avoid multiple allocations
+            result.reserve(4096); 
             
             int already_read = 0;
             while (true) {
@@ -214,13 +214,12 @@ public:
                 auto rd_bytes = read(client_socket, result.data() + already_read, 1);
                
                 if (rd_bytes == 0) {
-                    // End of stream
                     break;
                 } else if (rd_bytes < 0) {
                     if (errno == EAGAIN || errno == EWOULDBLOCK) {
               
                         std::cout << "Data ended" << std::endl;
-                        break; // or continue, depending on your logic
+                        break; 
                     } 
                     std::cerr << "Error reading\n";
                     break;
@@ -229,8 +228,9 @@ public:
                 already_read += rd_bytes;
             }
 
-            // Resize the string to the actual size read
+            
             result.resize(already_read);
+            result.shrink_to_fit();
             return result;
         }();
 

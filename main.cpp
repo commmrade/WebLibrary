@@ -39,7 +39,7 @@ const int PORT = 0;
 
 
 int main() {
-    PostClient joke("https://official-joke-api.appspot.com/jokes/random");
+    GetClient joke("https://official-joke-api.appspot.com/jokes/random");
     
     Response resp = Request::execute(joke);
     std::cout << resp.text() << std::endl;

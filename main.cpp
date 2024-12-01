@@ -6,11 +6,22 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <unordered_map>
-#include "Api.hpp"
+#include <requests/request.hpp>
 #include<print>
-#include<signal.h>
-const int PORT = 0;
+
+
+
+
+int main() {
+    get_client joke("https://official-joke-api.appspot.com/jokes/random");
+    
+    response resp = Request::execute(joke);
+    
+    std::cout << resp.text() << std::endl;
+    
+    return 0;
+}
+
 
 
 
@@ -36,13 +47,3 @@ const int PORT = 0;
 //     resp.set_header_raw("Content-Type", "text/plain");
 //     resp.write_raw("Page does not exist", 200);
 // }
-
-
-int main() {
-    GetClient joke("https://official-joke-api.appspot.com/jokes/random");
-    
-    Response resp = Request::execute(joke);
-    std::cout << resp.text() << std::endl;
-    
-    return 0;
-}

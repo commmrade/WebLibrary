@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.10.0)
 project(proj VERSION 0.1.0 LANGUAGES C CXX)
 
 
@@ -6,9 +6,9 @@ project(proj VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
-find_package(Boost REQUIRED)
 
-add_executable(proj main.cpp)
+add_executable(proj main.cpp requests/client.cpp requests/request.cpp requests/response.cpp)
 
-target_link_libraries(proj PRIVATE Boost::headers)
+
+target_include_directories(proj PUBLIC ${CMAKE_SOURCE_DIR}/include)
 

@@ -10,8 +10,11 @@ struct HttpRequest {
     std::unordered_map<std::string, std::string> headers;
     
     HttpRequest(const std::string &resp) : request(resp) {
+        // printf("start\n");
         extract_headers();
+        // printf("end\n");
         extract_queries();
+        
     }
     void extract_queries() {
         // Find the start of the query string
@@ -56,6 +59,7 @@ struct HttpRequest {
         }
     }
     void extract_headers() {
+       
         std::string headers_cont = request.substr(request.find("1.1") + 6, request.find("\r\n\r\n") - (request.find("1.1") + 5));
 
         if (headers_cont.empty()) {
@@ -82,7 +86,7 @@ struct HttpRequest {
     }
     std::optional<std::string> get_query(const std::string& query_name) {
         auto pos = queries.find(query_name);
-        if (pos != headers.end()) { //If header exists
+        if (pos != queries.end()) { //If header exists
             return pos->second;
         }
         return std::nullopt;

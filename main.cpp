@@ -1,16 +1,20 @@
 #include <cstdio>
+#include <fstream>
 #include <functional>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
 #include <unistd.h>
-#include <server/Endpoint.hpp>
+#include <server/HttpServer.hpp>
 #include<print>
 
 void reg(HttpRequest&& req, HttpResponse&& resp) {
-    std::cout << "reg\n";
+    
     auto login = req.get_query("name");
     auto password = req.get_query("password");
     
@@ -21,8 +25,13 @@ void reg(HttpRequest&& req, HttpResponse&& resp) {
         return;
     }
 
-    std::cout << req.get_query("password").value_or("NULL") << std::endl;
-    resp.write_str("Works", 200);
+    std::cout << "start\n";
+    std::ifstream file("index.html");
+    std::stringstream ss;
+    ss << file.rdbuf();
+    std::cout << "end\n";
+    resp.set_header_raw("Content-Type", "text/html");
+    resp.write_str(ss.str(), 200);
 }
 
 
@@ -30,7 +39,9 @@ void reg(HttpRequest&& req, HttpResponse&& resp) {
 int main() {
     auto &app = HttpServer::instance();
     //app.method_add(GET, "/zov?name=?&password=?", reg);
-    app.method_add(POST, "/zov?name=?&password=?", reg);
+
+    
+    app.method_add(RequestType::GET, "/zov?name=?&password=?", reg);
 
     app.listen_start();
     

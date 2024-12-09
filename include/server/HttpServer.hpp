@@ -1,3 +1,5 @@
+#pragma once
+
 #include <algorithm>
 #include <asm-generic/socket.h>
 #include <cerrno>
@@ -37,11 +39,12 @@ enum class RequestType {
 
 
 
+using Callback = std::function<void(HttpRequest&&, HttpResponse&&)>;
 
 
 class HttpServer {
 private:
-    using Callback = std::function<void(HttpRequest&&, HttpResponse&&)>;
+    
     std::unordered_map<std::pair<std::string, RequestType>, Callback> endpoints;
 
     int serv_socket;
@@ -57,7 +60,7 @@ public:
         close(serv_socket);
     }
 
-    void method_add(RequestType type, std::string &&endpoint_name, Callback foo) {
+    void method_add(RequestType type, const std::string &endpoint_name, Callback foo) {
         endpoints[{endpoint_name, type}] = foo;
     }
     
@@ -177,7 +180,7 @@ private:
         
         RequestType request_type = req_type_from_str(method);
         
-        std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 1)); // URL path that was called like /api/HttpServer
+        std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path that was called like /api/HttpServer
         std::string base_url = process_url_str(api_route); //Replacing values with ?
        
 
@@ -185,7 +188,9 @@ private:
 
         HttpResponse resp(client_socket);
         HttpRequest req(call);
+        
 
+        
         try { // If user function throws an exception the server doesn't crash
              if (endpoints.find({base_url, request_type}) != endpoints.end()) { //If such api HttpServer exist
                 endpoints.at({base_url, request_type})(std::move(req), std::move(resp));
@@ -220,6 +225,10 @@ private:
     }
 
     std::string process_url_str(const std::string &url) {
+        if (url.find("?") == url.npos) {
+            return url;
+        }
+
         std::string base_url = url.substr(0, url.find("/") );
      
         std::string query_part = url.substr(url.find("?") + 1);

@@ -1,4 +1,4 @@
-
+#pragma once
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>

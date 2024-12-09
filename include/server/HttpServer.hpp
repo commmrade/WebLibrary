@@ -54,6 +54,8 @@ private:
 
     inline static HttpServer *serv;
 
+    bool is_running{false};
+
 public: 
 
     ~HttpServer() {
@@ -72,7 +74,11 @@ public:
         return *serv;
     }
 
+    bool is_ran() const { return is_running; }
+
     void listen_start() {
+        is_running = true;
+
         if (endpoints.empty()) {
             throw std::runtime_error("Endpoints methods are not set");
         }

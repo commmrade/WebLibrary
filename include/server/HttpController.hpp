@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <iostream>
 #include  "HttpServer.hpp"
 
@@ -19,7 +20,11 @@ public:
     }
 
     static void register_endpoint(const std::string &endpoint_name, RequestType type, Callback callback) {
+        
         auto& app = HttpServer::instance();
+        if (app.is_ran()) {
+            throw std::runtime_error("Server is already listening! P.S: Add register endpoints before starting");
+        }
         app.method_add(type, endpoint_name, callback);
     }
 };

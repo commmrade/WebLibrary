@@ -3,12 +3,16 @@
 #include <algorithm>
 #include <asm-generic/socket.h>
 #include <cerrno>
+#include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <mutex>
 #include <optional>
 #include <ostream>
+#include <queue>
 #include <shared_mutex>
 #include <sstream>
 #include <stdexcept>
@@ -25,6 +29,11 @@
 #include <unordered_map>
 #include <utility>
 #include "hash.hpp"
+#include "ThreadPool.hpp"
+
+
+
+
 
 
 enum class RequestType {
@@ -33,10 +42,6 @@ enum class RequestType {
     PUT,
     DELETE
 };
-
-
-
-
 
 
 using Callback = std::function<void(HttpRequest&&, HttpResponse&&)>;
@@ -56,14 +61,18 @@ private:
 
     bool is_running{false};
 
+    ThreadPool thread_pool;
+
 public: 
 
     ~HttpServer() {
+        thread_pool.stop();
         close(serv_socket);
     }
 
     void method_add(RequestType type, const std::string &endpoint_name, Callback foo) {
         endpoints[{endpoint_name, type}] = foo;
+
     }
     
     
@@ -90,13 +99,15 @@ public:
                 exit(-1);
             }
             
-          
-            std::thread(&HttpServer::handle_incoming_request, this, client_socket).detach(); 
+            thread_pool.add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket);
+
         }
     }
 private:
     HttpServer(int port) {
         server_setup(port);
+
+        thread_pool.create();
 
         signal(SIGINT, &HttpServer::sigint_handler);
     }
@@ -135,6 +146,7 @@ private:
     }
 
     void handle_incoming_request(int client_socket) {
+        //std::this_thread::sleep_for(std::chrono::seconds(2));
      
         fcntl(client_socket, F_SETFL, O_NONBLOCK);
         std::string call;
@@ -145,7 +157,7 @@ private:
         int rd_bytes;
         while (true) {
             rd_bytes = read(client_socket, call.data() + already_read, 4096);
-            //std::cout << 
+           
             if (rd_bytes > 0) {
                 already_read += rd_bytes;   
                 std::cout << rd_bytes << std::endl;

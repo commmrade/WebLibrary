@@ -15,9 +15,11 @@
 
 
 int main() {
+    MyController controller{};
+    
     auto &app = HttpServer::instance();
-    MyController::init_path_routing();
 
+    
     
    
     app.listen_start();

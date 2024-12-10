@@ -1,32 +1,24 @@
 #pragma once
 
 #include <exception>
+#include <functional>
 #include <iostream>
 #include  "HttpServer.hpp"
 
-
-#define BEGIN_METHODS   static void init_path_routing() \
-    {
-#define METHOD_ADD(endpoint_name, type, callback) HttpController::register_endpoint(endpoint_name, type, callback)
-    
-#define END_METHODS return; \
-    }
-
+#define mv(X) std::move(X)
+#define REG_ENDP(FUNCTION, NAME, TYPE) HttpController::register_method(TYPE, NAME, [this] (HttpRequest &&req, HttpResponse &&resp) { FUNCTION(mv(req), mv(resp)); })
 
 class HttpController {
 public:
     HttpController() {
         
     }
-
-    static void register_endpoint(const std::string &endpoint_name, RequestType type, Callback callback) {
-        
-        auto& app = HttpServer::instance();
-        if (app.is_ran()) {
-            throw std::runtime_error("Server is already listening! P.S: Add register endpoints before starting");
-        }
-        app.method_add(type, endpoint_name, callback);
+    //RequestType type, const std::string &endpoint_name, Callback foo
+    template<typename... Values>
+    static void register_method(Values... val) {
+        HttpServer::instance().method_add(std::forward<Values>(val)...);
     }
+
 };
 
 

@@ -52,8 +52,7 @@ private:
 
     std::shared_mutex mtx;
 
-    inline static HttpServer *serv;
-
+    
     bool is_running{false};
 
     ThreadPool thread_pool;
@@ -67,7 +66,9 @@ public:
 
     void register_handler(RequestType type, const std::string &endpoint_name, Handler handler) {
         endpoints[{endpoint_name, type}] = handler;
-        middlewares[endpoint_name] = [] (auto &&req) {return true;};
+
+        if (middlewares.find(endpoint_name) == middlewares.end())
+            middlewares[endpoint_name] = [] (auto &&req) {return true;};
         printf("hhhh\n");
     }
 
@@ -78,10 +79,9 @@ public:
 
     
     static HttpServer& instance(int port = 8080) {
-        if (serv == nullptr) {
-            serv = new HttpServer(port);
-        }
-        return *serv;
+        static HttpServer serv{port};
+
+        return serv;
     }
 
     bool is_ran() const { return is_running; }
@@ -279,11 +279,13 @@ private:
         return url.substr(0, url.find("?") + 1) + base_url;
 
     }
+    void stop_server() {
+        close(serv_socket);
+    }
 
     static void sigint_handler(int signal) {
         std::cout << "SIGINT: Closing the server\n";
-        delete serv;
-        serv = nullptr;
+        instance().stop_server();
         std::exit(0);
     }
 };

@@ -18,9 +18,9 @@
 int main() {
 
    
-    
-    MyController controller{};
     MyFilter filter{};
+    MyController controller{};
+    
     
     auto &app = HttpServer::instance();
 

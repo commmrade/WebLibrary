@@ -31,11 +31,6 @@
 #include "hash.hpp"
 #include "ThreadPool.hpp"
 
-
-
-
-
-
 enum class RequestType {
     POST,
     GET,
@@ -44,14 +39,14 @@ enum class RequestType {
 };
 
 
-using Callback = std::function<void(HttpRequest&&, HttpResponse&&)>;
-
+using Handler = std::function<void(HttpRequest&&, HttpResponse&&)>;
+using Filter = std::function<bool(HttpRequest&&)>;
 
 class HttpServer {
 private:
     
-    std::unordered_map<std::pair<std::string, RequestType>, Callback> endpoints;
-
+    std::unordered_map<std::pair<std::string, RequestType>, Handler> endpoints;
+    std::unordered_map<std::string, Filter> middlewares;
     int serv_socket;
     sockaddr_in serv_addr;
 
@@ -70,11 +65,17 @@ public:
         close(serv_socket);
     }
 
-    void method_add(RequestType type, const std::string &endpoint_name, Callback foo) {
-        endpoints[{endpoint_name, type}] = foo;
-
+    void register_handler(RequestType type, const std::string &endpoint_name, Handler handler) {
+        endpoints[{endpoint_name, type}] = handler;
+        middlewares[endpoint_name] = [] (auto &&req) {return true;};
+        printf("hhhh\n");
     }
+
     
+    void register_filter(const std::string &route, Filter filter) {
+        middlewares[route] = filter;
+    }
+
     
     static HttpServer& instance(int port = 8080) {
         if (serv == nullptr) {
@@ -168,7 +169,7 @@ private:
 
             } else if (rd_bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
                 // Try again
-                std::cout << rd_bytes << std::endl;
+        
             } else if (rd_bytes == -1) {
                 break; // unknown error when reading
             }
@@ -202,7 +203,7 @@ private:
         std::string base_url = process_url_str(api_route); //Replacing values with ?
        
 
-
+        // TODO: SEPARATE ROUTING IN A SEPARATE UTILITY
 
         HttpResponse resp(client_socket);
         HttpRequest req(call);
@@ -210,8 +211,14 @@ private:
 
         
         try { // If user function throws an exception the server doesn't crash
-             if (endpoints.find({base_url, request_type}) != endpoints.end()) { //If such api HttpServer exist
-                endpoints.at({base_url, request_type})(std::move(req), std::move(resp));
+            if (endpoints.find({base_url, request_type}) != endpoints.end()) { // If such api exist
+
+                if (middlewares[base_url](std::move(req))) {
+                    endpoints.at({base_url, request_type})(std::move(req), std::move(resp));
+                } else {
+                    HttpResponse(client_socket).write_str("Access denied", 401);
+                }
+                
             } else {
                 
                 auto error_404 = [](auto &&req, auto &&resp) {

@@ -9,13 +9,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <server/CustomController.hpp>
+#include <server/CustomFilter.hpp>
 #include<print>
 
 
 
 
 int main() {
+
+   
+    
     MyController controller{};
+    MyFilter filter{};
     
     auto &app = HttpServer::instance();
 

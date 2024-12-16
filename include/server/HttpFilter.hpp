@@ -1,3 +1,4 @@
+#pragma once
 #include "server/HttpRequest.hpp"
 #include <server/HttpServer.hpp>
 
@@ -17,7 +18,7 @@ public:
     //str endp_name, function filter
     template<typename... Values>
     static void register_filter(Values... val) {
-        HttpServer::instance().register_filter(std::forward<Values>(val)...);
+        HttpRouter::instance().register_filter(std::forward<Values>(val)...);
     }
 
 };

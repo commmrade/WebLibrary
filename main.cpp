@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <server/CustomController.hpp>
 #include <server/CustomFilter.hpp>
+#include <server/CustomFilter2.hpp>
 #include<print>
 
 
@@ -17,9 +18,8 @@
 
 int main() {
 
-   
-    MyFilter filter{};
-    MyController controller{};
+    MyController a{};
+    //MyFilter b{};
     
     
     auto &app = HttpServer::instance();

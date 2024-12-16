@@ -2,7 +2,7 @@
 
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
-#include "server/HttpServer.hpp"
+
 
 
 
@@ -10,7 +10,7 @@
 class MyController : public HttpController {
 public:
     MyController() {
-        REG_ENDP(reg, "/zov", RequestType::GET);
+        REG_ENDP(reg, "/zov", RequestType::POST);
         REG_ENDP(echo, "/echo?text=?", RequestType::GET);
     }
 

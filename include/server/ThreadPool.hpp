@@ -34,7 +34,7 @@ public:
     void thread_loop() {
         while (true) {                      
             std::unique_lock lock{mtx};
-            cond.wait(lock, [this] { return !jobs.empty() || should_terminate; });
+            cond.wait(lock, [this] { return !jobs.empty() || should_terminate; }); // Waiting until we c
             if (should_terminate) {
                 return;
             }

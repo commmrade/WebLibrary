@@ -26,7 +26,6 @@ namespace std {
     template<>
     struct hash<RequestType> {
         size_t operator()(const RequestType &x) const {
-            size_t res = 0;
             auto hash = std::hash<int>()(static_cast<int>(x));
 
             return hash;

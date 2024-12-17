@@ -10,11 +10,8 @@ struct HttpRequest {
     std::unordered_map<std::string, std::string> headers;
     
     HttpRequest(const std::string &resp) : request(resp) {
-        // printf("start\n");
         extract_headers();
-        // printf("end\n");
         extract_queries();
-        
     }
     void extract_queries() {
         // Find the start of the query string
@@ -70,7 +67,7 @@ struct HttpRequest {
         std::stringstream strm(headers_cont);
         std::string line;
         while (std::getline(strm, line, '\n')) { //Extracting headers one by one
-            if (line.find("\r") != line.npos) {
+            if (line.find("\r") != line.npos) { // Remove \r if it is in the line
                 line.pop_back();
             } 
             
@@ -81,19 +78,24 @@ struct HttpRequest {
         }
         
     }
-    std::string get_raw() {
+
+    [[nodiscard]]
+    inline std::string get_raw() const {
         return request;
     }
-    std::optional<std::string> get_query(const std::string& query_name) {
+
+    [[nodiscard]]
+    std::optional<std::string> get_query(const std::string& query_name) const {
         auto pos = queries.find(query_name);
         if (pos != queries.end()) { //If header exists
             return pos->second;
         }
         return std::nullopt;
 
-        return std::nullopt;
     }
-    std::optional<std::string> get_header(const std::string &header_name) {
+
+    [[nodiscard]]
+    std::optional<std::string> get_header(const std::string &header_name) const {
         auto pos = headers.find(header_name);
         if (pos != headers.end()) { //If header exists
             return pos->second;
@@ -101,7 +103,27 @@ struct HttpRequest {
         return std::nullopt;
     }
 
-    auto body() -> std::string {
+    [[nodiscard]]
+    inline std::string body_as_str() const {
         return request.substr(request.find("\r\n\r\n") + 4);
     }
+
+    [[nodiscard]]
+    inline std::string get_method() const {
+        return request.substr(0, request.find(" "));
+    }
+
+    [[nodiscard]]
+    inline std::string get_method_string() const {
+        return request.substr(0, request.find("\r\n"));
+    }
+    
+    [[nodiscard]]
+    inline std::string get_version() const {
+        auto line = request.substr(0, request.find("\r\n"));
+        return line.substr(line.find_last_of("/") + 1);
+    }
+
+    // Get message
+    
 };

@@ -1,3 +1,4 @@
+#include "server/HttpServer.hpp"
 #include <cstdio>
 #include <fstream>
 #include <functional>
@@ -21,13 +22,9 @@ int main() {
     MyController a{};
     //MyFilter b{};
     
-    
-    auto &app = HttpServer::instance();
 
-    
-    
    
-    app.listen_start();
+    HttpServer::instance().listen_start();
     
     
     return 0;

@@ -160,7 +160,7 @@ private:
         close(serv_socket);
     }
 
-    static void sigint_handler(int signal) {
+    static void sigint_handler([[maybe_unused]] int signal) {
         std::cout << "SIGINT: Closing the server\n";
         instance().stop_server();
         std::exit(0);

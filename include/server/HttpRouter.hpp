@@ -55,7 +55,8 @@ public:
 
                 for (auto &filter : filters_iter->second) { // Go rhtough all filters
                     if (!filter(std::move(req))) {
-                        HttpResponse(client_socket).write_str("Access denied", 401);
+                        Response resp{401, "Access denied"};
+                        HttpResponse(client_socket).respond(resp);
                         return;
                     }
                 }
@@ -64,17 +65,22 @@ public:
                 
             } else { // If no endpoint found
 
-                auto error_404 = [](auto &&req, auto &&resp) {
-                    resp.set_header_raw("Content-Type", "text/plain");
-                    resp.write_str("Route does not exist", 404);
+                auto error_404 = []([[maybe_unused]] auto &&req, auto &&resp) {
 
+                    Response rsp;
+                    rsp.add_header_raw("Content-Type", "text/plain");
+                    rsp.set_body("Route does not exist");
+                    rsp.set_status(404);
+
+                    resp.respond(rsp);
                 };
                 error_404(std::move(req), std::move(resp));
             }
         } catch (std::exception &ex) { // Internal server error (throw in controller function)
             std::cerr << "Exception in " << api_route << std::endl;
 
-            HttpResponse(client_socket).write_str("Server internal error", 500);
+            Response rsp{500, "Server internal error"};
+            HttpResponse(client_socket).respond(rsp);
         }
 
     }

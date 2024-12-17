@@ -13,7 +13,7 @@ public:
     void create() {
         int num_thrs = std::thread::hardware_concurrency();
 
-        for (auto i{0}; i < 1; i++) {
+        for (auto i{0}; i < num_thrs; i++) {
             threads.emplace_back(std::thread(&ThreadPool::thread_loop, this));
         }
     }

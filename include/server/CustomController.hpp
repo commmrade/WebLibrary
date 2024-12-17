@@ -10,8 +10,8 @@
 class MyController : public HttpController {
 public:
     MyController() {
-        REG_ENDP(reg, "/zov", RequestType::POST);
-        REG_ENDP(echo, "/echo?text=?", RequestType::GET);
+        REG_ENDP(reg, "/zov", RequestType::GET);
+        
     }
 
 protected:
@@ -19,17 +19,16 @@ protected:
         auto login = req.get_query("name");
         auto password = req.get_query("password");
         
-     
+      
 
-        resp.set_header_raw("Content-Type", "text/plain");
-        resp.write_str("zov", 200);
+
+        Response rsp;
+        rsp.add_header(HeaderType::AUTH_BEARER, "fdjdfj28djsahd27y");
+        rsp.set_body("fuck you");
+        rsp.set_status(201);
+
+        resp.respond(rsp);
     }
 
-    void echo(HttpRequest &&req, HttpResponse &&resp) {
-        auto str = req.get_query("text").value_or("NULL");
-
-
-        resp.set_header_raw("Content-Type", "text/plain");
-        resp.write_str(str, 200);
-    }
+    
 };

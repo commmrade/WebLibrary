@@ -1,39 +1,156 @@
 #pragma once
+#include <stdexcept>
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>
+#include<iostream>
 
 
-struct HttpResponse {
-    int sock;
-    std::unordered_map<std::string, std::string> headers;
-    HttpResponse(int sock) : sock(sock) {
-        headers["Content-Type"] = "text/plain";
-    }
-    void write_str(const std::string &text, int code) {
-        std::string response{};
-        std::string status_code = std::to_string(code);
-        
-        response += "HTTP/1.1 " + status_code + " OK\r\n";
+enum class HeaderType {
+    CONTENT_TYPE,
+    CONTENT_LENGTH,
+    AUTH_BEARER,
+    AUTH_BASIC,
+};
+
+class Response {
+private:
     
-        //Adding headers part
+    std::unordered_map<std::string, std::string> headers;
+    std::string body{};
+    int status_code{200};
+
+    std::string status_message{"OK"};
+
+    std::string http_version{"1.1"};
+
+public:
+
+    Response() = default;
+
+    Response(int status_code, const std::string &resp_text) : body(resp_text) {
+        set_status(status_code);
+    }
+
+    [[nodiscard]]
+    std::string respond_text() const {
+        std::string response{};
+        std::string status_code_str = std::to_string(status_code);
+        
+        response += "HTTP/" + http_version + " " + status_code_str + " " + status_message + "\r\n";
+    
+        // Adding headers part
         for (const auto &[header_name, header_value] : headers) {
             response += header_name + ": " + header_value + "\r\n";
         }
+        if (headers.find("Content-Length") == headers.end()) { // Setting Content-Length if not already set
+            response += "Content-Length: " + std::to_string(body.size()) + "\r\n";
+        }
 
-        response += "\r\n"; //Separating headers and answer part
+        response += "\r\n"; // Separating headers and answer part
 
-        response += text + "\r\n"; //Adding user text
+        response += body; // Adding user text
 
-        ssize_t bytes_sent = send(sock, response.c_str(), response.length(), 0);
-        if (bytes_sent < 0) {
-            perror("Send error");
-        } else {
-            //std::cout << "Sent " << bytes_sent << " bytes." << std::endl; // Debug output
+        return response;
+    }
+
+
+    inline void add_header_raw(std::string name, std::string value) {
+        headers[name] = value;
+    }
+
+    inline void add_header(HeaderType header_type, std::string value) {
+        switch (header_type) {
+            case HeaderType::CONTENT_TYPE: {
+                headers["Content-Type"] = value;
+                break;
+            }
+            case HeaderType::CONTENT_LENGTH: {
+                headers["Content-Length"] = value;
+                break;
+            }
+            case HeaderType::AUTH_BASIC: {
+                headers["Authorization"] = "Basic " + value;
+                break;
+            }
+            case HeaderType::AUTH_BEARER: {
+                headers["Authorization"] = "Bearer " + value;
+                break;
+            }
+            default: {
+                throw std::runtime_error("Header type is not implemented > todo!");
+                break;
+            }
         }
     }
 
-    void set_header_raw(std::string name, std::string value) {
-        headers[name] = value;
+
+    inline void set_body(const std::string &text) {
+        body = text;
+    }
+
+    /* inline void set_body(const nlohmann::json &text) {
+        body = nlohmann::json::to_string(text); 
+    } kinda shit ok
+    */
+
+    void set_status(int status_code) {
+        std::cout << status_code << std::endl;
+        switch (status_code) {
+            case 200: {
+                status_message = "OK";
+                break;
+            }
+            case 400: {
+                status_message = "Bad request";
+                break;
+            }
+            case 401: {
+                status_message = "Unauthorized";
+                break;
+            }
+            case 404: {
+                status_message = "Not found";
+                break;
+            }
+            case 500: {
+                status_message = "Internal server error";
+                break;
+            }
+            default: {
+                status_message = "OK";
+                break;
+            }
+
+        }
+        this->status_code = status_code;
+    }
+
+    void set_version(const std::string &http_ver) {
+        http_version = http_ver;
     }
 };
+
+
+
+
+class HttpResponse {
+public:    
+    HttpResponse(int client_socket) : client_socket(client_socket) {
+        
+    }
+
+    void respond(Response &resp) { // Sending response text to the requester
+        auto response = resp.respond_text();
+
+        ssize_t bytes_sent = send(client_socket, response.c_str(), response.size(), 0);
+        if (bytes_sent < 0) {
+            perror("Send error");
+        } 
+    }
+private:
+    int client_socket;
+
+};
+
+

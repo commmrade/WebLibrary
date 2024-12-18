@@ -7,7 +7,7 @@
 #include "HttpRouter.hpp"
 
 #define mv(X) std::move(X)
-#define REG_ENDP(FUNCTION, NAME, TYPE, ...) HttpController::register_method(TYPE, NAME, [this] (HttpRequest &&req, HttpResponse &&resp) { FUNCTION(mv(req), mv(resp)); }, ##__VA_ARGS__)
+#define REG_ENDP(FUNCTION, NAME, TYPE, ...) HttpController::register_method(TYPE, NAME, [this] (const HttpRequest &req, HttpResponse &resp) { FUNCTION(mv(req), mv(resp)); }, ##__VA_ARGS__)
 
 class HttpController {
 public:

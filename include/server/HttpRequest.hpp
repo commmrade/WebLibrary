@@ -123,6 +123,9 @@ struct HttpRequest {
         auto line = request.substr(0, request.find("\r\n"));
         return line.substr(line.find_last_of("/") + 1);
     }
+    
+
+    //inline Json::Value get_json_obj() const {}
 
     // Get message
     

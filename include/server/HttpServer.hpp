@@ -23,17 +23,14 @@
 
 
 
-using Handler = std::function<void(HttpRequest&&, HttpResponse&&)>;
-using Filter = std::function<bool(HttpRequest&&)>;
+using Handler = std::function<void(const HttpRequest&, HttpResponse&)>;
+using Filter = std::function<bool(const HttpRequest&)>;
 
 class HttpServer {
 private:
    
     int serv_socket;
     sockaddr_in serv_addr;
-
-
-
     
     bool is_running{false};
 

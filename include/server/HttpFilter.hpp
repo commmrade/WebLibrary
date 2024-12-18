@@ -5,7 +5,7 @@
 
 
 #define mv(X) std::move(X)
-#define REG_FILT(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (HttpRequest &&req) { return FUNCTION(mv(req)); })
+#define REG_FILT(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION(mv(req)); })
 
 class HttpFilter {
 public:
@@ -13,7 +13,7 @@ public:
         
     }
 
-    virtual bool doFilter(HttpRequest &&req) = 0;
+    virtual bool doFilter(const HttpRequest &req) = 0;
 
     //str endp_name, function filter
     template<typename... Values>

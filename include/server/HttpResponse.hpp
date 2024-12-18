@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <stdexcept>
 #include <sys/socket.h>
 #include<unordered_map>
@@ -84,9 +85,24 @@ public:
         }
     }
 
+    inline void remove_header(const std::string &name) {
+        headers.erase(name); // Removing if exists (doesn't throw if does not exist)
+    }
+
+    [[nodiscard]]
+    inline std::optional<std::string> get_header(const std::string &name) const {
+        if (auto hdr = headers.find(name); hdr != headers.end()) {
+            return hdr->second;
+        }
+        return std::nullopt;
+    }
 
     inline void set_body(const std::string &text) {
         body = text;
+    }
+    [[nodiscard]] 
+    inline std::string get_body() const {
+        return body;
     }
 
     /* inline void set_body(const nlohmann::json &text) {
@@ -125,10 +141,27 @@ public:
         }
         this->status_code = status_code;
     }
+    [[nodiscard]]
+    inline int get_status() const {
+        return status_code;
+    }
 
     void set_version(const std::string &http_ver) {
         http_version = http_ver;
     }
+    [[nodiscard]]
+    inline std::string get_version() const {
+        return http_version;
+    }
+
+    void set_custom_message(const std::string &msg) {
+        status_message = msg;
+    }
+    [[nodiscard]]
+    inline std::string get_status_message() const { 
+        return status_message;
+    }
+
 };
 
 

@@ -1,13 +1,12 @@
 #pragma once
 
-#include <exception>
-#include <functional>
-#include <iostream>
 #include<stdarg.h>
 #include "HttpRouter.hpp"
 
-#define mv(X) std::move(X)
-#define REG_ENDP(FUNCTION, NAME, TYPE, ...) HttpController::register_method(TYPE, NAME, [this] (const HttpRequest &req, HttpResponse &resp) { FUNCTION(mv(req), mv(resp)); }, ##__VA_ARGS__)
+#define mv(X) std::move(X)             // More types
+#define REG_ENDP(FUNCTION, NAME, TYPE, ...) HttpController::register_method(NAME, [this] (const HttpRequest &req, HttpResponse &resp) { FUNCTION(mv(req), mv(resp)); }, TYPE, ##__VA_ARGS__)
+// Macro to reg endpoint
+
 
 class HttpController {
 public:

@@ -2,12 +2,14 @@
 
 #include "server/HttpRequest.hpp"
 #include "server/HttpResponse.hpp"
+#include <algorithm>
+#include <exception>
 #include <functional>
+#include <stdexcept>
 #include "Utils.hpp"
 #include "hash.hpp"
+#include "HttpHandle.hpp"
 
-using Handler = std::function<void(const HttpRequest&, HttpResponse&)>;
-using Filter = std::function<bool(const HttpRequest&)>;
 
 
 class HttpRouter {
@@ -15,14 +17,45 @@ public:
     HttpRouter() {
 
     }
-    void register_handler(RequestType type, const std::string &endpoint_name, Handler handler) {
 
-        endpoints[{endpoint_name, type}] = handler;
+    // template<typename... Types>
+    void register_handler(const std::string &endpoint_name, Handler handler, RequestType type) {
+        auto handle = handles.find(endpoint_name);
+
+        if (handle != handles.end()) {
+            throw std::runtime_error("Endpoint is already set!");
+        }    
+        HttpHandle handle_obj{};
+        handle_obj.add_http_method(type);
+        handle_obj.set_handle_method(handler);
+        
+
+        handles[endpoint_name] = std::move(handle_obj);
+    }
+
+    template<typename... Types>
+    void register_handler(const std::string &endpoint_name, Handler handler, Types... types) {
+        auto handle = handles.find(endpoint_name);
+
+        if (handle != handles.end()) {
+            throw std::runtime_error("Endpoint is already set!");
+        }    
+        HttpHandle handle_obj{};
+        (handle_obj.add_http_method(types), ...);
+        handle_obj.set_handle_method(handler);
+        
+
+        handles[endpoint_name] = std::move(handle_obj);
     }
 
     
     void register_filter(const std::string &route, Filter filter) {
-        middlewares[route].push_back(filter);
+        auto handle = handles.find(route);
+        if (handle == handles.end()) {
+            throw std::runtime_error("Please, set controllers before filters");
+        }
+
+        handle->second.add_filter(filter);
     }
 
     static HttpRouter& instance() {
@@ -38,57 +71,45 @@ public:
         RequestType request_type = req_type_from_str(method);
         
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path that was called like /api/HttpServer
-        std::string base_url = process_url_str(api_route); // Replacing values with ?
+        std::string base_url = process_url_str(api_route); // Replacing queries with ?
        
         HttpResponse resp(client_socket);
         HttpRequest req(call);
-           
+    
+        try {
 
-        try { // If user function throws an exception the server doesn't crash
-            if (endpoints.find({base_url, request_type}) != endpoints.end()) { // If endpoint found
-
-                auto filters_iter = middlewares.find(base_url);
-
-                if (filters_iter == middlewares.end()) { // If no filters
-                    endpoints.at({base_url, request_type})(req, resp);
-                    return;
-                }
-
-                for (auto &filter : filters_iter->second) { // Go rhtough all filters
-                    if (!filter(std::move(req))) {
-                        Response resp{401, "Access denied"};
-                        HttpResponse(client_socket).respond(resp);
+            if (auto handle = handles.find(base_url); handle != handles.end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
+                auto middlewares = handle->second.get_filters();
+                std::cout << handle->second.get_methods().size() << std::endl;
+                
+                for (auto &middleware : middlewares) { // Going through every middleware 
+                    if (!middleware(req)) {
+                        Response resp_{401, "Access denied", ResponseType::TEXT};
+                        resp.respond(resp_);
+                        
                         return;
                     }
                 }
 
-                endpoints.at({base_url, request_type})(req, resp);
-                
-            } else { // If no endpoint found
+                handle->second.proceed(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
 
-                auto error_404 = []([[maybe_unused]] auto &&req, auto &&resp) {
-
-                    Response rsp;
-                    rsp.add_header_raw("Content-Type", "text/plain");
-                    rsp.set_body("Route does not exist");
-                    rsp.set_status(404);
-
-                    resp.respond(rsp);
-                };
-                error_404(std::move(req), std::move(resp));
+            } else { // Endpoint was not found
+                Response rsp{404, "Not found", ResponseType::TEXT};
+                resp.respond(rsp);
             }
-        } catch (std::exception &ex) { // Internal server error (throw in controller function)
+        
+        } catch (std::exception &ex) {
             std::cerr << "Exception in " << api_route << std::endl;
 
-            Response rsp{500, "Server internal error"};
+            Response rsp{500, "Server internal error", ResponseType::TEXT};
             HttpResponse(client_socket).respond(rsp);
         }
 
     }
 
 private:
-    std::unordered_map<std::pair<std::string, RequestType>, Handler> endpoints; 
-    std::unordered_map<std::string, std::vector<Filter>> middlewares;
+    std::unordered_map<std::string, HttpHandle> handles; 
+    
 
 
 

@@ -6,17 +6,12 @@
 #include <functional>
 #include <iostream>
 #include <ostream>
-#include <stdexcept>
 #include <string>
-#include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<csignal>
 #include<fcntl.h>
 #include <unistd.h>
-#include <unordered_map>
-#include <utility>
-#include "hash.hpp"
 #include "ThreadPool.hpp"
 #include "HttpRouter.hpp"
 
@@ -31,11 +26,8 @@ private:
    
     int serv_socket;
     sockaddr_in serv_addr;
-    
-    bool is_running{false};
 
     ThreadPool thread_pool;
-
 public: 
 
     ~HttpServer() {
@@ -49,12 +41,8 @@ public:
         return serv;
     }
 
-    bool is_ran() const { return is_running; }
-
+ 
     void listen_start() {
-        is_running = true;
-
-       
 
         while (true) {
             int client_socket = accept(serv_socket, nullptr, nullptr);
@@ -97,13 +85,13 @@ private:
 
         if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
             std::cerr << "Error binding...\n";
-            perror("Binding");
+            perror("Binding error");
             exit(-1);
         } 
 
 
         if (listen(serv_socket, 999) < 0) { // Listening for incoming requests
-            perror("Listening");
+            perror("Listening error");
             exit(-1);
         }
     }
@@ -136,7 +124,7 @@ private:
                 break; // unknown error when reading
             }
 
-            if (already_read > 0 && already_read < 4096) {
+            if (already_read > 0 && already_read <= 4096) {
                 break; // Got all data
             }
 

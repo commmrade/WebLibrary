@@ -10,6 +10,7 @@ struct HttpRequest {
     std::unordered_map<std::string, std::string> headers;
     
     HttpRequest(const std::string &resp) : request(resp) {
+        
         extract_headers();
         extract_queries();
     }
@@ -57,7 +58,7 @@ struct HttpRequest {
     }
     void extract_headers() {
        
-        std::string headers_cont = request.substr(request.find("1.1") + 6, request.find("\r\n\r\n") - (request.find("1.1") + 5));
+        std::string headers_cont = request.substr(request.find("\r\n") + 2, request.find("\r\n\r\n") - (request.find("\r\n") + 2));
 
         if (headers_cont.empty()) {
             std::cerr << "Headers not found\n";

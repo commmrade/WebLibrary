@@ -14,7 +14,7 @@ public:
         int num_thrs = std::thread::hardware_concurrency();
 
         for (auto i{0}; i < num_thrs; i++) {
-            threads.emplace_back(std::thread(&ThreadPool::thread_loop, this));
+            threads.emplace_back(std::thread(&ThreadPool::thread_loop, this)); // Creating "empty" threads
         }
     }
     void stop() {
@@ -34,7 +34,7 @@ public:
     void thread_loop() {
         while (true) {                      
             std::unique_lock lock{mtx};
-            cond.wait(lock, [this] { return !jobs.empty() || should_terminate; }); // Waiting until we c
+            cond.wait(lock, [this] { return !jobs.empty() || should_terminate; }); // Waiting until there is a task or it should stop
             if (should_terminate) {
                 return;
             }

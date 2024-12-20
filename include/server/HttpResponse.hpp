@@ -14,6 +14,14 @@ enum class HeaderType {
     AUTH_BASIC,
 };
 
+enum class ResponseType {
+    HTML,
+    JSON,
+    TEXT,
+};
+
+
+
 class Response {
 private:
     
@@ -27,9 +35,28 @@ private:
 
 public:
 
-    Response() = default;
+    Response(ResponseType type) {
+        switch (type) {
+            case ResponseType::HTML: {
+                headers["Content-Type"] = "text/html";
+                break;
+            }   
+            case ResponseType::JSON: {
+                headers["Content-Type"] = "application/json";
+            }
+            case ResponseType::TEXT: {
+                // Deliberately made without break
+            }
+            default: {
+                headers["Content-Type"] = "plain/text";
+                break;
+            }
+        }
+        headers["Content-Type"] = "text/plain";
+    }
 
-    Response(int status_code, const std::string &resp_text) : body(resp_text) {
+    Response(int status_code, const std::string &resp_text, ResponseType type) : Response(type) {
+        set_body(resp_text);
         set_status(status_code);
     }
 

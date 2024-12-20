@@ -5,7 +5,7 @@
 
 
 #define mv(X) std::move(X)
-#define REG_FILT(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION(mv(req)); })
+#define REG_FILT(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION(mv(req)); }) // Macro to register filter
 
 class HttpFilter {
 public:
@@ -15,7 +15,6 @@ public:
 
     virtual bool doFilter(const HttpRequest &req) = 0;
 
-    //str endp_name, function filter
     template<typename... Values>
     static void register_filter(Values... val) {
         HttpRouter::instance().register_filter(std::forward<Values>(val)...);

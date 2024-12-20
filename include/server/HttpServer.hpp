@@ -7,8 +7,10 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include<csignal>
 #include<fcntl.h>
 #include <unistd.h>
@@ -28,6 +30,9 @@ private:
     sockaddr_in serv_addr;
 
     ThreadPool thread_pool;
+
+    std::vector<pollfd> polls_fd;
+
 public: 
 
     ~HttpServer() {
@@ -43,15 +48,41 @@ public:
 
  
     void listen_start() {
+        
+      
+        polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
 
         while (true) {
-            int client_socket = accept(serv_socket, nullptr, nullptr);
-            if (client_socket < 0) {
-                perror("Client socket");
+            
+            int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time because -1
+            if (poll_result < 0) {
+                perror("Polling error");
                 exit(-1);
             }
             
-            thread_pool.add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket);
+            for (size_t i = 0; i < polls_fd.size(); i++) {
+                if (polls_fd[i].revents & POLLIN) {
+
+                    if (polls_fd[i].fd == serv_socket) { // If server socket got something
+
+                        int client_socket = accept(serv_socket, nullptr, nullptr);
+                        if (client_socket < 0) {
+                            perror("Client error");
+                            exit(-1);
+                        }
+
+                        polls_fd.push_back({client_socket, POLLIN, 0}); // Add new user
+                    } else {
+                        int client_socket = polls_fd[i].fd;
+
+                        thread_pool.add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket); // Proccess user and remove from poll
+                        polls_fd.erase(polls_fd.begin() + i);
+                        i--;
+                    }
+
+                }
+            }
+            
         }
     }
 private:
@@ -65,7 +96,7 @@ private:
 
 
     void server_setup(int port) {
-        serv_socket = socket(AF_INET, SOCK_STREAM, 0); // Creating a socket that can be connected to
+        serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
         if (serv_socket < 0) {
             perror("Serv socket");
             exit(-1);

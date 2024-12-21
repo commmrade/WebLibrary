@@ -10,7 +10,7 @@ int main() {
 
     MyController a{};
 
-    MyFilter b{};
+    //MyFilter b{};
 
    
     HttpServer::instance().listen_start();

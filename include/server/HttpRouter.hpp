@@ -73,10 +73,11 @@ public:
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path that was called like /api/HttpServer
         std::string base_url = process_url_str(api_route); // Replacing queries with ?
        
-        HttpResponse resp(client_socket);
-        HttpRequest req(call);
+        
     
         try {
+            HttpResponse resp(client_socket);
+            HttpRequest req(call);
 
             if (auto handle = handles.find(base_url); handle != handles.end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
                 auto middlewares = handle->second.get_filters();
@@ -99,7 +100,7 @@ public:
             }
         
         } catch (std::exception &ex) {
-            std::cerr << "Exception in " << api_route << std::endl;
+            std::cerr << "Exception in " << api_route << " or incorrectly formatted request" << std::endl;
 
             Response rsp{500, "Server internal error", ResponseType::TEXT};
             HttpResponse(client_socket).respond(rsp);

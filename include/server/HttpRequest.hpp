@@ -1,18 +1,28 @@
 #pragma once
+#include "server/Cookie.hpp"
+#include "server/Utils.hpp"
+
+#include <chrono>
 #include <iostream>
+#include <optional>
+#include <stdexcept>
+#include <thread>
 #include<unordered_map>
 #include<string>
 #include<sstream>
+#include <vector>
 
 struct HttpRequest {
     std::string request;
     std::unordered_map<std::string, std::string> queries;
     std::unordered_map<std::string, std::string> headers;
+    std::unordered_map<std::string, Cookie> cookies;
     
     HttpRequest(const std::string &resp) : request(resp) {
         
         extract_headers();
         extract_queries();
+     
     }
     void extract_queries() {
         // Find the start of the query string
@@ -75,7 +85,43 @@ struct HttpRequest {
             std::string name = line.substr(0, line.find(":"));
             std::string value = line.substr(name.size() + 2);; 
             
-            headers[name] = value;
+            if (name != "Cookie") {
+                headers[name] = value;
+
+            } else { // Extracting cookies
+                std::string name = line.substr(0, line.find(":"));
+                std::string vals_str = line.substr(line.find(":") + 2);
+
+                while (!vals_str.empty()) {
+                    auto next_pos = vals_str.find(";");
+
+                    // Extracting name and value
+                    auto eq_pos = vals_str.find("="); 
+                    if (eq_pos == std::string::npos) {
+                        std::cerr << "Invalid cookie format: " << vals_str << std::endl;
+                        break;
+                    }
+
+                    std::string cookie_name = vals_str.substr(0, eq_pos);
+                    std::string value = (next_pos == std::string::npos) 
+                                            ? vals_str.substr(eq_pos + 1) 
+                                            : vals_str.substr(eq_pos + 1, next_pos - eq_pos - 1);
+
+           
+                    trim(cookie_name);
+                    trim(value);
+                    
+                    cookies.insert({cookie_name, Cookie{cookie_name, value}});
+
+                    // Update vals_str for the next iteration
+                    if (next_pos == std::string::npos) {
+                        vals_str.clear(); // No more cookies
+                    } else {
+                        vals_str = vals_str.substr(next_pos + 1);
+                    }
+                }
+            }
+
         }
         
     }
@@ -99,6 +145,16 @@ struct HttpRequest {
     std::optional<std::string> get_header(const std::string &header_name) const {
         auto pos = headers.find(header_name);
         if (pos != headers.end()) { //If header exists
+            return pos->second;
+        }
+        return std::nullopt;
+    }
+
+
+    [[nodiscard]]
+    std::optional<Cookie> get_cookie(const std::string &name) const {
+        auto pos = cookies.find(name);
+        if (pos != cookies.end()) {
             return pos->second;
         }
         return std::nullopt;

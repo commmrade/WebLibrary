@@ -5,7 +5,7 @@
 #include<unordered_map>
 #include<string>
 #include<iostream>
-
+#include "Cookie.hpp"
 
 enum class HeaderType {
     CONTENT_TYPE,
@@ -83,11 +83,21 @@ public:
     }
 
 
-    inline void add_header_raw(std::string name, std::string value) {
+    void add_header_raw(std::string name, std::string value) {
+        if (name == "Set-Cookie") {
+            throw std::runtime_error("Use add_cookie() instead!");
+        }
+
         headers[name] = value;
     }
 
-    inline void add_header(HeaderType header_type, std::string value) {
+    void add_cookie(const Cookie &cookie) {
+        std::string cookie_str = cookie.get_string();
+        // Maybe add multiple
+        headers["Set-Cookie"] = cookie_str;
+    }
+
+    void add_header(HeaderType header_type, std::string value) {
         switch (header_type) {
             case HeaderType::CONTENT_TYPE: {
                 headers["Content-Type"] = value;
@@ -112,7 +122,7 @@ public:
         }
     }
 
-    inline void remove_header(const std::string &name) {
+    void remove_header(const std::string &name) {
         headers.erase(name); // Removing if exists (doesn't throw if does not exist)
     }
 
@@ -124,7 +134,7 @@ public:
         return std::nullopt;
     }
 
-    inline void set_body(const std::string &text) {
+    void set_body(const std::string &text) {
         body = text;
     }
     [[nodiscard]] 

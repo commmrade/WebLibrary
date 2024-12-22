@@ -209,6 +209,8 @@ public:
     HttpResponse(int client_socket) : client_socket(client_socket) {
         
     }
+    HttpResponse(const HttpResponse&) = delete;
+    HttpResponse& operator=(const HttpResponse&) = delete;
 
     void respond(Response &resp) { // Sending response text to the requester
         auto response = resp.respond_text();

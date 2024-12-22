@@ -17,6 +17,10 @@ public:
     HttpRouter() {
 
     }
+    HttpRouter(const HttpRouter&) = delete;
+    HttpRouter(HttpRouter &&) = delete;
+    HttpRouter& operator=(const HttpRouter&) = delete;
+    HttpRouter& operator=(HttpRouter&&) = delete;
 
     // template<typename... Types>
     void register_handler(const std::string &endpoint_name, Handler handler, RequestType type) {
@@ -30,7 +34,8 @@ public:
         handle_obj.set_handle_method(handler);
         
 
-        handles[endpoint_name] = std::move(handle_obj);
+        
+        handles.emplace(endpoint_name, std::move(handle_obj));
     }
 
     template<typename... Types>

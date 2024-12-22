@@ -9,7 +9,7 @@
 
 
 
-class MyController : public HttpController {
+class MyController : public HttpController<MyController> {
 public:
     MyController() {
         REG_ENDP(reg, "/zov", RequestType::GET, RequestType::OPTIONS);

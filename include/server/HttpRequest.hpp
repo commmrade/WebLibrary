@@ -24,6 +24,9 @@ struct HttpRequest {
         extract_queries();
      
     }
+    HttpRequest(const HttpRequest&) = delete;
+    HttpRequest& operator=(const HttpRequest&) = delete;
+
     void extract_queries() {
         // Find the start of the query string
         size_t query_start = request.find("?");

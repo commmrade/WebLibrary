@@ -13,6 +13,7 @@ using Filter = std::function<bool(const HttpRequest&)>;
 class HttpHandle { // HttpHandle data class
 public:
     HttpHandle() = default;
+ 
 
     void add_filter(Filter filter) {
         filters.push_back(std::move(filter));

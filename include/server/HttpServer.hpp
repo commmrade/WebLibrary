@@ -35,6 +35,12 @@ private:
 
 public: 
 
+    HttpServer(const HttpServer&) = delete;
+    HttpServer(HttpServer &&) = delete;
+    HttpServer& operator=(const HttpServer&) = delete;
+    HttpServer& operator=(HttpServer&&) = delete;
+
+
     ~HttpServer() {
         thread_pool.stop();
         close(serv_socket);

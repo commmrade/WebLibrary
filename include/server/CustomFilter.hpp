@@ -3,14 +3,14 @@
 
 
 
-class MyFilter : public HttpFilter {
+class MyFilter : public HttpFilter<MyFilter> {
 public:
     MyFilter() {
         printf("done reg 1\n");
         REG_FILT("/zov", doFilter);
     }
 protected:
-    bool doFilter(const HttpRequest &req) override {
+    bool doFilter(const HttpRequest &req) {
         std::cout << "Filtering before...\n";
         if (!req.get_header("Authorization").has_value()) {
             return false;

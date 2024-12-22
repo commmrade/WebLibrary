@@ -19,7 +19,7 @@ public:
     HttpFilter& operator=(HttpFilter&&) = delete;
 
     bool doFilter(const HttpRequest &req) {
-        return static_cast<Derived*>(this)->doFilter();
+        return static_cast<Derived*>(this)->doFilter(req);
     }
 
     template<typename... Values>

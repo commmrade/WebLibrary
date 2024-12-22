@@ -86,6 +86,18 @@ public:
     std::optional<int> get_max_age() const {
         return max_age;
     }
+    [[nodiscard]]
+    std::optional<bool> get_httponly() const {
+        return httpOnly;
+    }
+    [[nodiscard]]
+    std::optional<bool> get_is_secure() const {
+        return secure;
+    }
+    [[nodiscard]]
+    SameSite get_samesite_policy() const {
+        return samesite;
+    }
 
     void set_name(const std::string &new_name) {
         name = new_name;

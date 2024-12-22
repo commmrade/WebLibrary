@@ -5,7 +5,7 @@ project(proj VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wnognu-zero-variadic-macro-arguments")
 
 add_executable(proj main.cpp requests/client.cpp requests/request.cpp requests/response.cpp server/Utils.cpp)
 

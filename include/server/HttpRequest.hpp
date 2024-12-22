@@ -32,6 +32,7 @@ struct HttpRequest {
 
         size_t http_start = request.find(" HTTP", query_start);
         if (http_start == std::string::npos) {
+            std::cerr << "Ill formed request\n";
             return; // No HTTP found
         }
 

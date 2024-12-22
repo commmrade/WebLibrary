@@ -158,6 +158,8 @@ private:
                 // Try again
         
             } else if (rd_bytes == -1) {
+                std::cerr << "Weird error when reading\n";
+                perror("Error reading");
                 break; // unknown error when reading
             }
 

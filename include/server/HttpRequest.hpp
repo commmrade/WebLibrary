@@ -2,16 +2,20 @@
 #include "server/Cookie.hpp"
 #include "server/Utils.hpp"
 #include <iostream>
+#include <json/reader.h>
+#include <json/value.h>
+#include <memory>
 #include <optional>
 #include<unordered_map>
 #include<string>
 #include<sstream>
-
+#include <json/json.h>
 
 struct HttpRequest {
     std::string request;
-    std::unordered_map<std::string, std::string> queries;
+    std::unordered_map<std::string, std::string> query_params;
     std::unordered_map<std::string, std::string> headers;
+    std::unordered_map<int, std::string> path_params;
     std::unordered_map<std::string, Cookie> cookies;
     
     HttpRequest(const std::string &resp) : request(resp) {
@@ -36,13 +40,13 @@ struct HttpRequest {
             return; // No HTTP found
         }
 
-        // Extract the query part (everything between '?' and ' HTTP')
+        // Extract the query part
         std::string query_part = request.substr(query_start + 1, http_start - query_start - 1);
 
         // Iterate over the query part and extract each key-value pair
         size_t param_start = 0;
         while (param_start < query_part.length()) {
-            // Find the end of the current key-value pair (either '&' or end of string)
+            // Find the end of the current key-value pair
             size_t param_end = query_part.find("&", param_start);
             if (param_end == std::string::npos) {
                 param_end = query_part.length(); // End of the query string
@@ -51,7 +55,7 @@ struct HttpRequest {
             // Extract the current key-value pair
             std::string key_value = query_part.substr(param_start, param_end - param_start);
 
-            // Find the '=' that separates the key and value
+            // Find the = that separates the key and value
             size_t equals_pos = key_value.find("=");
             if (equals_pos != std::string::npos) {
                 // Extract key and value
@@ -59,13 +63,18 @@ struct HttpRequest {
                 std::string value = key_value.substr(equals_pos + 1);
 
                 // Insert the key-value pair into the unordered map
-                queries[key] = value;
+                query_params[key] = value;
             }
 
-            // Move to the next parameter (skip past '&')
+            // Move to the next parameter
             param_start = param_end + 1;
         }
     }
+
+    void extract_path_params() {
+        
+    } 
+
     void extract_headers() {
        
         std::string headers_cont = request.substr(request.find("\r\n") + 2, request.find("\r\n\r\n") - (request.find("\r\n") + 2));
@@ -133,8 +142,8 @@ struct HttpRequest {
 
     [[nodiscard]]
     std::optional<std::string> get_query(const std::string& query_name) const {
-        auto pos = queries.find(query_name);
-        if (pos != queries.end()) { //If header exists
+        auto pos = query_params.find(query_name);
+        if (pos != query_params.end()) { //If header exists
             return pos->second;
         }
         return std::nullopt;
@@ -164,6 +173,20 @@ struct HttpRequest {
     inline std::string body_as_str() const {
         return request.substr(request.find("\r\n\r\n") + 4);
     }
+
+    [[nodiscard]]
+    inline std::unique_ptr<Json::Value> body_as_json() const {
+        const std::string raw_json = request.substr(request.find("\r\n\r\n") + 4);
+        Json::Value json_obj;
+
+
+        Json::Reader json_reader;
+        if (!json_reader.parse(raw_json, json_obj)) {
+            return nullptr;
+        }
+        return std::make_unique<Json::Value>(std::move(json_obj)); // Hopefuly Json::Value is good at move semantics
+    }
+
 
     [[nodiscard]]
     inline std::string get_method() const {

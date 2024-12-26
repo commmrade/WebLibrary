@@ -76,6 +76,7 @@ public:
         RequestType request_type = req_type_from_str(method);
         
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path that was called like /api/HttpServer
+        std::cout << api_route << std::endl;
         std::string base_url = process_url_str(api_route); // Replacing queries with ?
        
         

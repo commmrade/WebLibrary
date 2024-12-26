@@ -1,4 +1,6 @@
 #pragma once
+#include "json/writer.h"
+#include <json/value.h>
 #include <optional>
 #include <stdexcept>
 #include <sys/socket.h>
@@ -6,6 +8,8 @@
 #include<string>
 #include<iostream>
 #include "Cookie.hpp"
+#include <json/json.h>
+#include <json/json.h>
 
 enum class HeaderType {
     CONTENT_TYPE,
@@ -55,7 +59,7 @@ public:
         headers["Content-Type"] = "text/plain";
     }
 
-    Response(int status_code, const std::string &resp_text, ResponseType type) : Response(type) {
+    Response(int status_code, const std::string &resp_text, ResponseType type = ResponseType::TEXT) : Response(type) {
         set_body(resp_text);
         set_status(status_code);
     }
@@ -137,6 +141,18 @@ public:
     void set_body(const std::string &text) {
         body = text;
     }
+
+    void set_body(const Json::Value& json_obj) {
+        Json::FastWriter json_writer;
+        const std::string json_str = json_writer.write(json_obj);
+        std::cout << json_str << std::endl;
+
+        body = json_str;
+    }
+    void set_body(const char *text) {
+        body = text;
+    }
+
     [[nodiscard]] 
     inline std::string get_body() const {
         return body;

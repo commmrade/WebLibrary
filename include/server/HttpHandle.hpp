@@ -46,8 +46,17 @@ public:
         handle(req, resp);
     }
 
+    void set_param_names(std::vector<std::string> vec) {
+        parameter_names = std::move(vec);
+    }
+
+    std::vector<std::string> get_param_names() const {
+        return parameter_names;
+    }
+
 private:
     std::vector<RequestType> methods;
     std::vector<Filter> filters;
+    std::vector<std::string> parameter_names;
     Handler handle;
 };

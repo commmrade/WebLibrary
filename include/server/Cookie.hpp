@@ -64,9 +64,8 @@ public:
             }
             final_str += "; ";
         }
-        std::cout << final_str.find_last_of(";") << " " << final_str.size() - 2 << std::endl;
+      
         if (final_str.find_last_of(";") == final_str.size() - 2) {
-            printf("here\n");
             final_str.erase(final_str.find_last_of(";"));
         }
 

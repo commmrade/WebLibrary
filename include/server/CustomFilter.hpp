@@ -6,7 +6,7 @@
 class MyFilter : public HttpFilter<MyFilter> {
 public:
     MyFilter() {
-        printf("done reg 1\n");
+        
         REG_FILT("/zov", doFilter);
     }
 protected:

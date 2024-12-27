@@ -13,17 +13,13 @@
 class MyController : public HttpController<MyController> {
 public:
     MyController() {
-        REG_ENDP(reg, "/zov?name={}&password={}", RequestType::POST, RequestType::OPTIONS);
+        REG_ENDP(reg, "/zov", RequestType::POST, RequestType::OPTIONS);
         
     }
 protected:
     void reg(const HttpRequest& req, HttpResponse&& resp) {
         
        
-
-
-
-
         Response rsp{ResponseType::JSON};    
         rsp.set_status(200);
         Json::Value val;

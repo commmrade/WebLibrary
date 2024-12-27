@@ -146,9 +146,9 @@ private:
         while (true) {
             rd_bytes = read(client_socket, call.data() + already_read, 4096);
            
-            if (rd_bytes > 0) {
+            if (rd_bytes > 0) { // Normal reading
                 already_read += rd_bytes;   
-                std::cout << rd_bytes << std::endl;
+               
 
                 if (already_read >= call.size()) {
                     call.resize(call.size() * 2);

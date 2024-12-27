@@ -32,10 +32,11 @@ public:
         HttpHandle handle_obj{};
         handle_obj.add_http_method(type);
         handle_obj.set_handle_method(handler);
-        
 
-        
-        handles.emplace(endpoint_name, std::move(handle_obj));
+        handle_obj.set_param_names(extract_params(endpoint_name)); // Extracting param names that are in {param_name}
+
+   
+        handles.emplace(process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
     }
 
     template<typename... Types>
@@ -48,9 +49,12 @@ public:
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(types), ...);
         handle_obj.set_handle_method(handler);
+      
+        handle_obj.set_param_names(extract_params(endpoint_name)); // Extracting param names that are in {param_name}
+    
         
-
-        handles[endpoint_name] = std::move(handle_obj);
+        handles.emplace(process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
+      
     }
 
     
@@ -63,7 +67,7 @@ public:
         handle->second.add_filter(filter);
     }
 
-    static HttpRouter& instance() {
+    static HttpRouter& instance() { // Singleton
         static HttpRouter router{};
 
         return router;
@@ -72,32 +76,24 @@ public:
 
     void process_endpoint(int client_socket, const std::string &call) {
         std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request
-        
         RequestType request_type = req_type_from_str(method);
-        
-        std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path that was called like /api/HttpServer
-        std::cout << api_route << std::endl;
-        std::string base_url = process_url_str(api_route); // Replacing queries with ?
-       
-        
-    
+        std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
+        std::string base_url = process_url_str(api_route); // Replacing queries with {}
+
         try {
             HttpResponse resp(client_socket);
-            HttpRequest req(call);
-
+            
             if (auto handle = handles.find(base_url); handle != handles.end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
-                auto middlewares = handle->second.get_filters();
-                std::cout << handle->second.get_methods().size() << std::endl;
-                
+                HttpRequest req(call, handle->second.get_param_names()); // Passing param names to then process query part
+        
+                auto middlewares = handle->second.get_filters();    
                 for (auto &middleware : middlewares) { // Going through every middleware 
                     if (!middleware(req)) {
                         Response resp_{401, "Access denied", ResponseType::TEXT};
                         resp.respond(resp_);
-                        
-                        return;
+                        return; // Didn't pass a filter
                     }
                 }
-
                 handle->second.proceed(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
 
             } else { // Endpoint was not found
@@ -106,18 +102,13 @@ public:
             }
         
         } catch (std::exception &ex) {
-            std::cerr << "Exception in " << api_route << " or incorrectly formatted request" << std::endl;
+            std::cerr << "Exception in " << api_route << " or incorrectly formatted request " << ex.what() << std::endl;
 
             Response rsp{500, "Server internal error", ResponseType::TEXT};
             HttpResponse(client_socket).respond(rsp);
         }
-
     }
 
 private:
     std::unordered_map<std::string, HttpHandle> handles; 
-    
-
-
-
 };

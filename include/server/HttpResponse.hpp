@@ -145,7 +145,7 @@ public:
     void set_body(const Json::Value& json_obj) {
         Json::FastWriter json_writer;
         const std::string json_str = json_writer.write(json_obj);
-        std::cout << json_str << std::endl;
+      
 
         body = json_str;
     }
@@ -164,7 +164,7 @@ public:
     */
 
     void set_status(int status_code) {
-        std::cout << status_code << std::endl;
+     
         switch (status_code) {
             case 200: {
                 status_message = "OK";
@@ -216,9 +216,6 @@ public:
     }
 
 };
-
-
-
 
 class HttpResponse {
 public:    

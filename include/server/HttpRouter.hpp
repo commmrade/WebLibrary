@@ -4,12 +4,13 @@
 #include "server/HttpResponse.hpp"
 #include <algorithm>
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <stdexcept>
 #include "Utils.hpp"
 #include "hash.hpp"
 #include "HttpHandle.hpp"
-
 
 
 class HttpRouter {
@@ -22,7 +23,6 @@ public:
     HttpRouter& operator=(const HttpRouter&) = delete;
     HttpRouter& operator=(HttpRouter&&) = delete;
 
-    // template<typename... Types>
     void register_handler(const std::string &endpoint_name, Handler handler, RequestType type) {
         auto handle = handles.find(endpoint_name);
 
@@ -33,10 +33,10 @@ public:
         handle_obj.add_http_method(type);
         handle_obj.set_handle_method(handler);
 
-        handle_obj.set_param_names(extract_params(endpoint_name)); // Extracting param names that are in {param_name}
+        handle_obj.set_param_names(utils::extract_params(endpoint_name)); // Extracting param names that are in {param_name}
 
    
-        handles.emplace(process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
+        handles.emplace(utils::process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
     }
 
     template<typename... Types>
@@ -50,10 +50,10 @@ public:
         (handle_obj.add_http_method(types), ...);
         handle_obj.set_handle_method(handler);
       
-        handle_obj.set_param_names(extract_params(endpoint_name)); // Extracting param names that are in {param_name}
+        handle_obj.set_param_names(utils::extract_params(endpoint_name)); // Extracting param names that are in {param_name}
     
         
-        handles.emplace(process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
+        handles.emplace(utils::process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
       
     }
 
@@ -74,18 +74,25 @@ public:
     }
 
 
+    
+
     void process_endpoint(int client_socket, const std::string &call) {
         std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request
-        RequestType request_type = req_type_from_str(method);
+        RequestType request_type = utils::req_type_from_str(method);
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
-        std::string base_url = process_url_str(api_route); // Replacing queries with {}
+        std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
 
         try {
             HttpResponse resp(client_socket);
             
+            if (auto dot_place = base_url.find_last_of("."); dot_place != std::string::npos && dot_place > base_url.find_last_of("/")) { 
+                auto filename = base_url.substr(base_url.find_last_of("/") + 1);
+                base_url = "/static/" + utils::find_file(filename);
+            } // if it's a request for a file
+
             if (auto handle = handles.find(base_url); handle != handles.end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
                 HttpRequest req(call, handle->second.get_param_names()); // Passing param names to then process query part
-        
+                
                 auto middlewares = handle->second.get_filters();    
                 for (auto &middleware : middlewares) { // Going through every middleware 
                     if (!middleware(req)) {

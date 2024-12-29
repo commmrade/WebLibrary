@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include "ThreadPool.hpp"
 #include "HttpRouter.hpp"
+#include "server/HttpResController.hpp"
 
 
 
@@ -54,10 +55,7 @@ public:
 
  
     void listen_start() {
-        
-      
         polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
-
         while (true) {
             
             int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time because -1
@@ -91,13 +89,18 @@ public:
             
         }
     }
+    void stop_server() {
+        close(serv_socket);
+    }
+
 private:
     HttpServer(int port) {
         server_setup(port);
 
-        thread_pool.create();
+        HttpResController resController; // Setting up resource controller
 
-        signal(SIGINT, &HttpServer::sigint_handler);
+        thread_pool.create();
+   
     }
 
 
@@ -180,13 +183,7 @@ private:
     }
 
     
-    void stop_server() {
-        close(serv_socket);
-    }
+    
 
-    static void sigint_handler([[maybe_unused]] int signal) {
-        std::cout << "SIGINT: Closing the server\n";
-        instance().stop_server();
-        std::exit(0);
-    }
+    
 };

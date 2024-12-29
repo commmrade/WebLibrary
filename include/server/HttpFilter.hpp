@@ -1,7 +1,7 @@
 #pragma once
 #include "server/HttpRequest.hpp"
 #include <server/HttpServer.hpp>
-
+#include <server/HttpRouter.hpp>
 
 
 #define mv(X) std::move(X)

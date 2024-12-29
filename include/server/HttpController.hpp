@@ -25,7 +25,6 @@ public:
     static void register_method(Values... val) {
         HttpRouter::instance().register_handler(std::forward<Values>(val)...);
     }
-
 };
 
 

@@ -2,6 +2,8 @@
 #include <iostream>
 
 
+namespace utils {
+
 
 RequestType req_type_from_str(const std::string &str) {
     if (str == "GET") {
@@ -48,10 +50,17 @@ std::string process_url_str(const std::string &url) {
     std::string request = url;
     
     // Process route and add all key values to the parameters map
- 
+    
+
+
     std::string result;
     result += request.substr(0, request.find("/", 1) != std::string::npos ? request.find("/", 1) : request.find("?"));
-   
+    
+    if (result.contains("public") || result.contains("private") || result.contains("static")) {
+       
+        return url;
+    }
+
     { // Path parameter parsing
         auto request_url = request.substr(1);  
 
@@ -133,8 +142,8 @@ void trim_l(std::string &s) {
 }
 
 void trim(std::string &s) {
-    trim_l(s);
-    trim_r(s);
+    utils::trim_l(s);
+    utils::trim_r(s);
 }
 
 std::vector<std::string> extract_params(const std::string &url) {
@@ -156,4 +165,14 @@ std::vector<std::string> extract_params(const std::string &url) {
     
     
     return key_names;
+}
+std::string find_file(const std::string &filename) {
+    if (std::filesystem::exists("static/public/" + filename)) {
+        return "public/";
+    } else if (std::filesystem::exists("static/private/" + filename)) {
+        return "private/";
+    }
+    return "";
+}
+
 }

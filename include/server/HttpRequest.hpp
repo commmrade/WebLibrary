@@ -225,8 +225,8 @@ private:
                                             : vals_str.substr(eq_pos + 1, next_pos - eq_pos - 1);
 
            
-                    trim(cookie_name);
-                    trim(value);
+                    utils::trim(cookie_name);
+                    utils::trim(value);
                     
                     cookies.insert({cookie_name, Cookie{cookie_name, value}});
 

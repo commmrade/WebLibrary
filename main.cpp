@@ -1,4 +1,4 @@
-#include "server/HttpServer.hpp"
+#include <server/HttpFramework.hpp>
 #include <server/CustomController.hpp>
 #include <server/CustomFilter.hpp>
 #include <server/CustomFilter2.hpp>
@@ -9,11 +9,12 @@
 int main() {
 
     MyController a{};
+    //HttpResController web_controller; // For static files
 
     //MyFilter b{};
 
-   
-    HttpServer::instance().listen_start();
+    app().listen_start();
+    
     
     
     return 0;

@@ -47,6 +47,7 @@ public:
             }   
             case ResponseType::JSON: {
                 headers["Content-Type"] = "application/json";
+                break;
             }
             case ResponseType::TEXT: {
                 // Deliberately made without break
@@ -56,7 +57,6 @@ public:
                 break;
             }
         }
-        headers["Content-Type"] = "text/plain";
     }
 
     Response(int status_code, const std::string &resp_text, ResponseType type = ResponseType::TEXT) : Response(type) {

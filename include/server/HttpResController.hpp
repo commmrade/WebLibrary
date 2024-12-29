@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include<stdarg.h>
 #include <utility>
@@ -30,26 +31,18 @@ public:
     }
 
     void process_file_request(const HttpRequest &req, HttpResponse &resp) {
- 
-        const std::string req_str = req.get_raw();
-        const std::string filepath = req_str.substr(req_str.find("/"), req_str.find("HTTP") - req_str.find("/") - 1).substr(1);
-        const std::string full_path = "static/" + filepath;
 
-        auto filename = filepath.substr(filepath.find_last_of("/") + 1);
-        const std::string file_extension = filename.substr(filename.find_last_of(".") + 1);
+        auto full_path = get_file_path(req.get_raw());
+        const std::string file_extension = full_path.substr(full_path.find_last_of(".") + 1);
+        auto filename = full_path.substr(full_path.find_last_of("/") + 1);
 
-        std::ifstream file(full_path);
-
-        if (!file.is_open()) {
+        auto file_opt = read_file(full_path);
+        if (!file_opt) {
             Response response{404, "Not found"};
             resp.respond(response);
         }
 
-        std::stringstream ss;
-        ss << file.rdbuf();
-
-        Response response{200, ss.str()};
-
+        Response response{200, file_opt.value()};
         if (file_extension == "css") {
             response.add_header(HeaderType::CONTENT_TYPE, "text/css");
         } else if (file_extension == "js") {
@@ -58,7 +51,25 @@ public:
         resp.respond(response);
     }
 
-    
+    std::optional<std::string> read_file(const std::string &filepath) {
+        std::ifstream file(filepath);
+
+        if (!file.is_open()) {
+            return std::nullopt;
+        }
+
+        std::stringstream ss;
+        ss << file.rdbuf();
+
+        return ss.str();
+    }
+
+    std::string get_file_path(std::string &&req) {
+        const std::string req_str = req;
+        const std::string filepath = req_str.substr(req_str.find("/"), req_str.find("HTTP") - req_str.find("/") - 1).substr(1);
+     
+        return "static/" + filepath;
+    }
 
 };
 

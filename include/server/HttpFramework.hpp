@@ -12,8 +12,5 @@ static void sigint_handler([[maybe_unused]] int signal) {
 
 static HttpServer& app() {
     signal(SIGINT, sigint_handler);
-
-    
-
     return HttpServer::instance();
 }

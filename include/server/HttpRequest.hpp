@@ -115,7 +115,6 @@ private:
             auto request_url = request.substr(request.find("/") + 1, request.find("HTTP") - request.find("/") - 2);   
             
             if (param_names.size() == 0) { // iF weithout query
-                std::cerr << "No query found / Not processed yet\n";
                 return;
             }
 

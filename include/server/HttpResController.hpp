@@ -47,7 +47,12 @@ public:
             response.add_header(HeaderType::CONTENT_TYPE, "text/css");
         } else if (file_extension == "js") {
             response.add_header(HeaderType::CONTENT_TYPE, "text/javascript");
+        } else if (file_extension == "html") {
+            response.add_header(HeaderType::CONTENT_TYPE, "text/html");
+        } else {
+            response.add_header(HeaderType::CONTENT_TYPE, "plain/text");
         }
+        
         resp.respond(response);
     }
 

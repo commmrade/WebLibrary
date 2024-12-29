@@ -108,7 +108,7 @@ public:
                 resp.respond(rsp);
             }
         
-        } catch (std::exception &ex) {
+        } catch (std::exception &ex) { // Server internal error 5xx
             std::cerr << "Exception in " << api_route << " or incorrectly formatted request " << ex.what() << std::endl;
 
             Response rsp{500, "Server internal error", ResponseType::TEXT};

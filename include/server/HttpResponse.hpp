@@ -158,10 +158,6 @@ public:
         return body;
     }
 
-    /* inline void set_body(const nlohmann::json &text) {
-        body = nlohmann::json::to_string(text); 
-    } kinda shit ok
-    */
 
     void set_status(int status_code) {
      

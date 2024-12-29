@@ -36,7 +36,7 @@ public:
         const std::string file_extension = full_path.substr(full_path.find_last_of(".") + 1);
         auto filename = full_path.substr(full_path.find_last_of("/") + 1);
 
-        auto file_opt = read_file(full_path);
+        auto file_opt = read_file(full_path); 
         if (!file_opt) {
             Response response{404, "Not found"};
             resp.respond(response);

@@ -50,6 +50,8 @@ public:
         parameter_names = std::move(vec);
     }
 
+
+    [[nodiscard]]
     std::vector<std::string> get_param_names() const {
         return parameter_names;
     }

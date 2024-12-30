@@ -8,7 +8,7 @@
 class MyController : public HttpController<MyController> {
 public:
     MyController() {
-        REG_ENDP(reg, "/zov?name={name}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDP(reg, "/smth?name={name}", RequestType::GET, RequestType::OPTIONS);
         
     }
 protected:

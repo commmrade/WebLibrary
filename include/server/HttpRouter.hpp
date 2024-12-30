@@ -74,8 +74,6 @@ public:
     
 
     void process_endpoint(int client_socket, const std::string &call) {
-        
-
         std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request
         RequestType request_type = utils::req_type_from_str(method);
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer

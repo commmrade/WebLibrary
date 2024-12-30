@@ -10,6 +10,7 @@
 #include "Cookie.hpp"
 #include <json/json.h>
 #include <json/json.h>
+#include <debug.hpp>
 
 enum class HeaderType {
     CONTENT_TYPE,
@@ -40,23 +41,7 @@ private:
 public:
 
     Response(ResponseType type) {
-        switch (type) {
-            case ResponseType::HTML: {
-                headers["Content-Type"] = "text/html";
-                break;
-            }   
-            case ResponseType::JSON: {
-                headers["Content-Type"] = "application/json";
-                break;
-            }
-            case ResponseType::TEXT: {
-                // Deliberately made without break
-            }
-            default: {
-                headers["Content-Type"] = "plain/text";
-                break;
-            }
-        }
+       set_type(type);
     }
 
     Response(int status_code, const std::string &resp_text, ResponseType type = ResponseType::TEXT) : Response(type) {
@@ -128,6 +113,26 @@ public:
 
     void remove_header(const std::string &name) {
         headers.erase(name); // Removing if exists (doesn't throw if does not exist)
+    }
+
+    void set_type(ResponseType type) {
+        switch (type) {
+            case ResponseType::HTML: {
+                headers["Content-Type"] = "text/html";
+                break;
+            }   
+            case ResponseType::JSON: {
+                headers["Content-Type"] = "application/json";
+                break;
+            }
+            case ResponseType::TEXT: {
+                // Deliberately made without break
+            }
+            default: {
+                headers["Content-Type"] = "plain/text";
+                break;
+            }
+        }
     }
 
     [[nodiscard]]
@@ -226,7 +231,7 @@ public:
 
         ssize_t bytes_sent = send(client_socket, response.c_str(), response.size(), 0);
         if (bytes_sent < 0) {
-            perror("Send error");
+            debug::log_error("Error sending response");
         } 
     }
 private:

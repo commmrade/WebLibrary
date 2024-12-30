@@ -9,7 +9,7 @@
 #include "Utils.hpp"
 #include "hash.hpp"
 #include "HttpHandle.hpp"
-
+#include <debug.hpp>
 
 class HttpRouter {
 public:
@@ -30,11 +30,11 @@ public:
         HttpHandle handle_obj{};
         handle_obj.add_http_method(type);
         handle_obj.set_handle_method(handler);
-
         handle_obj.set_param_names(utils::extract_params(endpoint_name)); // Extracting param names that are in {param_name}
 
-   
         handles.emplace(utils::process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
+
+        debug::log_info("Registered handler");
     }
 
     template<typename... Types>
@@ -46,13 +46,11 @@ public:
         }    
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(types), ...);
-        handle_obj.set_handle_method(handler);
-      
+        handle_obj.set_handle_method(handler);      
         handle_obj.set_param_names(utils::extract_params(endpoint_name)); // Extracting param names that are in {param_name}
-    
-        
+
         handles.emplace(utils::process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
-      
+        debug::log_info("Registered handler");
     }
 
     
@@ -63,6 +61,7 @@ public:
         }
 
         handle->second.add_filter(filter);
+        debug::log_info("Registered filter");
     }
 
     static HttpRouter& instance() { // Singleton
@@ -75,10 +74,14 @@ public:
     
 
     void process_endpoint(int client_socket, const std::string &call) {
+        
+
         std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request
         RequestType request_type = utils::req_type_from_str(method);
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
         std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
+
+        debug::log_info("Proceeding to the endpoint ", base_url);
 
         try {
             HttpResponse resp(client_socket);
@@ -94,21 +97,25 @@ public:
                 auto middlewares = handle->second.get_filters();    
                 for (auto &middleware : middlewares) { // Going through every middleware 
                     if (!middleware(req)) {
+                        debug::log_warn("Filtering not passed");
+
                         Response resp_{401, "Access denied", ResponseType::TEXT};
                         resp.respond(resp_);
                         return; // Didn't pass a filter
                     }
                 }
-                handle->second.proceed(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
 
+                handle->second.proceed(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
             } else { // Endpoint was not found
+                debug::log_info("Endpoint not found");
+
                 Response rsp{404, "Not found", ResponseType::TEXT};
                 resp.respond(rsp);
             }
         
         } catch (std::exception &ex) { // Server internal error 5xx
+            debug::log_error("Server internal error ", api_route, " ", ex.what());
             std::cerr << "Exception in " << api_route << " or incorrectly formatted request " << ex.what() << std::endl;
-
             Response rsp{500, "Server internal error", ResponseType::TEXT};
             HttpResponse(client_socket).respond(rsp);
         }

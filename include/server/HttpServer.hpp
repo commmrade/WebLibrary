@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include "ThreadPool.hpp"
 #include "HttpRouter.hpp"
+#include "debug.hpp"
 #include "server/HttpResController.hpp"
 
 
@@ -55,12 +56,19 @@ public:
 
  
     void listen_start() {
+
+        debug::log_info("Starting listening for incoming requests");
+        if (listen(serv_socket, 999) < 0) { // Listening for incoming requests
+            debug::log_error("Listening error");
+            exit(-1);
+        }
+
+
         polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
         while (true) {
-            
             int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time because -1
             if (poll_result < 0) {
-                perror("Polling error");
+                debug::log_error("Polling error");
                 exit(-1);
             }
             
@@ -71,7 +79,7 @@ public:
 
                         int client_socket = accept(serv_socket, nullptr, nullptr);
                         if (client_socket < 0) {
-                            perror("Client error");
+                            debug::log_error("Accepting error");
                             exit(-1);
                         }
 
@@ -96,18 +104,19 @@ public:
 private:
     HttpServer(int port) {
         server_setup(port);
-
         HttpResController resController; // Setting up resource controller
-
         thread_pool.create();
-   
     }
 
 
     void server_setup(int port) {
+        debug::log_info("Setting up server");
+
+
+        debug::log_info("Creating a socket");
         serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
         if (serv_socket < 0) {
-            perror("Serv socket");
+            debug::log_error("Socket error");
             exit(-1);
         }   
 
@@ -115,7 +124,7 @@ private:
 
         int sockopt = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));// TODO: On release remove this
         if (sockopt < 0) { // TODO: On release remove this
-            perror("Setting sockopt"); // TODO: On release remove this
+            debug::log_error("Setting sockopt error");
             exit(-1); // TODO: On release remove this
         }
 
@@ -123,27 +132,23 @@ private:
         serv_addr.sin_port = htons(port); // Settings app addres info
         serv_addr.sin_addr.s_addr = INADDR_ANY;
 
+        debug::log_info("Binding socket");
         if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
-            std::cerr << "Error binding...\n";
-            perror("Binding error");
+            debug::log_error("Binding socket error");
             exit(-1);
         } 
 
-
-        if (listen(serv_socket, 999) < 0) { // Listening for incoming requests
-            perror("Listening error");
-            exit(-1);
-        }
+        
+        
     }
 
     void handle_incoming_request(int client_socket) {
-       
-        fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
+        debug::log_info("Reading user request");
 
+        fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
         std::string call; 
         call.resize(4096);
         
-      
         size_t already_read{0};
         int rd_bytes;
         while (true) {
@@ -152,7 +157,6 @@ private:
             if (rd_bytes > 0) { // Normal reading
                 already_read += rd_bytes;   
                
-
                 if (already_read >= call.size()) {
                     call.resize(call.size() * 2);
                 }
@@ -161,16 +165,13 @@ private:
                 // Try again
         
             } else if (rd_bytes == -1) {
-                std::cerr << "Weird error when reading\n";
-                perror("Error reading");
+                debug::log_error("Error reading");
                 break; // unknown error when reading
             }
 
             if (already_read > 0 && already_read <= 4096) {
                 break; // Got all data
             }
-
-            
         }
         
         call.resize(already_read);

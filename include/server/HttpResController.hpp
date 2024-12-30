@@ -8,13 +8,15 @@
 #include "server/HttpRequest.hpp"
 #include "server/HttpResponse.hpp"
 #include "server/HttpRouter.hpp"
+#include <debug.hpp>
+
 
 class HttpResController {
 public:
     HttpResController() {
         register_method("/static/public/", [this] (const HttpRequest &req, HttpResponse &resp) {process_file_request(req, resp); }, RequestType::GET, RequestType::OPTIONS);
         register_method("/static/private/", [this] (const HttpRequest &req, HttpResponse &resp) {process_file_request(req, resp); }, RequestType::GET, RequestType::OPTIONS);
-
+        debug::log_info("Registered resource endpoints");
         // Apply filter to one of these endpoints to make resources protected
     }
 
@@ -31,6 +33,7 @@ public:
     }
 
     void process_file_request(const HttpRequest &req, HttpResponse &resp) {
+        debug::log_info("Processing file request");
 
         auto full_path = get_file_path(req.get_raw());
         const std::string file_extension = full_path.substr(full_path.find_last_of(".") + 1);
@@ -38,6 +41,7 @@ public:
 
         auto file_opt = read_file(full_path); 
         if (!file_opt) {
+            debug::log_error("File not found");
             Response response{404, "Not found"};
             resp.respond(response);
         }
@@ -62,7 +66,6 @@ public:
         if (!file.is_open()) {
             return std::nullopt;
         }
-
         std::stringstream ss;
         ss << file.rdbuf();
 

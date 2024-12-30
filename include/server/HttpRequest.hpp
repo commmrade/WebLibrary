@@ -17,10 +17,8 @@ public:
     
     
     HttpRequest(const std::string &resp, std::vector<std::string> vec = {}) : request(resp), param_names(std::move(vec)) {
-        
         extract_headers();
         extract_queries();
-     
     }
     HttpRequest(const HttpRequest&) = delete;
     HttpRequest& operator=(const HttpRequest&) = delete;

@@ -4,8 +4,6 @@
 #include <cerrno>
 #include <cstdio>
 #include <functional>
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <sys/poll.h>
 #include <sys/socket.h>

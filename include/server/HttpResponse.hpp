@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>
-#include<iostream>
 #include "Cookie.hpp"
 #include <json/json.h>
 #include <json/json.h>

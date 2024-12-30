@@ -1,4 +1,3 @@
-#include "server/HttpResController.hpp"
 #include <server/HttpServer.hpp>
 #include <debug.hpp>
 

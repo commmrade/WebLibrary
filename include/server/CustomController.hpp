@@ -1,16 +1,9 @@
 #pragma once
 
-#include "server/Cookie.hpp"
+
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
-#include "server/Utils.hpp"
-#include <fstream>
 #include <json/value.h>
-#include <sstream>
-
-
-
-
 
 class MyController : public HttpController<MyController> {
 public:

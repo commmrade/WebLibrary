@@ -3,6 +3,7 @@
 #include <asm-generic/socket.h>
 #include <cerrno>
 #include <cstdio>
+#include <exception>
 #include <functional>
 #include <string>
 #include <sys/poll.h>
@@ -56,9 +57,9 @@ public:
     void listen_start() {
 
         debug::log_info("Starting listening for incoming requests");
-        if (listen(serv_socket, 999) < 0) { // Listening for incoming requests
+        if (listen(serv_socket, SOMAXCONN) < 0) { // Listening for incoming requests
             debug::log_error("Listening error");
-            exit(-1);
+            std::abort();
         }
 
 
@@ -67,7 +68,7 @@ public:
             int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time because -1
             if (poll_result < 0) {
                 debug::log_error("Polling error");
-                exit(-1);
+                std::abort();
             }
             
             for (size_t i = 0; i < polls_fd.size(); i++) {
@@ -77,8 +78,8 @@ public:
 
                         int client_socket = accept(serv_socket, nullptr, nullptr);
                         if (client_socket < 0) {
-                            debug::log_error("Accepting error");
-                            exit(-1);
+                            debug::log_error("Accepting user error");
+                            continue; // Moving on
                         }
 
                         polls_fd.push_back({client_socket, POLLIN, 0}); // Add new user
@@ -115,16 +116,16 @@ private:
         serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
         if (serv_socket < 0) {
             debug::log_error("Socket error");
-            exit(-1);
+            std::abort();
         }   
 
-        int optval = 1;
+        // int optval = 1;
 
-        int sockopt = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));// TODO: On release remove this
-        if (sockopt < 0) { // TODO: On release remove this
-            debug::log_error("Setting sockopt error");
-            exit(-1); // TODO: On release remove this
-        }
+        // int sockopt = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));// TODO: On release remove this
+        // if (sockopt < 0) { // TODO: On release remove this
+        //     debug::log_error("Setting sockopt error");
+        //      std::abort(); // TODO: On release remove this
+        // }
 
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(port); // Settings app addres info
@@ -133,7 +134,7 @@ private:
         debug::log_info("Binding socket");
         if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
             debug::log_error("Binding socket error");
-            exit(-1);
+            std::abort();
         } 
 
         
@@ -141,7 +142,7 @@ private:
     }
 
     void handle_incoming_request(int client_socket) {
-        debug::log_info("Reading user request");
+        debug::log_info("Reding user request");
 
         fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
         std::string call; 

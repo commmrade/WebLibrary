@@ -67,7 +67,5 @@ public:
     const char* as<const char*>() const {
         return content.c_str();
     }
-
- 
 };
 

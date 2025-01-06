@@ -20,7 +20,7 @@ protected:
     void reg(const HttpRequest& req, HttpResponse&& resp) {
         
         std::cout << req.get_query("id").as<long long>() << std::endl;
-    
+        auto a = req.get_cookie("aaa");
         Response r{200, "ok"};
         resp.respond(r);
     }

@@ -10,7 +10,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -DDEBUG")
 
 
 
-add_executable(proj main.cpp requests/client.cpp requests/request.cpp requests/response.cpp server/Utils.cpp)
+# Find all .cpp files in the 'requests' and 'server' directories
+file(GLOB_RECURSE REQUESTS_SOURCES "requests/*.cpp")
+file(GLOB_RECURSE SERVER_SOURCES "server/*.cpp")
+
+# Add executable with all .cpp files
+add_executable(proj main.cpp ${REQUESTS_SOURCES} ${SERVER_SOURCES})
+
 
 
 target_include_directories(proj PUBLIC ${CMAKE_SOURCE_DIR}/include)

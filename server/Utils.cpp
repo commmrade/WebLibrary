@@ -21,9 +21,6 @@ std::string process_url_str(const std::string &url) {
     std::string request = url;
     
     // Process route and add all key values to the parameters map
-    
-
-
     std::string result;
     result += request.substr(0, request.find("/", 1) != std::string::npos ? request.find("/", 1) : request.find("?"));
     

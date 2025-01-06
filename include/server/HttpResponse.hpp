@@ -48,6 +48,7 @@ public:
         set_status(status_code);
     }
 
+
     [[nodiscard]]
     std::string respond_text() const {
         std::string response{};

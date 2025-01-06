@@ -1,16 +1,21 @@
 #pragma once
+#include "debug.hpp"
 #include "server/Cookie.hpp"
 #include "server/Utils.hpp"
+#include <exception>
 #include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include<unordered_map>
 #include<string>
 #include<sstream>
 #include <json/json.h>
 #include <vector>
+#include "Query.hpp"
+
 
 class HttpRequest {
 public:
@@ -32,13 +37,13 @@ public:
     }
 
     [[nodiscard]]
-    std::optional<std::string> get_query(const std::string& query_name) const {
+    Query get_query(const std::string& query_name) const {
+        Query query;
         auto pos = parameters.find(query_name);
         if (pos != parameters.end()) { //If header exists
-            return pos->second;
+            query.content = pos->second;
         }
-        return std::nullopt;
-
+        return query;
     }
 
     [[nodiscard]]
@@ -191,7 +196,7 @@ private:
 
         std::stringstream strm(headers_cont);
         std::string line;
-        while (std::getline(strm, line, '\n')) { //Extracting headers one by one
+        while (std::getline(strm, line, '\n')) { // Extracting headers one by one
             if (line.find("\r") != line.npos) { // Remove \r if it is in the line
                 line.pop_back();
             } 

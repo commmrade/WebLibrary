@@ -5,18 +5,24 @@
 #include "server/HttpResponse.hpp"
 #include <json/value.h>
 
+
+
+
+
+
 class MyController : public HttpController<MyController> {
 public:
     MyController() {
-        REG_ENDP(reg, "/smth?name={name}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDP(reg, "/smth/{id}?name={name}", RequestType::GET, RequestType::OPTIONS);
         
     }
 protected:
     void reg(const HttpRequest& req, HttpResponse&& resp) {
-      
-        Response rsp{200, req.get_query("name").value(), ResponseType::HTML}; 
         
-        resp.respond(rsp);
+        std::cout << req.get_query("id").as<long long>() << std::endl;
+    
+        Response r{200, "ok"};
+        resp.respond(r);
     }
 
     

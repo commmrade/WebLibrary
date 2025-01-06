@@ -79,8 +79,6 @@ public:
         std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
         std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
 
-        debug::log_info("Proceeding to the endpoint ", base_url);
-
         try {
             HttpResponse resp(client_socket);
             
@@ -102,7 +100,7 @@ public:
                         return; // Didn't pass a filter
                     }
                 }
-
+                debug::log_info("Proceeding to the endpoint ", base_url);
                 handle->second.proceed(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
             } else { // Endpoint was not found
                 debug::log_info("Endpoint not found");

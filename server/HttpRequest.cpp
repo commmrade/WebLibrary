@@ -1,4 +1,6 @@
+#include "server/Utils.hpp"
 #include <server/HttpRequest.hpp>
+#include <iostream>
 
 HttpRequest::HttpRequest(const std::string &resp, std::span<const std::string> vec) : request(resp), param_names(std::vector<std::string>{vec.begin(), vec.end()}) {
     extract_headers();

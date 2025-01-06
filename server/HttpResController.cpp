@@ -1,4 +1,6 @@
 #include <server/HttpResController.hpp>
+#include <fstream>
+
 
 HttpResController::HttpResController() {
     register_method("/static/public/", [this] (const HttpRequest &req, HttpResponse &resp) {process_file_request(req, resp); }, RequestType::GET, RequestType::OPTIONS);

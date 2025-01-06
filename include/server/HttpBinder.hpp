@@ -1,9 +1,9 @@
 #pragma once
 
 #include "server/HttpHandle.hpp"
+#include "server/Utils.hpp"
 #include <unordered_map>
 #include <string>
-#include <iostream>
 
 class HttpBinder {
 private:

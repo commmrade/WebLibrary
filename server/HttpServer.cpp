@@ -1,4 +1,8 @@
 #include <server/HttpServer.hpp>
+#include <server/HttpRouter.hpp>
+#include "debug.hpp"
+#include "server/HttpResController.hpp"
+
 
 HttpServer::HttpServer() {
     HttpResController resController; // Setting up resource controller

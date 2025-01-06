@@ -1,5 +1,12 @@
 #include <server/HttpRouter.hpp>
-
+#include "server/HttpBinder.hpp"
+#include "server/HttpRequest.hpp"
+#include "server/HttpResponse.hpp"
+#include <algorithm>
+#include <exception>
+#include <functional>
+#include <server/Utils.hpp>
+#include <server/hash.hpp>
 
 void HttpRouter::process_endpoint(int client_socket, const std::string &call) {
     std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request

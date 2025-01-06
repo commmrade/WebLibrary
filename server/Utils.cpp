@@ -1,6 +1,5 @@
 #include <filesystem>
 #include <server/Utils.hpp>
-#include <iostream>
 
 
 namespace utils {

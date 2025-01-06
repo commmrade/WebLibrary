@@ -3,9 +3,8 @@
 #include <asm-generic/socket.h>
 #include <cerrno>
 #include <cstdio>
-#include <exception>
+
 #include <functional>
-#include <string>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -14,9 +13,9 @@
 #include<fcntl.h>
 #include <unistd.h>
 #include "ThreadPool.hpp"
-#include "HttpRouter.hpp"
-#include "debug.hpp"
-#include "server/HttpResController.hpp"
+#include "server/HttpRequest.hpp"
+#include "server/HttpResponse.hpp"
+
 
 
 

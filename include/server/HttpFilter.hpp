@@ -1,4 +1,5 @@
 #pragma once
+#include "server/HttpBinder.hpp"
 #include "server/HttpRequest.hpp"
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>

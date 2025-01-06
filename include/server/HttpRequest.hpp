@@ -1,16 +1,13 @@
 #pragma once
+
 #include "server/Cookie.hpp"
-#include "server/Utils.hpp"
-#include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
 #include <memory>
 #include <optional>
 #include <span>
-#include <stdexcept>
 #include<unordered_map>
 #include<string>
-#include<sstream>
 #include <json/json.h>
 #include <vector>
 #include "Query.hpp"

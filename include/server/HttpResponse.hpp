@@ -2,7 +2,6 @@
 #include "json/writer.h"
 #include <json/value.h>
 #include <optional>
-#include <stdexcept>
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>

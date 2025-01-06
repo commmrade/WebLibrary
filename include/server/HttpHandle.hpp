@@ -5,7 +5,6 @@
 #include <functional>
 #include "RequestType.hpp"
 #include <span>
-#include <stdexcept>
 #include <vector>
 
 

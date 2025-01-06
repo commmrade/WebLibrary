@@ -1,14 +1,6 @@
 #pragma once
 
-#include "server/HttpBinder.hpp"
-#include "server/HttpRequest.hpp"
-#include "server/HttpResponse.hpp"
-#include <algorithm>
-#include <exception>
-#include <functional>
-#include <stdexcept>
-#include "Utils.hpp"
-#include "hash.hpp"
+
 #include <debug.hpp>
 
 class HttpRouter {

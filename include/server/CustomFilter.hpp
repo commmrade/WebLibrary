@@ -7,7 +7,7 @@ class MyFilter : public HttpFilter<MyFilter> {
 public:
     MyFilter() {
         
-        REG_FILT("/zov", doFilter);
+        REG_FILTER("/zov", doFilter);
     }
 protected:
     bool doFilter(const HttpRequest &req) {

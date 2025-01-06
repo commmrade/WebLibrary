@@ -19,7 +19,7 @@ public:
 
     void set_header(const std::string &key, const std::string &value);
 
-    inline std::string get_url() { return url; }
+    std::string get_url() { return url; }
 
 private:
     client (const std::string &url);

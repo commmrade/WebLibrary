@@ -3,6 +3,7 @@
 
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
+#include "server/RequestType.hpp"
 #include <json/value.h>
 
 
@@ -13,8 +14,7 @@
 class MyController : public HttpController<MyController> {
 public:
     MyController() {
-        REG_ENDP(reg, "/smth/{id}?name={name}", RequestType::GET, RequestType::OPTIONS);
-        
+        REG_ENDPOINT(reg, "/smth/{id}?name={name}", RequestType::GET, RequestType::OPTIONS);
     }
 protected:
     void reg(const HttpRequest& req, HttpResponse&& resp) {

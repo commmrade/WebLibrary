@@ -136,7 +136,7 @@ public:
     }
 
     [[nodiscard]]
-    inline std::optional<std::string> get_header(const std::string &name) const {
+    std::optional<std::string> get_header(const std::string &name) const {
         if (auto hdr = headers.find(name); hdr != headers.end()) {
             return hdr->second;
         }
@@ -159,7 +159,7 @@ public:
     }
 
     [[nodiscard]] 
-    inline std::string get_body() const {
+    std::string get_body() const {
         return body;
     }
 
@@ -196,7 +196,7 @@ public:
         this->status_code = status_code;
     }
     [[nodiscard]]
-    inline int get_status() const {
+    int get_status() const {
         return status_code;
     }
 
@@ -204,7 +204,7 @@ public:
         http_version = http_ver;
     }
     [[nodiscard]]
-    inline std::string get_version() const {
+    std::string get_version() const {
         return http_version;
     }
 
@@ -212,7 +212,7 @@ public:
         status_message = msg;
     }
     [[nodiscard]]
-    inline std::string get_status_message() const { 
+    std::string get_status_message() const { 
         return status_message;
     }
 

@@ -1,8 +1,6 @@
 #pragma once
-#include "debug.hpp"
 #include "server/Cookie.hpp"
 #include "server/Utils.hpp"
-#include <exception>
 #include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
@@ -32,7 +30,7 @@ public:
     
 
     [[nodiscard]]
-    inline std::string get_raw() const {
+    std::string get_raw() const {
         return request;
     }
 
@@ -66,12 +64,12 @@ public:
     }
 
     [[nodiscard]]
-    inline std::string body_as_str() const {
+    std::string body_as_str() const {
         return request.substr(request.find("\r\n\r\n") + 4);
     }
 
     [[nodiscard]]
-    inline std::unique_ptr<Json::Value> body_as_json() const {
+    std::unique_ptr<Json::Value> body_as_json() const {
         const std::string raw_json = request.substr(request.find("\r\n\r\n") + 4);
         Json::Value json_obj;
 
@@ -85,17 +83,17 @@ public:
 
 
     [[nodiscard]]
-    inline std::string get_method() const {
+    std::string get_method() const {
         return request.substr(0, request.find(" "));
     }
 
     [[nodiscard]]
-    inline std::string get_method_string() const {
+    std::string get_method_string() const {
         return request.substr(0, request.find("\r\n"));
     }
     
     [[nodiscard]]
-    inline std::string get_version() const {
+    std::string get_version() const {
         auto line = request.substr(0, request.find("\r\n"));
         return line.substr(line.find_last_of("/") + 1);
     }

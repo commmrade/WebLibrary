@@ -14,8 +14,8 @@ private:
 public:
     response(int status_code, const std::string &headers, const std::string &body);
     
-    inline std::string text() { return body; }
-    inline int status_code() { return status; }
+    std::string text() { return body; }
+     int status_code() { return status; }
 
     auto get_header(const std::string &name) -> std::optional<std::string>;
     

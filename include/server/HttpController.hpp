@@ -1,8 +1,9 @@
 #pragma once
 
 #include<stdarg.h>
-#include "HttpRouter.hpp"
+#include <utility>
 #include "debug.hpp"
+#include "server/HttpBinder.hpp"
 
 #define mv(X) std::move(X)         
 #define REG_ENDPOINT(FUNCTION, NAME, TYPE, ...) register_method(NAME, [this] (const HttpRequest &req, HttpResponse &resp) { FUNCTION(mv(req), mv(resp)); }, TYPE, __VA_ARGS__)
@@ -25,7 +26,7 @@ public:
     template<typename... Values>
     static void register_method(Values... val) {
         debug::log_info("Registering a handler");
-        HttpRouter::instance().register_handler(std::forward<Values>(val)...);
+        HttpBinder::instance().register_handler(std::forward<Values>(val)...);
     }
 };
 

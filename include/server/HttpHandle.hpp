@@ -4,6 +4,7 @@
 #include "server/HttpResponse.hpp"
 #include <functional>
 #include "RequestType.hpp"
+#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -35,11 +36,11 @@ public:
     }
 
     [[nodiscard]]
-    std::vector<RequestType> get_methods() const {
+    const std::span<const RequestType> get_methods() const {
         return methods;
     }
 
-    void proceed(const HttpRequest& req, HttpResponse& resp) {
+    void proceed(const HttpRequest& req, HttpResponse& resp) const {
         if (!handle) {
             throw std::runtime_error("Handle is not set");
         }
@@ -52,7 +53,7 @@ public:
 
 
     [[nodiscard]]
-    std::vector<std::string> get_param_names() const {
+    std::span<const std::string> get_param_names() const {
         return parameter_names;
     }
 

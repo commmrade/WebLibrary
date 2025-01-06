@@ -6,6 +6,7 @@
 #include <json/value.h>
 #include <memory>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include<unordered_map>
 #include<string>
@@ -19,7 +20,7 @@ class HttpRequest {
 public:
     
     
-    HttpRequest(const std::string &resp, std::vector<std::string> vec = {}) : request(resp), param_names(std::move(vec)) {
+    HttpRequest(const std::string &resp, std::span<const std::string> vec = {}) : request(resp), param_names(std::vector<std::string>{vec.begin(), vec.end()}) {
         extract_headers();
         extract_queries();
     }

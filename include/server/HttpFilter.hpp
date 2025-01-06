@@ -25,7 +25,7 @@ public:
     template<typename... Values>
     static void register_filter(Values... val) {
         debug::log_info("Registering a filter");
-        HttpRouter::instance().register_filter(std::forward<Values>(val)...);
+        HttpBinder::instance().register_filter(std::forward<Values>(val)...);
     }
 
 };

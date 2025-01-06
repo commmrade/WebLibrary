@@ -11,7 +11,6 @@ void client<T>::set_header(const std::string &key, const std::string &value) {
 
 
 
-
 get_client::get_client(const std::string &url) : client(url) { }
 
 std::string get_client::prepare_request_str() {

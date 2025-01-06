@@ -20,4 +20,4 @@ This is just a library made for learning purposes. I don't think it is productio
 
 
 # requests
-- todo!()
+- i put all my efforts into making "server" functionality, so requests part of the library is really basic and I don't really wanna rewrite it

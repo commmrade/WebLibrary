@@ -5,6 +5,7 @@
 #include <sstream>
 #include<stdarg.h>
 #include <utility>
+#include "server/HttpBinder.hpp"
 #include "server/HttpRequest.hpp"
 #include "server/HttpResponse.hpp"
 #include "server/HttpRouter.hpp"
@@ -29,7 +30,7 @@ public:
    
     template<typename... Values>
     static void register_method(Values... val) {
-        HttpRouter::instance().register_handler(std::forward<Values>(val)...);
+        HttpBinder::instance().register_handler(std::forward<Values>(val)...);
     }
 
     void process_file_request(const HttpRequest &req, HttpResponse &resp) {

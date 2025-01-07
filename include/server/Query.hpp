@@ -24,7 +24,7 @@ public:
     } 
     template <>
     [[nodiscard]]
-    float as<float>() const {
+    inline float as<float>() const {
         if (content.empty()) {
             throw std::invalid_argument("Could not be converted");
         }
@@ -34,7 +34,7 @@ public:
     }
     template <>
     [[nodiscard]]
-    int as<int>() const {
+    inline int as<int>() const {
         if (content.empty()) {
             throw std::invalid_argument("Could not be converted");
         }
@@ -44,7 +44,7 @@ public:
     }
     template <>
     [[nodiscard]]
-    long long as<long long>() const {
+    inline long long as<long long>() const {
         if (content.empty()) {
             throw std::invalid_argument("Could not be converted");
         }
@@ -54,7 +54,7 @@ public:
     }
     template <>
     [[nodiscard]]
-    double as<double>() const {
+    inline double as<double>() const {
         if (content.empty()) {
             throw std::invalid_argument("Could not be converted");
         }
@@ -64,7 +64,7 @@ public:
     }  
     template<>
     [[nodiscard]]
-    const char* as<const char*>() const {
+    inline const char* as<const char*>() const {
         return content.c_str();
     }
 };

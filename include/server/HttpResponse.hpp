@@ -2,6 +2,8 @@
 #include "json/writer.h"
 #include <json/value.h>
 #include <optional>
+#include <sstream>
+#include <stdexcept>
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>
@@ -9,21 +11,12 @@
 #include <json/json.h>
 #include <json/json.h>
 #include <debug.hpp>
+#include <fstream>
+#include "types.hpp"
 
-enum class HeaderType {
-    CONTENT_TYPE,
-    CONTENT_LENGTH,
-    AUTH_BEARER,
-    AUTH_BASIC,
-};
-
-enum class ResponseType {
-    HTML,
-    JSON,
-    TEXT,
-};
-
-
+class ResponseBuilder;
+enum class HeaderType;
+enum class ResponseType; 
 
 class Response {
 private:
@@ -123,6 +116,7 @@ public:
         resp.set_body(json_obj);
         return *this;
     }
+
     ResponseBuilder& set_status(int code) {
         resp.set_status(code);
         return *this;
@@ -131,8 +125,34 @@ public:
         resp.set_type(type);
         return *this;
     }
+    ResponseBuilder& set_custom_message(const std::string &msg) {
+        resp.set_custom_message(msg);
+        return *this;
+    }
+
+    // Relative to the binary
+    ResponseBuilder& serve_file(const std::string &path) {
+        std::ifstream file(path);
+        if (file.is_open()) {
+            std::stringstream ss;
+            ss << file.rdbuf();
+
+            auto contents = ss.str();
+            resp.set_body(contents);
+            resp.set_type(ResponseType::TEXT);
+            resp.set_status(200);
+        } else {
+            throw std::runtime_error("File does not exist");
+        }
+        return *this;
+    }
+    
     Response build() {
         return std::move(resp);
     }
 
+
 };
+
+
+

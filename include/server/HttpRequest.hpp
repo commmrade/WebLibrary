@@ -55,11 +55,15 @@ public:
         auto line = request.substr(0, request.find("\r\n"));
         return line.substr(line.find_last_of("/") + 1);
     }
+
+    void add_header(const std::string &name, const std::string &value) const {
+        headers[name] = value;
+    }
     
 private:
     std::string request;
     std::unordered_map<std::string, std::string> parameters;
-    std::unordered_map<std::string, std::string> headers;
+    mutable std::unordered_map<std::string, std::string> headers;
     std::unordered_map<int, std::string> path_params;
     std::unordered_map<std::string, Cookie> cookies;
 

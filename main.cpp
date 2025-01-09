@@ -3,11 +3,14 @@
 #include <json/json.h>
 #include <debug.hpp>
 #include "examples/CustomController.hpp"
-
+#include "examples/CustomFilter.hpp"
 
 int main() {
     MyController controller;
-    app().listen_start(1233);
+    MyFilter filter;
+    
+    
+    app().listen_start(8080);
     
     return 0;
 }

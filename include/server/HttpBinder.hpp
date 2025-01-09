@@ -55,7 +55,7 @@ public:
 
     
     void register_filter(const std::string &route, Filter filter) {
-        auto handle = handles.find(route);
+        auto handle = handles.find(utils::process_url_str(route));
         if (handle == handles.end()) {
             throw std::runtime_error("Please, set controllers before filters");
         }

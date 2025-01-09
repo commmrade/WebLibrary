@@ -6,7 +6,7 @@
 #include <debug.hpp>
 
 #define mv(X) std::move(X)
-#define REG_FILTER(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION(mv(req)); }) // Macro to register filter
+#define REG_FILTER(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION((req)); }) // Macro to register filter
 
 template<typename Derived>
 class HttpFilter {

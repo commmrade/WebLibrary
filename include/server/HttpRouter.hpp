@@ -19,7 +19,7 @@ public:
 
         return router;
     }
-    void process_endpoint(int client_socket, const std::string &call);
+    void process_endpoint(int client_socket, std::string_view call);
 private:
     bool is_file_url(std::string_view base_url);
 };

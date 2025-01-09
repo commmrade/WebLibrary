@@ -23,8 +23,8 @@ protected:
         
         auto a = req.get_query("id").as<long long>();
 
-        std::cout << req.get_cookie("sessionId")->get_value() << std::endl;
-        std::cout << req.get_cookie("userId")->get_value() << std::endl;
+        std::cout << req.get_cookie("sessionId").has_value() << std::endl;
+        // // std::cout << req.get_cookie("userId")->get_value() << std::endl;
 
         auto cookie = CookieBuilder()
         .set_domain("/")

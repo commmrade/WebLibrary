@@ -54,7 +54,8 @@ void HttpRequest::extract_queries() {
     auto param_name_iter = param_names.begin(); // param_names stores id, user from api/{id}/{user} (example)
     {
         //std::string request_url = request.substr(request.find("/") + 1, request.find("HTTP") - request.find("/") - 2);   
-        std::string_view request_url{request.data() + request.find("/") + 1, request.find("HTTP") - request.find("/") - 2};
+        size_t next_slash = request.find("/");
+        std::string_view request_url{request.data() + next_slash + 1, request.find("HTTP") - next_slash - 2};
 
         if (param_names.size() == 0) { // iF weithout query
             return;
@@ -63,7 +64,8 @@ void HttpRequest::extract_queries() {
             size_t pos;
             while ((pos = request_url.find("/")) != std::string::npos) {
                 size_t start_pos = pos;
-                size_t end_pos = (request_url.find("/", pos + 1) == std::string::npos) ? request_url.find("?") : request_url.find("/", pos + 1);
+                size_t next_slash = request_url.find("/", pos + 1);
+                size_t end_pos = (next_slash == std::string::npos) ? request_url.find("?") : next_slash;
 
                 std::string_view value = request_url.substr(start_pos + 1, end_pos - start_pos - 1);
                 

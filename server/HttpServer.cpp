@@ -1,5 +1,6 @@
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
+#include <stdexcept>
 #include "debug.hpp"
 #include "server/HttpResController.hpp"
 
@@ -21,8 +22,10 @@ void HttpServer::server_setup(int port) {
     serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
     if (serv_socket < 0) {
         debug::log_error("Socket error");
-        std::abort();
+        throw std::runtime_error("");
     }   
+    int flags = fcntl(serv_socket, F_GETFL, 0);
+    fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK);
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port); // Settings app addres info
@@ -31,7 +34,7 @@ void HttpServer::server_setup(int port) {
     debug::log_info("Binding socket");
     if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
         debug::log_error("Binding socket error");
-        std::abort();
+        throw std::runtime_error("");
     } 
 
     
@@ -87,7 +90,7 @@ void HttpServer::listen_start(int port) {
     debug::log_info("Starting listening for incoming requests");
     if (listen(serv_socket, SOMAXCONN) < 0) { // Listening for incoming requests
         debug::log_error("Listening error");
-        std::abort();
+        throw std::runtime_error("");
     }
 
 
@@ -96,7 +99,7 @@ void HttpServer::listen_start(int port) {
         int poll_result = poll(polls_fd.data(), polls_fd.size(), 60'000); // Polling for inf time
         if (poll_result < 0) {
             debug::log_error("Polling error"); // Critical error
-            std::abort();
+            throw std::runtime_error("");
         }
         
         for (size_t i = 0; i < polls_fd.size(); i++) {

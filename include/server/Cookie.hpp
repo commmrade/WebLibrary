@@ -12,7 +12,7 @@ enum class SameSite {
 
 class Cookie {
 public:
-    Cookie(const std::string &key, const std::string &val) : name(key), value(val) {}
+    Cookie(std::string_view key, std::string_view val) : name(key), value(val) {}
 
     [[nodiscard]]
     std::string get_string() const;
@@ -44,14 +44,14 @@ public:
     }
 
 
-    void set_name(const std::string &new_name);
-    void set_val(const std::string &new_val);
+    void set_name(std::string_view name);
+    void set_val(std::string_view new_val);
 
     void set_httponly(bool val);
     void set_secure(bool val);
     void set_max_age(int new_max_age);
-    void set_path(const std::string &new_path);
-    void set_domain(const std::string &new_domain);
+    void set_path(std::string_view new_path);
+    void set_domain(std::string_view new_domain);
     void set_samesite(SameSite new_rule);
 
 

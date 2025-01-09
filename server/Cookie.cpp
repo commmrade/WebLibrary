@@ -57,10 +57,10 @@ std::string Cookie::get_string() const {
 }
 
 
-void Cookie::set_name(const std::string &new_name) {
+void Cookie::set_name(std::string_view new_name) {
     name = new_name;
 } 
-void Cookie::set_val(const std::string &new_val) {
+void Cookie::set_val(std::string_view new_val) {
     value = new_val;
 }
 
@@ -76,11 +76,11 @@ void Cookie::set_max_age(int new_max_age) {
     max_age = new_max_age;
     is_resp_cookie = true;
 }
-void Cookie::set_path(const std::string &new_path) {
+void Cookie::set_path(std::string_view new_path) {
     path = new_path;
     is_resp_cookie = true;
 }
-void Cookie::set_domain(const std::string &new_domain) {
+void Cookie::set_domain(std::string_view new_domain) {
     domain = new_domain;
     is_resp_cookie = true;
 }

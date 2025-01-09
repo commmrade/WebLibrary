@@ -5,6 +5,7 @@
 #include <cstdio>
 
 #include <functional>
+#include <memory>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -29,7 +30,8 @@ private:
     int serv_socket;
     sockaddr_in serv_addr;
 
-    ThreadPool thread_pool;
+    //ThreadPool thread_pool;
+    std::unique_ptr<ThreadPool> thread_pool;
 
     std::vector<pollfd> polls_fd;
 

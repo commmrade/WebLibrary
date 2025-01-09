@@ -4,6 +4,7 @@
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
 #include "server/RequestType.hpp"
+#include <format>
 #include <json/value.h>
 
 
@@ -21,8 +22,18 @@ protected:
         
         std::cout << req.get_query("id").as<long long>() << std::endl;
         auto a = req.get_cookie("aaa");
-        Response r{200, "ok"};
-        resp.respond(r);
+
+
+
+        auto response = ResponseBuilder()
+        .set_body(std::format("ID {} NAME {}", req.get_query("id").as<long long>(), req.get_query("name").as<std::string>()))
+        .set_status(200)
+        .set_type(ResponseType::TEXT)
+        .build();
+        
+    
+
+        resp.respond(response);
     }
 
     

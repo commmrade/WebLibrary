@@ -2,21 +2,12 @@
 
 #include <json/json.h>
 #include <debug.hpp>
-
+#include "examples/CustomController.hpp"
 
 
 int main() {
-
-  
-   //HttpResController web_controller; // For static files
-
-    //MyFilter b{};
-
- 
-
+    MyController controller;
     app().listen_start(1233);
-    
-    
     
     return 0;
 }

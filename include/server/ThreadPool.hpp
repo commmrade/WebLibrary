@@ -10,8 +10,10 @@
 
 class ThreadPool {
 public:
-    void create();
-    void stop();
+
+    ThreadPool();
+    ~ThreadPool();
+
 
     void thread_loop();
     void add_job(std::function<void(int)> job, int arg);

@@ -28,7 +28,7 @@ enum class ResponseType {
 class Response {
 private:
     
-    std::unordered_map<std::string, std::string> headers;
+    std::unordered_map<std::string, std::string> headers{{"Content-Type", "plain/text"}};
     std::string body{};
     int status_code{200};
 
@@ -37,10 +37,7 @@ private:
     std::string http_version{"1.1"};
 
 public:
-
-    Response(ResponseType type);
-    Response(int status_code, const std::string &resp_text, ResponseType type = ResponseType::TEXT);
-
+    Response() = default;
 
     [[nodiscard]]
     std::string respond_text() const;
@@ -108,4 +105,34 @@ private:
     int client_socket;
 };
 
+class ResponseBuilder {
+private:
+    Response resp{};
+public:
+    ResponseBuilder() {}
+    
+    ResponseBuilder& set_body(const std::string &text) {
+        resp.set_body(text);
+        return *this;
+    }
+    ResponseBuilder& set_body(const char *text) {
+        resp.set_body(text);
+        return *this;
+    }
+    ResponseBuilder& set_body(const Json::Value& json_obj) {
+        resp.set_body(json_obj);
+        return *this;
+    }
+    ResponseBuilder& set_status(int code) {
+        resp.set_status(code);
+        return *this;
+    }
+    ResponseBuilder& set_type(ResponseType type) {
+        resp.set_type(type);
+        return *this;
+    }
+    Response build() {
+        return std::move(resp);
+    }
 
+};

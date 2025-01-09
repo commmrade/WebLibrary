@@ -1,13 +1,5 @@
 #include <server/HttpResponse.hpp>
 
-Response::Response(ResponseType type) {
-    set_type(type);
-}
-
-Response::Response(int status_code, const std::string &resp_text, ResponseType type) : Response(type) {
-    set_body(resp_text);
-    set_status(status_code);
-}
 
 std::string Response::respond_text() const {
     std::string response{};
@@ -135,7 +127,7 @@ void Response::set_status(int status_code) {
             break;
         }
         default: {
-            status_message = "OK";
+            status_message = "Unknown status code, set msg manually";
             break;
         }
 

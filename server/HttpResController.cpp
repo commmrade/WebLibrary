@@ -20,11 +20,19 @@ void HttpResController::process_file_request(const HttpRequest &req, HttpRespons
     auto file_opt = read_file(full_path); 
     if (!file_opt) {
         debug::log_error("File not found");
-        Response response{404, "Not found"};
-        resp.respond(response);
-    }
 
-    Response response{200, file_opt.value()};
+        auto resp_ = ResponseBuilder()
+                    .set_status(404)
+                    .set_body("Not found")
+                    .set_type(ResponseType::TEXT)
+                    .build();
+        resp.respond(resp_);
+    }
+    
+    auto response = ResponseBuilder()
+                    .set_status(200)
+                    .set_body(file_opt.value())
+                    .build();
     if (file_extension == "css") {
         response.add_header(HeaderType::CONTENT_TYPE, "text/css");
     } else if (file_extension == "js") {

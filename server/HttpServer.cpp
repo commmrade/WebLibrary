@@ -6,10 +6,9 @@
 
 HttpServer::HttpServer() {
     HttpResController resController; // Setting up resource controller
-    thread_pool.create();
+    thread_pool = std::make_unique<ThreadPool>();
 }
 HttpServer::~HttpServer() {
-    thread_pool.stop();
     close(serv_socket);
 }
 
@@ -115,7 +114,7 @@ void HttpServer::listen_start(int port) {
                 } else {
                     int client_socket = polls_fd[i].fd;
 
-                    thread_pool.add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket); // Proccess user and remove from poll
+                    thread_pool->add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket); // Proccess user and remove from poll
                     polls_fd.erase(polls_fd.begin() + i);
                     i--;
                 }

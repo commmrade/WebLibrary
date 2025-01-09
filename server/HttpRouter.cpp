@@ -32,7 +32,13 @@ void HttpRouter::process_endpoint(int client_socket, const std::string &call) {
                 if (!middleware(req)) {
                     debug::log_warn("Filtering not passed");
 
-                    Response resp_{401, "Access denied", ResponseType::TEXT};
+                   
+                    auto resp_ = ResponseBuilder()
+                    .set_status(401)
+                    .set_body("Access denied")
+                    .set_type(ResponseType::TEXT)
+                    .build();
+
                     resp.respond(resp_);
                     return; // Didn't pass a filter
                 }
@@ -42,15 +48,24 @@ void HttpRouter::process_endpoint(int client_socket, const std::string &call) {
         } else { // Endpoint was not found
             debug::log_info("Endpoint not found");
 
-            Response rsp{404, "Not found", ResponseType::TEXT};
-            resp.respond(rsp);
+            auto resp_ = ResponseBuilder()
+                    .set_status(404)
+                    .set_body("Not found")
+                    .set_type(ResponseType::TEXT)
+                    .build();
+            resp.respond(resp_);
         }
     
     } catch (std::exception &ex) { // Server internal error 5xx
         debug::log_error("Server internal error ", api_route, " ", ex.what());
         std::cerr << "Exception in " << api_route << " or incorrectly formatted request " << ex.what() << std::endl;
-        Response rsp{500, "Server internal error", ResponseType::TEXT};
-        HttpResponse(client_socket).respond(rsp);
+        
+        auto resp_ = ResponseBuilder()
+                    .set_status(500)
+                    .set_body("Server internal error")
+                    .set_type(ResponseType::TEXT)
+                    .build();
+        HttpResponse(client_socket).respond(resp_);
     }
 }
 

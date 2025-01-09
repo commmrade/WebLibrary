@@ -93,15 +93,14 @@ void HttpServer::listen_start(int port) {
 
     polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
-        int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time because -1
+        int poll_result = poll(polls_fd.data(), polls_fd.size(), 60'000); // Polling for inf time
         if (poll_result < 0) {
-            debug::log_error("Polling error");
+            debug::log_error("Polling error"); // Critical error
             std::abort();
         }
         
         for (size_t i = 0; i < polls_fd.size(); i++) {
             if (polls_fd[i].revents & POLLIN) {
-
                 if (polls_fd[i].fd == serv_socket) { // If server socket got something
 
                     int client_socket = accept(serv_socket, nullptr, nullptr);

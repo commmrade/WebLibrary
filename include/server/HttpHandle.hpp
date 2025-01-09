@@ -16,7 +16,7 @@ public:
     HttpHandle() = default;
  
 
-    void add_filter(Filter filter);
+    void add_filter(Filter &&filter);
 
     void set_handle_method(Handler handle);
 
@@ -26,7 +26,7 @@ public:
         return filters;
     }
 
-    const std::span<const RequestType> get_methods() const {
+    std::span<const RequestType> get_methods() const {
         return methods;
     }
 

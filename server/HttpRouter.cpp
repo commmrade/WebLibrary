@@ -11,6 +11,7 @@
 void HttpRouter::process_endpoint(int client_socket, const std::string &call) {
     std::string method = call.substr(0, call.find("/") - 1); // Extracting method from request
     RequestType request_type = utils::req_type_from_str(method);
+
     std::string api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
     std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
 
@@ -69,7 +70,7 @@ void HttpRouter::process_endpoint(int client_socket, const std::string &call) {
     }
 }
 
-bool HttpRouter::is_file_url(const std::string &base_url) {
+bool HttpRouter::is_file_url(std::string_view base_url) {
         if (auto dot_place = base_url.find_last_of("."); dot_place != std::string::npos && dot_place > base_url.find_last_of("/")) { 
         return true;
     } 

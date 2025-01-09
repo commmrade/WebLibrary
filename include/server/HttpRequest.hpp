@@ -56,7 +56,12 @@ public:
         return line.substr(line.find_last_of("/") + 1);
     }
 
-    void add_header(const std::string &name, const std::string &value) const {
+    [[nodiscard]]
+    const std::unordered_map<std::string, std::string>& get_headers() const {
+        return headers;
+    }
+
+    void add_header(const std::string &name, std::string_view value) const {
         headers[name] = value;
     }
     

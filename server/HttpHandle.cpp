@@ -1,8 +1,8 @@
 #include <server/HttpHandle.hpp>
 
 
-void HttpHandle::add_filter(Filter filter) {
-    filters.push_back(std::move(filter));
+void HttpHandle::add_filter(Filter &&filter) {
+    filters.emplace_back(std::move(filter));
 }
 
 void HttpHandle::set_handle_method(Handler handle) {
@@ -10,7 +10,7 @@ void HttpHandle::set_handle_method(Handler handle) {
 }
 
 void HttpHandle::add_http_method(RequestType method) {
-    methods.push_back(std::move(method));
+    methods.emplace_back(method);
 }
 
 

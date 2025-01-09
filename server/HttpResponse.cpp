@@ -15,15 +15,14 @@ std::string Response::respond_text() const {
         response += "Content-Length: " + std::to_string(body.size()) + "\r\n";
     }
 
-    response += "\r\n"; // Separating headers and answer part
-
+    response += "\r\n"; // Separating headers and answer par
     response += body; // Adding user text
 
     return response;
 }
 
 
-void Response::add_header_raw(std::string name, std::string value) {
+void Response::add_header_raw(const std::string& name, std::string_view value) {
     if (name == "Set-Cookie") {
         throw std::runtime_error("Use add_cookie() instead!");
     }
@@ -143,4 +142,20 @@ void HttpResponse::respond(Response &resp) { // Sending response text to the req
     if (bytes_sent < 0) {
         debug::log_error("Error sending response");
     } 
+}
+
+ResponseBuilder& ResponseBuilder::serve_file(const std::string &path) {
+    std::ifstream file(path);
+    if (file.is_open()) {
+        std::stringstream ss;
+        ss << file.rdbuf();
+
+        auto contents = ss.str();
+        resp.set_body(contents);
+        resp.set_type(ResponseType::TEXT);
+        resp.set_status(200);
+    } else {
+        throw std::runtime_error("File does not exist");
+    }
+    return *this;
 }

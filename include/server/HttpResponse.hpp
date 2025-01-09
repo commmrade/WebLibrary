@@ -35,7 +35,7 @@ public:
     [[nodiscard]]
     std::string respond_text() const;
 
-    void add_header_raw(std::string name, std::string value);
+    void add_header_raw(const std::string &name, std::string_view value);
 
     void add_cookie(const Cookie &cookie);
 
@@ -48,7 +48,7 @@ public:
     [[nodiscard]]
     std::optional<std::string> get_header(const std::string &name) const;
 
-    void set_body(const std::string &text) {
+    void set_body(const std::string & text) {
         body = text;
     }
     void set_body(const char *text) {
@@ -67,7 +67,7 @@ public:
         return status_code;
     }
 
-    void set_version(const std::string &http_ver) {
+    void set_version(std::string_view http_ver) {
         http_version = http_ver;
     }
     [[nodiscard]]
@@ -75,7 +75,7 @@ public:
         return http_version;
     }
 
-    void set_custom_message(const std::string &msg) {
+    void set_custom_message(std::string_view msg) {
         status_message = msg;
     }
     [[nodiscard]]
@@ -104,7 +104,7 @@ private:
 public:
     ResponseBuilder() {}
     
-    ResponseBuilder& set_body(const std::string &text) {
+    ResponseBuilder& set_body(const std::string& text) {
         resp.set_body(text);
         return *this;
     }
@@ -131,21 +131,7 @@ public:
     }
 
     // Relative to the binary
-    ResponseBuilder& serve_file(const std::string &path) {
-        std::ifstream file(path);
-        if (file.is_open()) {
-            std::stringstream ss;
-            ss << file.rdbuf();
-
-            auto contents = ss.str();
-            resp.set_body(contents);
-            resp.set_type(ResponseType::TEXT);
-            resp.set_status(200);
-        } else {
-            throw std::runtime_error("File does not exist");
-        }
-        return *this;
-    }
+    ResponseBuilder& serve_file(const std::string &path);
     
     Response build() {
         return std::move(resp);

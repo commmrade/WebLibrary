@@ -96,7 +96,7 @@ void HttpServer::listen_start(int port) {
 
     polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
-        int poll_result = poll(polls_fd.data(), polls_fd.size(), 60'000); // Polling for inf time
+        int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
         if (poll_result < 0) {
             debug::log_error("Polling error"); // Critical error
             throw std::runtime_error("");

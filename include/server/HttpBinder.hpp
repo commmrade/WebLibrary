@@ -19,8 +19,8 @@ public:
     const std::unordered_map<std::string, HttpHandle>& get_handles() const {
         return handles;
     }
-    void register_handler(std::string_view endpoint_name, Handler &&handler, RequestType type) {
-        auto handle = handles.find(std::string{endpoint_name});
+    void register_handler(const std::string& endpoint_name, Handler &&handler, RequestType type) {
+        auto handle = handles.find(endpoint_name);
         if (handle != handles.end()) {
             throw std::runtime_error("Endpoint is already set!");
         }    
@@ -36,8 +36,8 @@ public:
     }
 
     template<typename... Types>
-    void register_handler(std::string_view endpoint_name, Handler&& handler, Types&&... types) {
-        auto handle = handles.find(std::string{endpoint_name});
+    void register_handler(const std::string& endpoint_name, Handler&& handler, Types&&... types) {
+        auto handle = handles.find(endpoint_name);
         if (handle != handles.end()) {
             throw std::runtime_error("Endpoint is already set!");
         }    

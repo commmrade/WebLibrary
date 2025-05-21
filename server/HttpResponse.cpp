@@ -1,12 +1,13 @@
+#include "debug.hpp"
+#include <cerrno>
+#include <format>
 #include <server/HttpResponse.hpp>
+#include <print>
+#include <stdexcept>
+#include <sys/poll.h>
 
-
-std::string Response::respond_text() const {
-    std::string response{};
-    std::string status_code_str = std::to_string(status_code);
-    
-    response += "HTTP/" + http_version + " " + status_code_str + " " + status_message + "\r\n";
-
+std::string HttpResponse::respond_text() const {
+    std::string response = std::format("HTTP/{} {} {}\r\n", http_version, status_code, status_message);
     // Adding headers part
     for (const auto &[header_name, header_value] : headers) {
         response += header_name + ": " + header_value + "\r\n";
@@ -22,7 +23,7 @@ std::string Response::respond_text() const {
 }
 
 
-void Response::add_header_raw(const std::string& name, std::string_view value) {
+void HttpResponse::add_header_raw(const std::string& name, std::string_view value) {
     if (name == "Set-Cookie") {
         throw std::runtime_error("Use add_cookie() instead!");
     }
@@ -30,13 +31,12 @@ void Response::add_header_raw(const std::string& name, std::string_view value) {
     headers[name] = value;
 }
 
-void Response::add_cookie(const Cookie &cookie) {
+void HttpResponse::add_cookie(const Cookie &cookie) {
     std::string cookie_str = cookie.to_string();
-    // Maybe add multiple
     headers["Set-Cookie"] = cookie_str;
 }
 
-void Response::add_header(HeaderType header_type, std::string value) {
+void HttpResponse::add_header(HeaderType header_type, std::string value) {
     switch (header_type) {
         case HeaderType::CONTENT_TYPE: {
             headers["Content-Type"] = value;
@@ -61,11 +61,11 @@ void Response::add_header(HeaderType header_type, std::string value) {
     }
 }
 
-void Response::remove_header(const std::string &name) {
+void HttpResponse::remove_header(const std::string &name) {
     headers.erase(name); // Removing if exists (doesn't throw if does not exist)
 }
 
-void Response::set_type(ResponseType type) {
+void HttpResponse::set_type(ResponseType type) {
     switch (type) {
         case ResponseType::HTML: {
             headers["Content-Type"] = "text/html";
@@ -85,8 +85,7 @@ void Response::set_type(ResponseType type) {
     }
 }
 
-[[nodiscard]]
-std::optional<std::string> Response::get_header(const std::string &name) const {
+std::optional<std::string> HttpResponse::get_header(const std::string &name) const {
     if (auto hdr = headers.find(name); hdr != headers.end()) {
         return hdr->second;
     }
@@ -94,16 +93,13 @@ std::optional<std::string> Response::get_header(const std::string &name) const {
 }
 
 
-void Response::set_body(const Json::Value& json_obj) {
+void HttpResponse::set_body(const Json::Value& json_obj) {
     Json::FastWriter json_writer;
     const std::string json_str = json_writer.write(json_obj);
-    
-
     body = json_str;
 }
 
-void Response::set_status(int status_code) {
-    
+void HttpResponse::set_status(int status_code) {
     switch (status_code) {
         case 200: {
             status_message = "OK";
@@ -135,27 +131,28 @@ void Response::set_status(int status_code) {
 }
 
 
-void HttpResponse::respond(Response &resp) { // Sending response text to the requester
+void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text to the requester
     auto response = resp.respond_text();
+    size_t write_total_size = 0;
 
-    ssize_t bytes_sent = send(client_socket, response.c_str(), response.size(), 0);
-    if (bytes_sent < 0) {
-        debug::log_error("Error sending response");
-    } 
-}
+    while (write_total_size < response.size()) {
+        ssize_t bytes_sent = send(client_socket, response.c_str() + write_total_size, response.size() - write_total_size, 0);
+        if (bytes_sent < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+            pollfd client;
+            client.fd = client_socket;
+            client.events = POLLOUT;
 
-ResponseBuilder& ResponseBuilder::serve_file(const std::string &path) {
-    std::ifstream file(path);
-    if (file.is_open()) {
-        std::stringstream ss;
-        ss << file.rdbuf();
-
-        auto contents = ss.str();
-        resp.set_body(contents);
-        resp.set_type(ResponseType::TEXT);
-        resp.set_status(200);
-    } else {
-        throw std::runtime_error("File does not exist");
+            int poll_result = poll(&client, 1, 5000);
+            if (poll_result <= 0) {
+                debug::log_error("Connection is lost");
+                return;
+            }
+            continue;
+        } else if (bytes_sent < 0) {
+            debug::log_error("Sending failed");
+            throw std::runtime_error("Sending failed");
+        }
+        write_total_size += bytes_sent;
     }
-    return *this;
 }
+

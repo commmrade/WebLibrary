@@ -1,6 +1,7 @@
 #pragma once
 
 #include "server/HttpHandle.hpp"
+#include "server/RequestType.hpp"
 #include "server/Utils.hpp"
 #include <unordered_map>
 #include <string>
@@ -8,10 +9,7 @@
 class HttpBinder {
 private:
     std::unordered_map<std::string, HttpHandle> handles; 
-
-
 public:
-
     static HttpBinder& instance() {
         static HttpBinder binder;
         return binder;
@@ -23,10 +21,10 @@ public:
     }
     void register_handler(std::string_view endpoint_name, Handler &&handler, RequestType type) {
         auto handle = handles.find(std::string{endpoint_name});
-
         if (handle != handles.end()) {
             throw std::runtime_error("Endpoint is already set!");
         }    
+
         HttpHandle handle_obj{};
         handle_obj.add_http_method(type);
         handle_obj.set_handle_method(std::move(handler));
@@ -40,10 +38,10 @@ public:
     template<typename... Types>
     void register_handler(std::string_view endpoint_name, Handler&& handler, Types&&... types) {
         auto handle = handles.find(std::string{endpoint_name});
-
         if (handle != handles.end()) {
             throw std::runtime_error("Endpoint is already set!");
         }    
+        
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(types), ...);
         handle_obj.set_handle_method(std::move(handler));      

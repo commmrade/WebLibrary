@@ -26,11 +26,6 @@ std::string process_url_str(std::string_view url) {
     // Process route and add all key values to the parameters map
     std::string result;
     result += url.substr(0, url.find("/", 1) != std::string::npos ? url.find("/", 1) : url.find("?"));
-    
-    if (result.contains("public") || result.contains("private") || result.contains("static")) {
-       
-        return std::string{url};
-    }
 
     { // Path parameter parsing
         std::string_view request_url = url.substr(1);  
@@ -107,13 +102,5 @@ std::vector<std::string> extract_params(std::string_view url) {
     return key_names;
 }
 
-std::string find_file(const std::string &filename) {
-    if (std::filesystem::exists("static/public/" + filename)) {
-        return "public/";
-    } else if (std::filesystem::exists("static/private/" + filename)) {
-        return "private/";
-    }
-    return "";
-}
 
 }

@@ -6,10 +6,9 @@
 #include "RequestType.hpp"
 #include <span>
 #include <vector>
+#include "funcs.hpp"
 
 
-using Handler = std::function<void(const HttpRequest&, HttpResponse&)>;
-using Filter = std::function<bool(const HttpRequest&)>;
 
 class HttpHandle { // HttpHandle data class
 public:
@@ -20,20 +19,22 @@ public:
     void set_handle_method(Handler&& handle);
     void add_http_method(RequestType method);
 
+    [[nodiscard]] 
     std::span<const Filter> get_filters() const {
         return filters;
     }
+    [[nodiscard]] 
     std::span<const RequestType> get_methods() const {
         return methods;
     }
 
-    void proceed(const HttpRequest& req, HttpResponse& resp) const;
-
-    void set_param_names(std::vector<std::string> vec);
+    void set_param_names(std::vector<std::string>&& vec);
     [[nodiscard]]
     std::span<const std::string> get_param_names() const {
         return parameter_names;
     }
+
+    void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
 
 private:
     std::vector<RequestType> methods;

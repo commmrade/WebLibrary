@@ -6,10 +6,10 @@
 #include "server/HttpBinder.hpp"
 
 #define mv(X) std::move(X)         
-#define REG_ENDPOINT(FUNCTION, NAME, TYPE, ...) register_method(NAME, [this] (const HttpRequest &req, HttpResponse &resp) { FUNCTION(mv(req), mv(resp)); }, TYPE, __VA_ARGS__)
+#define REG_ENDPOINT(FUNCTION, NAME, TYPE, ...) register_method(NAME, [this] (const HttpRequest &req, HttpResponseWriter &resp) { FUNCTION(req, mv(resp)); }, TYPE, __VA_ARGS__)
 
 
-template<typename Derived>
+template<typename Derived> // Currently no real need for CRTP  but maybe in the future
 class HttpController {
 public:
     HttpController() = default;

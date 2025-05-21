@@ -6,7 +6,6 @@
 class MyFilter : public HttpFilter<MyFilter> {
 public:
     MyFilter() {
-        
         REG_FILTER("/smth/{id}?name={name}", doFilter);
     }
 protected:

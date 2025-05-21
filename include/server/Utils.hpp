@@ -19,6 +19,4 @@ void trim_r(std::string &s);
 void trim_l(std::string &s);
 void trim(std::string &s);
 
-std::string find_file(const std::string &filename);
-
 }

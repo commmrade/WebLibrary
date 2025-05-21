@@ -13,14 +13,13 @@ void HttpHandle::add_http_method(RequestType method) {
     methods.emplace_back(method);
 }
 
+void HttpHandle::set_param_names(std::vector<std::string>&& vec) {
+    parameter_names = std::move(vec);
+}
 
-void HttpHandle::proceed(const HttpRequest& req, HttpResponse& resp) const {
+void HttpHandle::operator()(const HttpRequest& req, HttpResponseWriter& resp) const {
     if (!handle) {
         throw std::runtime_error("Handle is not set");
     }
     handle(req, resp);
-}
-
-void HttpHandle::set_param_names(std::vector<std::string> vec) {
-    parameter_names = std::move(vec);
 }

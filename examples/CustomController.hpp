@@ -19,7 +19,7 @@ public:
         REG_ENDPOINT(reg, "/smth/{id}?name={name}", RequestType::GET, RequestType::OPTIONS);
     }
 protected:
-    void reg(const HttpRequest& req, HttpResponse&& resp) {
+    void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
         
         auto a = req.get_query("id").as<long long>();
 
@@ -36,7 +36,7 @@ protected:
         .build();
         cookie.set_secure(true);
 
-        auto response = ResponseBuilder().set_type(ResponseType::TEXT).set_body("fuck").build();
+        auto response = HttpResponseBuilder().set_type(ResponseType::TEXT).set_body("fuck").build();
         response.add_cookie(cookie);
 
         resp.respond(response);

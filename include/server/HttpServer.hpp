@@ -1,28 +1,14 @@
 #pragma once
 
 #include <asm-generic/socket.h>
-#include <cerrno>
-#include <cstdio>
-
-#include <functional>
 #include <memory>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <poll.h>
-#include<csignal>
 #include<fcntl.h>
 #include <unistd.h>
 #include "ThreadPool.hpp"
-#include "server/HttpRequest.hpp"
-#include "server/HttpResponse.hpp"
-
-
-
-
-
-using Handler = std::function<void(const HttpRequest&, HttpResponse&)>;
-using Filter = std::function<bool(const HttpRequest&)>;
 
 class HttpServer {
 private:

@@ -8,7 +8,8 @@
 #define mv(X) std::move(X)
 #define REG_FILTER(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION((req)); }) // Macro to register filter
 
-template<typename Derived>
+template<typename Derived> // CRTP needed to avoid dynamic dispatching
+// TODO: Maybe give ability for use to specify error themself
 class HttpFilter {
 public:
     HttpFilter() = default;
@@ -17,7 +18,7 @@ public:
     HttpFilter& operator=(const HttpFilter&) = delete;
     HttpFilter& operator=(HttpFilter&&) = delete;
 
-    bool doFilter(const HttpRequest &req) {
+    [[nodiscard]] bool doFilter(const HttpRequest &req) {
         return static_cast<Derived*>(this)->doFilter(req);
     }
 

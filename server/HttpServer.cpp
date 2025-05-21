@@ -1,12 +1,13 @@
+#include <cerrno>
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
 #include <stdexcept>
+#include <sys/poll.h>
+#include <sys/types.h>
 #include "debug.hpp"
-#include "server/HttpResController.hpp"
 
 
 HttpServer::HttpServer() {
-    HttpResController resController; // Setting up resource controller
     thread_pool = std::make_unique<ThreadPool>();
 }
 HttpServer::~HttpServer() {
@@ -48,44 +49,47 @@ void HttpServer::server_setup(int port) {
 }
 
 void HttpServer::handle_incoming_request(int client_socket) {
-    debug::log_info("Reding user request");
+    debug::log_info("Reading user request");
 
     fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
     std::string request_string; 
     request_string.resize(4096);
     
     size_t already_read{0};
-    int rd_bytes;
     while (true) {
-        rd_bytes = read(client_socket, request_string.data() + already_read, 4096);
-        
-        if (rd_bytes > 0) { // Normal reading
-            already_read += rd_bytes;   
-            
-            if (already_read >= request_string.size()) {
-                request_string.resize(request_string.size() * 2);
+        ssize_t rd_bytes = read(client_socket, request_string.data() + already_read, 4096);
+        if (rd_bytes == 0) { // CLient disconnected
+            debug::log_info("Client has disconnected");
+            break;
+        }
+        if (rd_bytes > 0) {
+            already_read += rd_bytes;
+            if ((int)request_string.size() - already_read < 4096) {
+                request_string.resize(request_string.size() + 4096);
             }
-
-        } else if (rd_bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            // Try again
-    
-        } else if (rd_bytes == -1) {
-            debug::log_error("Error reading");
-            break; // unknown error when reading
+            if (rd_bytes < 4096) { // We read the full request TODO: If its not GET parse headers find content-length and use it to read
+                request_string.resize(already_read);
+                HttpRouter::instance().process_endpoint(client_socket, request_string); // Read/Writes are kinda thread-safe but at the same time they arent so idk leave it like that
+                request_string.resize(4096); // Old content will be just overwritten
+                already_read = 0;
+            }
+        } else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+            pollfd client;
+            client.fd = client_socket;
+            client.events = POLLIN;
+            int poll_result = poll(&client, 1, 5000);
+            if (poll_result <= 0) { // Probably means connection is kinda lost
+                debug::log_error("Connection is lost");
+                break;
+            }
+        } else {
+            debug::log_error("Fatal error when reading");
+            throw std::runtime_error("Fatal error reading");
         }
 
-        if (already_read > 0 && already_read <= 4096) {
-            break; // Got all data
-        }
     }
-    
-    request_string.resize(already_read);
-    request_string.shrink_to_fit();
-
-    
-    HttpRouter::instance().process_endpoint(client_socket, request_string);
-
     close(client_socket);
+    client_socket = -1;
 }
 
 
@@ -122,7 +126,7 @@ void HttpServer::listen_start(int port) {
                 } else {
                     int client_socket = polls_fd[i].fd;
 
-                    thread_pool->add_job([this](int client_socket){ handle_incoming_request(client_socket); }, client_socket); // Proccess user and remove from poll
+                    thread_pool->add_job([this, client_socket](){ handle_incoming_request(client_socket); }); // Proccess user and remove from poll
                     polls_fd.erase(polls_fd.begin() + i);
                     i--;
                 }

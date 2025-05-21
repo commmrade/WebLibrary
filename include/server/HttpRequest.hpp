@@ -67,10 +67,8 @@ private:
     mutable std::unordered_map<std::string, std::string> headers;
     std::unordered_map<int, std::string> path_params;
     std::unordered_map<std::string, Cookie> cookies;
-
     std::vector<std::string> param_names;
 
     void extract_queries();
-    void extract_headers();
-    
+    void extract_headers();  
 };

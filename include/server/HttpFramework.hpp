@@ -1,10 +1,11 @@
 #include <server/HttpServer.hpp>
 #include <debug.hpp>
+#include <signal.h>
 
 static HttpServer& app();
 
 static void sigint_handler([[maybe_unused]] int signal) {
-    debug::log_info("sigint: Closing the server");
+    debug::log_info("SIGINT: Closing the server");
     app().stop_server();
     std::exit(0);
 }

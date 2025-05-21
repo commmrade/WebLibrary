@@ -14,11 +14,11 @@
 #include <fstream>
 #include "types.hpp"
 
-class ResponseBuilder;
+class HttpResponseBuilder;
 enum class HeaderType;
 enum class ResponseType; 
 
-class Response {
+class HttpResponse {
 private:
     
     std::unordered_map<std::string, std::string> headers{{"Content-Type", "plain/text"}};
@@ -30,7 +30,7 @@ private:
     std::string http_version{"1.1"};
 
 public:
-    Response() = default;
+    HttpResponse() = default;
 
     [[nodiscard]]
     std::string respond_text() const;
@@ -83,59 +83,52 @@ public:
 
 };
 
-class HttpResponse {
+class HttpResponseWriter {
 public:    
-    HttpResponse(int client_socket) : client_socket(client_socket) {
-        
-    }
-    HttpResponse(const HttpResponse&) = delete;
-    HttpResponse& operator=(const HttpResponse&) = delete;
+    HttpResponseWriter(int client_socket) : client_socket(client_socket) {}
+    HttpResponseWriter(const HttpResponseWriter&) = delete;
+    HttpResponseWriter& operator=(const HttpResponseWriter&) = delete;
 
-    void respond(Response &resp);
+    void respond(HttpResponse &resp);
 private:
     int client_socket;
 };
 
-class ResponseBuilder {
+class HttpResponseBuilder {
 private:
-    Response resp{};
+    HttpResponse resp{};
 public:
-    ResponseBuilder() {}
+    HttpResponseBuilder() {}
     
-    ResponseBuilder& set_body(const std::string& text) {
+    [[nodiscard]] HttpResponseBuilder& set_body(const std::string& text) {
         resp.set_body(text);
         return *this;
     }
-    ResponseBuilder& set_body(const char *text) {
+    [[nodiscard]] HttpResponseBuilder& set_body(const char *text) {
         resp.set_body(text);
         return *this;
     }
-    ResponseBuilder& set_body(const Json::Value& json_obj) {
+    [[nodiscard]] HttpResponseBuilder& set_body(const Json::Value& json_obj) {
         resp.set_body(json_obj);
         return *this;
     }
 
-    ResponseBuilder& set_status(int code) {
+    [[nodiscard]] HttpResponseBuilder& set_status(int code) {
         resp.set_status(code);
         return *this;
     }
-    ResponseBuilder& set_type(ResponseType type) {
+    [[nodiscard]] HttpResponseBuilder& set_type(ResponseType type) {
         resp.set_type(type);
         return *this;
     }
-    ResponseBuilder& set_custom_message(const std::string &msg) {
+    [[nodiscard]] HttpResponseBuilder& set_custom_message(const std::string &msg) {
         resp.set_custom_message(msg);
         return *this;
     }
-
-    // Relative to the binary
-    ResponseBuilder& serve_file(const std::string &path);
     
-    Response build() {
+    [[nodiscard]] HttpResponse build() {
         return std::move(resp);
     }
-
-
 };
 
 

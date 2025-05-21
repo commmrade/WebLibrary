@@ -33,7 +33,7 @@ void HttpRouter::process_endpoint(int client_socket, std::string_view call) {
 
                    
                     auto resp_ = ResponseBuilder()
-                    .set_status(401)
+                    .set_status(403)
                     .set_body("Access denied")
                     .set_type(ResponseType::TEXT)
                     .build();

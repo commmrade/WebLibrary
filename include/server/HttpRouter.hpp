@@ -5,9 +5,7 @@
 
 class HttpRouter {
 public:
-    HttpRouter() {
-
-    }
+    HttpRouter() = default;
 
     HttpRouter(const HttpRouter&) = delete;
     HttpRouter(HttpRouter &&) = delete;

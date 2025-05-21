@@ -11,9 +11,7 @@
 template<typename Derived>
 class HttpFilter {
 public:
-    HttpFilter() {
-        
-    }
+    HttpFilter() = default;
     HttpFilter(const HttpFilter&) = delete;
     HttpFilter(HttpFilter &&) = delete;
     HttpFilter& operator=(const HttpFilter&) = delete;
@@ -23,10 +21,9 @@ public:
         return static_cast<Derived*>(this)->doFilter(req);
     }
 
-    template<typename... Values>
-    static void register_filter(Values... val) {
+    static void register_filter(std::string_view route, Filter filter) {
         debug::log_info("Registering a filter");
-        HttpBinder::instance().register_filter(std::forward<Values>(val)...);
+        HttpBinder::instance().register_filter(route, filter);
     }
 
 };

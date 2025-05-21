@@ -17,13 +17,12 @@ public:
     Cookie() = default;
 
     [[nodiscard]]
-    std::string get_string() const;
+    std::string to_string() const;
 
     [[nodiscard]]
     std::string get_name() const {
         return name;
     }
-
     [[nodiscard]]
     std::string get_value() const {
         return value;
@@ -47,7 +46,7 @@ public:
 
 
     void set_name(std::string_view name);
-    void set_val(std::string_view new_val);
+    void set_value(std::string_view new_val);
 
     void set_httponly(bool val);
     void set_secure(bool val);
@@ -69,7 +68,7 @@ private:
     std::string name;
     std::string value;
 
-    bool is_resp_cookie{false};
+    bool response_cookie{false};
 };
 
 class CookieBuilder {
@@ -80,8 +79,8 @@ public:
         cookie.set_name(name);
         return *this;
     }
-    CookieBuilder& set_val(std::string_view new_val) {
-        cookie.set_val(new_val);
+    CookieBuilder& set_value(std::string_view new_val) {
+        cookie.set_value(new_val);
         return *this;
     }
 

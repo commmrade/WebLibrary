@@ -21,9 +21,6 @@ public:
     HttpRequest(const HttpRequest&) = delete;
     HttpRequest& operator=(const HttpRequest&) = delete;
    
-
-    
-
     [[nodiscard]]
     std::string get_raw() const { return request; }
 
@@ -39,7 +36,6 @@ public:
 
     [[nodiscard]]
     std::string body_as_str() const { return request.substr(request.find("\r\n\r\n") + 4); }
-
     [[nodiscard]]
     std::unique_ptr<Json::Value> body_as_json() const;
 

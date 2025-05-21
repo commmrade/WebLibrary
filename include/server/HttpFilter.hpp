@@ -21,9 +21,9 @@ public:
         return static_cast<Derived*>(this)->doFilter(req);
     }
 
-    static void register_filter(std::string_view route, Filter filter) {
+    static void register_filter(std::string_view route, Filter&& filter) {
         debug::log_info("Registering a filter");
-        HttpBinder::instance().register_filter(route, filter);
+        HttpBinder::instance().register_filter(route, std::move(filter));
     }
 
 };

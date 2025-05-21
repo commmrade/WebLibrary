@@ -5,7 +5,7 @@ void HttpHandle::add_filter(Filter &&filter) {
     filters.emplace_back(std::move(filter));
 }
 
-void HttpHandle::set_handle_method(Handler handle) {
+void HttpHandle::set_handle_method(Handler &&handle) {
     this->handle = std::move(handle);
 }
 

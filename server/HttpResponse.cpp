@@ -31,7 +31,7 @@ void Response::add_header_raw(const std::string& name, std::string_view value) {
 }
 
 void Response::add_cookie(const Cookie &cookie) {
-    std::string cookie_str = cookie.get_string();
+    std::string cookie_str = cookie.to_string();
     // Maybe add multiple
     headers["Set-Cookie"] = cookie_str;
 }
@@ -79,7 +79,7 @@ void Response::set_type(ResponseType type) {
             // Deliberately made without break
         }
         default: {
-            headers["Content-Type"] = "plain/text";
+            headers["Content-Type"] = "text/plain";
             break;
         }
     }

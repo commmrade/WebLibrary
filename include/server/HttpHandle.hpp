@@ -17,15 +17,12 @@ public:
  
 
     void add_filter(Filter &&filter);
-
-    void set_handle_method(Handler handle);
-
+    void set_handle_method(Handler&& handle);
     void add_http_method(RequestType method);
 
-    std::vector<Filter> get_filters() const {
+    std::span<const Filter> get_filters() const {
         return filters;
     }
-
     std::span<const RequestType> get_methods() const {
         return methods;
     }
@@ -33,7 +30,6 @@ public:
     void proceed(const HttpRequest& req, HttpResponse& resp) const;
 
     void set_param_names(std::vector<std::string> vec);
-
     [[nodiscard]]
     std::span<const std::string> get_param_names() const {
         return parameter_names;

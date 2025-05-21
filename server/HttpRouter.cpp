@@ -8,9 +8,9 @@
 #include <server/Utils.hpp>
 #include <server/hash.hpp>
 
-void HttpRouter::process_endpoint(int client_socket, std::string_view call) {
-    RequestType request_type = utils::req_type_from_str(call.substr(0, call.find("/") - 1)); // Extracting method from request
-    std::string_view api_route = call.substr(call.find(" ") + 1, call.find("HTTP") - (call.find(" ") + 2)); // URL path like /api/HttpServer
+void HttpRouter::process_endpoint(int client_socket, std::string_view request_string) {
+    RequestType request_type = utils::req_type_from_str(request_string.substr(0, request_string.find("/") - 1)); // Extracting method from request
+    std::string_view api_route = request_string.substr(request_string.find(" ") + 1, request_string.find("HTTP") - (request_string.find(" ") + 2)); // URL path like /api/HttpServer
     std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
 
     try {
@@ -24,7 +24,7 @@ void HttpRouter::process_endpoint(int client_socket, std::string_view call) {
         auto &binder = HttpBinder::instance();
 
         if (auto handle = binder.get_handles().find(base_url); handle != binder.get_handles().end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
-            HttpRequest req(std::string(call), handle->second.get_param_names()); // Passing param names to then process query part
+            HttpRequest req(std::string(request_string), handle->second.get_param_names()); // Passing param names to then process query part
             
             auto middlewares = handle->second.get_filters();    
             for (auto &middleware : middlewares) { // Going through every middleware 

@@ -31,12 +31,12 @@ protected:
         .set_httponly(true)
         .set_max_age(10000)
         .set_name("token")
-        .set_val("sdjfjfjdsjklFJLKLjlkSE88J")
+        .set_value("sdjfjfjdsjklFJLKLjlkSE88J")
         .set_samesite(SameSite::Lax)
         .build();
         cookie.set_secure(true);
 
-        auto response = ResponseBuilder().serve_file("static/public/fuck.css").build();
+        auto response = ResponseBuilder().set_type(ResponseType::TEXT).set_body("fuck").build();
         response.add_cookie(cookie);
 
         resp.respond(response);

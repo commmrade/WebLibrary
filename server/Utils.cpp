@@ -1,6 +1,7 @@
+#include "server/RequestType.hpp"
 #include <filesystem>
 #include <server/Utils.hpp>
-
+#include <iostream>
 
 namespace utils {
 
@@ -10,9 +11,15 @@ RequestType req_type_from_str(std::string_view str) {
         return RequestType::GET;
     } else if (str == "POST") {
         return RequestType::POST;
+    } else if (str == "OPTIONS") {
+        return RequestType::OPTIONS;
+    } else if (str == "PUT") {
+        return RequestType::PUT;
+    } else if (str == "DELETE") {
+        return RequestType::DELETE;
     } else {
-        return RequestType::GET;
-    }
+        return RequestType::DELETE;
+    }   
 }
 
 std::string process_url_str(std::string_view url) {
@@ -56,18 +63,16 @@ std::string process_url_str(std::string_view url) {
             result += "?" + std::string{name} + "=" + "{}";
             
             request_url.remove_prefix(end_pos);
+            
             while (request_url.find("&") != std::string::npos) { // Parsing &name={val}&...
                 size_t start_pos = request_url.find_first_not_of("&");
-                size_t end_pos = request_url.find("&");
+                size_t end_pos = request_url.find("&", 1);
 
                 std::string_view key_value = request_url.substr(start_pos, end_pos - start_pos - 1);
                 std::string_view name = key_value.substr(0, key_value.find("="));
-
-                // auto name = *key_name_iter;
                 result += "&" + std::string{name} + "=" "{}";
                 
-                // request_url = request_url.substr(end_pos == 0 ? request_url.size() : end_pos);
-                request_url.remove_prefix(end_pos == 0 ? request_url.size() : end_pos);
+                request_url.remove_prefix(end_pos == std::string::npos ? request_url.size() : end_pos);
             }
             
         }
@@ -96,7 +101,7 @@ std::vector<std::string> extract_params(std::string_view url) {
         size_t start_pos = url.find("{");
         size_t end_pos = url.find("}");
 
-        key_names.emplace_back(std::string{url.substr(start_pos + 1, end_pos - start_pos - 1)});
+        key_names.emplace_back(url.substr(start_pos + 1, end_pos - start_pos - 1));
         url.remove_prefix(end_pos + 1);
     }
     return key_names;

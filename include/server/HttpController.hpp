@@ -20,9 +20,9 @@ public:
     HttpController& operator=(HttpController&&) = delete;
 
     template<typename ... RequestTypes>
-    static void register_method(const std::string &endpoint_name, Handler handler, RequestTypes&&... types) {
+    static void register_method(const std::string &endpoint_name, Handler &&handler, RequestTypes&&... types) {
         debug::log_info("Registering a handler");
-        HttpBinder::instance().register_handler(endpoint_name, handler, types...);
+        HttpBinder::instance().register_handler(endpoint_name, std::move(handler), types...);
     }
 };
 

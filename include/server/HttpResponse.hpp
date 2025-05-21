@@ -36,11 +36,10 @@ public:
     std::string respond_text() const;
 
     void add_header_raw(const std::string &name, std::string_view value);
+    void add_header(HeaderType header_type, std::string value);
+    const std::unordered_map<std::string, std::string>& get_headers() const { return headers; }
 
     void add_cookie(const Cookie &cookie);
-
-    void add_header(HeaderType header_type, std::string value);
-
     void remove_header(const std::string &name);
 
     void set_type(ResponseType type);
@@ -55,9 +54,8 @@ public:
         body = text;
     }
     void set_body(const Json::Value& json_obj);
-    
     [[nodiscard]] 
-    std::string get_body() const {
+    std::string get_body_str() const {
         return body;
     }
 

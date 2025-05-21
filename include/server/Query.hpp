@@ -49,7 +49,7 @@ public:
             throw std::invalid_argument("Could not be converted");
         }
     
-        auto converted_val = std::stoi(content);
+        auto converted_val = std::stoll(content);
         return converted_val;
     }
     template <>

@@ -27,6 +27,12 @@ void HttpServer::server_setup(int port) {
     int flags = fcntl(serv_socket, F_GETFL, 0);
     fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK);
 
+    int reuse = 1;
+    int result = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
+    if ( result < 0 ) {
+        perror("ERROR SO_REUSEADDR:");
+    }
+
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port); // Settings app addres info
     serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -45,19 +51,19 @@ void HttpServer::handle_incoming_request(int client_socket) {
     debug::log_info("Reding user request");
 
     fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
-    std::string call; 
-    call.resize(4096);
+    std::string request_string; 
+    request_string.resize(4096);
     
     size_t already_read{0};
     int rd_bytes;
     while (true) {
-        rd_bytes = read(client_socket, call.data() + already_read, 4096);
+        rd_bytes = read(client_socket, request_string.data() + already_read, 4096);
         
         if (rd_bytes > 0) { // Normal reading
             already_read += rd_bytes;   
             
-            if (already_read >= call.size()) {
-                call.resize(call.size() * 2);
+            if (already_read >= request_string.size()) {
+                request_string.resize(request_string.size() * 2);
             }
 
         } else if (rd_bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
@@ -73,11 +79,11 @@ void HttpServer::handle_incoming_request(int client_socket) {
         }
     }
     
-    call.resize(already_read);
-    call.shrink_to_fit();
+    request_string.resize(already_read);
+    request_string.shrink_to_fit();
 
     
-    HttpRouter::instance().process_endpoint(client_socket, call);
+    HttpRouter::instance().process_endpoint(client_socket, request_string);
 
     close(client_socket);
 }

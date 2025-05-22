@@ -1,11 +1,14 @@
 #include <cerrno>
+#include <iterator>
+#include <ostream>
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
 #include <stdexcept>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include "debug.hpp"
-
+#include "server/HttpRequest.hpp"
+#include <print>
 
 HttpServer::HttpServer() {
     thread_pool = std::make_unique<ThreadPool>();
@@ -53,26 +56,45 @@ void HttpServer::handle_incoming_request(int client_socket) {
 
     fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
     std::string request_string; 
-    request_string.resize(4096);
-    
-    size_t already_read{0};
+
+    int content_length{-1};
+    int current_body_read{0};
+    bool in_body{false};
+
+    auto reset_func = [&] {
+        current_body_read = 0;
+        content_length = -1;
+        in_body = false;
+    };
+
     while (true) {
-        ssize_t rd_bytes = read(client_socket, request_string.data() + already_read, 4096);
+        char buffer[4096];
+        ssize_t rd_bytes = read(client_socket, buffer, 4096);
         if (rd_bytes == 0) { // CLient disconnected
             debug::log_info("Client has disconnected");
             break;
         }
         if (rd_bytes > 0) {
-            already_read += rd_bytes;
-            if ((int)request_string.size() - already_read < 4096) {
-                request_string.resize(request_string.size() + 4096);
+            request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
+            // Body parsing
+            if (!in_body && request_string.find("\r\n\r\n") != std::string::npos) { // Means headers are fully sent
+                HttpRequest req{request_string};
+                try {
+                    content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
+                } catch (const std::invalid_argument& ex) {
+                    debug::log_warn("Could not parse content-length: ", ex.what());
+                    content_length = 0; // We don't care what exception it is just set c-l to 0
+                }
+                in_body = true;
+            } 
+            if (in_body) { // If parsing the body
+                current_body_read = std::distance(request_string.begin() + request_string.find("\r\n\r\n") + 4, request_string.end()); // Cheap because its a random access iterator
+                if (current_body_read >= content_length) { // Finished reading body, if body is empty it will still be true, since default content-length value is 0 and current_body_read is 0 by default
+                    HttpRouter::instance().process_endpoint(client_socket, request_string); // Read/Writes are kinda thread-safe but at the same time they arent so idk leave it like that
+                    reset_func();
+                }
             }
-            if (rd_bytes < 4096) { // We read the full request TODO: If its not GET parse headers find content-length and use it to read
-                request_string.resize(already_read);
-                HttpRouter::instance().process_endpoint(client_socket, request_string); // Read/Writes are kinda thread-safe but at the same time they arent so idk leave it like that
-                request_string.resize(4096); // Old content will be just overwritten
-                already_read = 0;
-            }
+           
         } else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
             pollfd client;
             client.fd = client_socket;

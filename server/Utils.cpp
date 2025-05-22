@@ -1,7 +1,9 @@
 #include "server/RequestType.hpp"
 #include <filesystem>
+#include <ostream>
 #include <server/Utils.hpp>
 #include <iostream>
+#include <print>
 
 namespace utils {
 

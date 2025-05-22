@@ -108,10 +108,6 @@ void HttpRequest::extract_queries() {
 
 
 void HttpRequest::extract_headers() {
-    
-
-    
-
     std::stringstream strm(request.substr(request.find("\r\n") + 2, request.find("\r\n\r\n") - (request.find("\r\n") + 2))); // here
     
     if (strm.view().empty()) {

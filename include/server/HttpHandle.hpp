@@ -25,6 +25,10 @@ public:
     }
     [[nodiscard]] 
     std::span<const RequestType> get_methods() const {
+        for (auto method : methods) {
+            std::cout << (int)method;
+        }
+        std::cout << std::endl;
         return methods;
     }
 

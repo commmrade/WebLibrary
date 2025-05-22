@@ -3,8 +3,11 @@
 #include "server/HttpHandle.hpp"
 #include "server/RequestType.hpp"
 #include "server/Utils.hpp"
+#include <ostream>
 #include <unordered_map>
 #include <string>
+#include <print>
+
 
 class HttpBinder {
 private:
@@ -17,6 +20,11 @@ public:
 
     [[nodiscard]]
     const std::unordered_map<std::string, HttpHandle>& get_handles() const {
+        std::println("=====");
+        for (const auto& [f, s] : handles) {
+            std::println("'{}'", f);
+        }
+        std::println("===");
         return handles;
     }
     void register_handler(const std::string& endpoint_name, Handler &&handler, RequestType type) {

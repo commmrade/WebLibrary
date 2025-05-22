@@ -11,6 +11,7 @@
 #include <print>
 
 void HttpRouter::process_endpoint(int client_socket, std::string_view request_string) {
+    std::println("Method: '{}'", request_string.substr(0, request_string.find("/") - 1));
     RequestType request_type = utils::req_type_from_str(request_string.substr(0, request_string.find("/") - 1)); // Extracting method from request TODO: FIX
     std::string_view api_route = request_string.substr(request_string.find(" ") + 1, request_string.find("HTTP") - (request_string.find(" ") + 2)); // URL path like /api/HttpServer TODO: MAKE CLEARER
     std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
@@ -20,6 +21,7 @@ void HttpRouter::process_endpoint(int client_socket, std::string_view request_st
         auto &binder = HttpBinder::instance();
 
         // TODO: MAKE ALL THIS SHIT CLEANER
+        std::println("Req: {}", (int)request_type);
         if (auto handle = binder.get_handles().find(base_url); handle != binder.get_handles().end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
             HttpRequest req(std::string(request_string), handle->second.get_param_names()); // Passing param names to then process query part
             

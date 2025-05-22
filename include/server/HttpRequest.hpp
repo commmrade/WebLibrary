@@ -15,11 +15,7 @@
 
 class HttpRequest {
 public:
-    
-    
     HttpRequest(const std::string &resp, std::span<const std::string> vec = {});
-    HttpRequest(const HttpRequest&) = delete;
-    HttpRequest& operator=(const HttpRequest&) = delete;
    
     [[nodiscard]]
     std::string get_raw() const { return request; }

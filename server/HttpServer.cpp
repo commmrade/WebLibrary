@@ -1,5 +1,6 @@
 #include <cerrno>
 #include <iterator>
+#include <optional>
 #include <ostream>
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
@@ -29,7 +30,9 @@ void HttpServer::server_setup(int port) {
         throw std::runtime_error("");
     }   
     int flags = fcntl(serv_socket, F_GETFL, 0);
-    fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK);
+    if (flags < 0 || fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
+        throw std::runtime_error("Could not set flags for client socket");
+    }
 
     int reuse = 1;
     int result = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
@@ -51,28 +54,19 @@ void HttpServer::server_setup(int port) {
     
 }
 
-void HttpServer::handle_incoming_request(int client_socket) {
-    debug::log_info("Reading user request");
-
-    fcntl(client_socket, F_SETFL, O_NONBLOCK); // Setting non-blocking mode for better handling of requests
+std::optional<std::string> HttpServer::read_request(int client_socket) {
     std::string request_string; 
 
     int content_length{-1};
     int current_body_read{0};
     bool in_body{false};
 
-    auto reset_func = [&] {
-        current_body_read = 0;
-        content_length = -1;
-        in_body = false;
-    };
-
     while (true) {
         char buffer[4096];
         ssize_t rd_bytes = read(client_socket, buffer, 4096);
         if (rd_bytes == 0) { // CLient disconnected
             debug::log_info("Client has disconnected");
-            break;
+            return std::nullopt;
         }
         if (rd_bytes > 0) {
             request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
@@ -90,11 +84,9 @@ void HttpServer::handle_incoming_request(int client_socket) {
             if (in_body) { // If parsing the body
                 current_body_read = std::distance(request_string.begin() + request_string.find("\r\n\r\n") + 4, request_string.end()); // Cheap because its a random access iterator
                 if (current_body_read >= content_length) { // Finished reading body, if body is empty it will still be true, since default content-length value is 0 and current_body_read is 0 by default
-                    HttpRouter::instance().process_endpoint(client_socket, request_string); // Read/Writes are kinda thread-safe but at the same time they arent so idk leave it like that
-                    reset_func();
+                    return request_string;
                 }
             }
-           
         } else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
             pollfd client;
             client.fd = client_socket;
@@ -102,13 +94,28 @@ void HttpServer::handle_incoming_request(int client_socket) {
             int poll_result = poll(&client, 1, 5000);
             if (poll_result <= 0) { // Probably means connection is kinda lost
                 debug::log_error("Connection is lost");
-                break;
+                return std::nullopt;
             }
         } else {
             debug::log_error("Fatal error when reading");
             throw std::runtime_error("Fatal error reading");
         }
+    }
+}
 
+void HttpServer::handle_incoming_request(int client_socket) {
+    debug::log_info("Reading user request");
+    int flags = fcntl(client_socket, F_GETFL, 0);
+    if (flags < 0 || fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
+        throw std::runtime_error("Could not set flags for client socket");
+    }
+
+    while (true) {
+        auto request_str = read_request(client_socket);
+        if (!request_str) {
+            break;
+        }
+        HttpRouter::instance().process_endpoint(client_socket, request_str.value());
     }
     close(client_socket);
     client_socket = -1;
@@ -148,7 +155,14 @@ void HttpServer::listen_start(int port) {
                 } else {
                     int client_socket = polls_fd[i].fd;
 
-                    thread_pool->add_job([this, client_socket](){ handle_incoming_request(client_socket); }); // Proccess user and remove from poll
+                    thread_pool->add_job([this, client_socket](){ 
+                        try {
+                            handle_incoming_request(client_socket);
+                        } catch (const std::exception& ex) {
+                            close(client_socket);
+                            debug::log_error("Could not handle: ", ex.what());
+                        }
+                    });
                     polls_fd.erase(polls_fd.begin() + i);
                     i--;
                 }

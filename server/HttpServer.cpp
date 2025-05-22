@@ -72,7 +72,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
             request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
             // Body parsing
             if (!in_body && request_string.find("\r\n\r\n") != std::string::npos) { // Means headers are fully sent
-                HttpRequest req{request_string};
+                HttpRequest req{request_string}; // TODO: Just parse headers, this will be faster
                 try {
                     content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
                 } catch (const std::invalid_argument& ex) {
@@ -113,6 +113,7 @@ void HttpServer::handle_incoming_request(int client_socket) {
     while (true) {
         auto request_str = read_request(client_socket);
         if (!request_str) {
+            debug::log_warn("Could not read request. Something's wrong");
             break;
         }
         HttpRouter::instance().process_endpoint(client_socket, request_str.value());

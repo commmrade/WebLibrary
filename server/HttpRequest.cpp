@@ -60,6 +60,7 @@ void HttpRequest::extract_queries() {
         return;
     }   
     
+    // Slash parsing
     // TODO: Fix when there is several slashes like /api/auth/{id}
     auto param_name_iter = param_names.begin(); // param_names stores id, user from api/{id}/{user} (example)
     size_t endpoint_start = request.find("/");
@@ -69,7 +70,6 @@ void HttpRequest::extract_queries() {
         | std::views::transform([](auto&& range) {
         return std::string{range.begin(), range.end()};
     }) | std::ranges::to<std::vector>();
-
     for (size_t i = 0; i < args.size(); ++i) {
         if (i != 0 && i != args.size() - 1 && !args[i].empty()) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
@@ -92,8 +92,8 @@ void HttpRequest::extract_queries() {
 
         request_url.remove_prefix(question_pos);
     }
-    std::println("After {}", request_url);
 
+    // Question mark parsing
     auto question_mark_pos = request_url.find("?");
     if (question_mark_pos != std::string::npos) { // ?name={smth} parsing 
         if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");

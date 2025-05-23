@@ -10,6 +10,7 @@
 #include "debug.hpp"
 #include "server/HttpRequest.hpp"
 #include <print>
+#include <system_error>
 
 HttpServer::HttpServer() {
     thread_pool = std::make_unique<ThreadPool>();
@@ -18,7 +19,7 @@ HttpServer::~HttpServer() {
     close(serv_socket);
 }
 
-const char* const HEADERS_END = "\r\n\r\n";
+static constexpr std::string HEADERS_END = "\r\n\r\n";
 
 void HttpServer::server_setup(int port) {
     debug::log_info("Setting up server");
@@ -27,17 +28,17 @@ void HttpServer::server_setup(int port) {
     serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
     if (serv_socket < 0) {
         debug::log_error("Socket error");
-        throw std::runtime_error("");
+        throw std::system_error{std::error_code{}, "Could not create a socket"}; // Since socket() interfaces with the OS, throw system_error 
     }   
     int flags = fcntl(serv_socket, F_GETFL, 0);
     if (flags < 0 || fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
-        throw std::runtime_error("Could not set flags for client socket");
+        throw std::system_error(std::error_code{}, "Could not set flags for client socket");
     }
 
-    int reuse = 1;
+    bool reuse = true;
     int result = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0) {
-        perror("ERROR SO_REUSEADDR:");
+        throw std::system_error{std::error_code{}, "Could not set flags"};
     }
 
     serv_addr.sin_family = AF_INET;
@@ -47,7 +48,7 @@ void HttpServer::server_setup(int port) {
     debug::log_info("Binding socket");
     if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
         debug::log_error("Binding socket error");
-        throw std::runtime_error("");
+        throw std::system_error(std::error_code{}, "Could not bind the server socket");
     } 
 }
 
@@ -58,6 +59,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
     int current_body_read{0};
     bool in_body{false};
 
+    size_t header_end_pos;
     while (true) {
         char buffer[4096];
         ssize_t rd_bytes = read(client_socket, buffer, 4096);
@@ -68,7 +70,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
         if (rd_bytes > 0) { // If something to read...
             request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
             // Body parsing
-            if (!in_body && request_string.find(HEADERS_END) != std::string::npos) {
+            if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
                 HttpRequest req{request_string}; // TODO: Just parse headers, this will be faster
                 try {
                     content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
@@ -79,7 +81,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
                 in_body = true;
             } 
             if (in_body) { // If parsing the body
-                current_body_read = std::distance(request_string.begin() + request_string.find(HEADERS_END) + 4, request_string.end()); // Cheap because its a random access iterator
+                current_body_read = std::distance(request_string.begin() + header_end_pos + 4, request_string.end()); // Cheap because its a random access iterator
                 if (current_body_read >= content_length) { // Finished reading body, if body is empty it will still be true, since default content-length value is 0 and current_body_read is 0 by default
                     return request_string;
                 }
@@ -122,6 +124,7 @@ void HttpServer::listen_start(int port) {
         debug::log_error("Listening error");
         throw std::runtime_error("");
     }
+    std::vector<pollfd> polls_fd;
     polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
         int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time

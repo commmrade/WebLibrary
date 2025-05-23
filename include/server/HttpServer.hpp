@@ -16,11 +16,7 @@ private:
     int serv_socket;
     sockaddr_in serv_addr;
 
-    //ThreadPool thread_pool;
     std::unique_ptr<ThreadPool> thread_pool;
-
-    std::vector<pollfd> polls_fd;
-
 public: 
 
     HttpServer(const HttpServer&) = delete;

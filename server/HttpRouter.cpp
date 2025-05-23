@@ -1,43 +1,49 @@
+#include <expected>
 #include <ostream>
 #include <server/HttpRouter.hpp>
 #include "server/HttpBinder.hpp"
+#include "server/HttpHandle.hpp"
 #include "server/HttpRequest.hpp"
 #include "server/HttpResponse.hpp"
-#include <algorithm>
+#include "server/RequestType.hpp"
 #include <exception>
-#include <functional>
 #include <server/Utils.hpp>
 #include <server/hash.hpp>
 #include <print>
 
-void HttpRouter::process_endpoint(int client_socket, std::string_view request_string) {
-    // IF rquest is empty it loops indefinitely TODO: FIX
-    RequestType request_type = utils::req_type_from_str(request_string.substr(0, request_string.find("/") - 1)); // Extracting method from request TODO: FIX
-    std::string_view api_route = request_string.substr(request_string.find(" ") + 1, request_string.find("HTTP") - (request_string.find(" ") + 2)); // URL path like /api/HttpServer TODO: MAKE CLEARER
-    std::string base_url = utils::process_url_str(api_route); // Replacing queries with {}
 
+std::expected<std::pair<std::string, std::string>, std::string> HttpRouter::parse_request_line(std::string_view request_string) {
+    auto method_str = request_string.substr(0, request_string.find(" "));
+    auto first_space = request_string.find(' ');
+    auto second_space = request_string.find(' ', first_space + 1);
+    if (first_space == std::string_view::npos || second_space == std::string_view::npos) {
+        return std::unexpected{"Malformed request"};
+    }
+    std::string_view endpoint_target = request_string.substr(first_space + 1, second_space - first_space - 1);
+
+    return std::pair{std::string{method_str}, std::string{endpoint_target}};
+}
+
+void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view request_string, const std::string& processed_endpoint, std::string_view method, RequestType request_type) {
     try {
-        // TODO: MAKE ALL THIS SHIT CLEANER
-        HttpResponseWriter resp(client_socket);
-        const auto& handles = HttpBinder::instance().get_handles();
-        if (auto handle = handles.find(base_url); handle != handles.end() && std::ranges::contains(handle->second.get_methods(), request_type)) {
-            HttpRequest req(std::string{request_string}, handle->second.get_param_names()); // Passing param names to then process query part
+        const HttpHandle* handle = HttpBinder::instance().find_handle(processed_endpoint, request_type);
+        // Do not destroy, since it is stored inside HttpBinder
+        if (handle) {
+            HttpRequest request(std::string{request_string}, handle->get_param_names()); // Passing param names to then process query part
             
-            auto middlewares = handle->second.get_filters();    
-            for (auto&& middleware : middlewares) { // Going through every middleware 
-                if (!middleware(req)) {
-                    debug::log_warn("Filtering not passed");
-                    auto resp_ = HttpResponseBuilder()
-                        .set_status(403)
-                        .set_body("Access denied") // TODO: Universal error JSON response struct
-                        .set_type(ResponseType::TEXT)
-                        .build();
-                    resp.respond(resp_);
-                    return;
-                }
+            if (!handle->pass_middlewares(request)) {
+                debug::log_warn("Filtering not passed");
+                auto resp_ = HttpResponseBuilder()
+                    .set_status(403)
+                    .set_body("Access denied") // TODO: Universal error JSON response struct
+                    .set_type(ResponseType::TEXT)
+                    .build();
+                resp.respond(resp_);
+                return;
             }
-            debug::log_info("Proceeding to the endpoint ", base_url);
-            handle->second(req, resp); // Proceeding to endpoint if all middlewares were passed successfuly
+
+            debug::log_info("Proceeding to the endpoint ", processed_endpoint);
+            (*handle)(request, resp); // Proceeding to endpoint if all middlewares were passed successfuly
         } else { // Endpoint was not found
             debug::log_info("Endpoint not found");
             auto resp_ = HttpResponseBuilder()
@@ -47,16 +53,33 @@ void HttpRouter::process_endpoint(int client_socket, std::string_view request_st
                 .build();
             resp.respond(resp_);
         }
-    
     } catch (const std::exception &ex) { // Server internal error 5xx
-        debug::log_error("Server internal error ", api_route, " ", ex.what());
-        std::cerr << "Exception in " << api_route << " or incorrectly formatted request " << ex.what() << std::endl;
-        
+        debug::log_error("Server internal error ", method, " ", ex.what());
         auto resp_ = HttpResponseBuilder()
             .set_status(500)
             .set_body("Server internal error")
             .set_type(ResponseType::TEXT)
             .build();
-        HttpResponseWriter(client_socket).respond(resp_);
+        resp.respond(resp_);
     }
+}
+
+void HttpRouter::process_request(int client_socket, std::string_view request_string) {
+    if (request_string.empty()) return;
+    HttpResponseWriter resp{client_socket};
+
+    auto result_parse = parse_request_line(request_string);
+    if (!result_parse) {
+        auto resp_ = HttpResponseBuilder()
+            .set_status(400)
+            .set_body(result_parse.error())
+            .set_type(ResponseType::TEXT)
+            .build();
+        resp.respond(resp_);
+        return;
+    }
+    auto [method, path] = *result_parse;
+    std::string processed_endpoint = utils::process_url_str(path);
+    RequestType request_type = utils::req_type_from_str(method);
+    handle_request(resp, request_string, processed_endpoint, method, request_type);
 }

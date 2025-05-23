@@ -33,10 +33,10 @@ public:
     HttpResponse() = default;
 
     [[nodiscard]]
-    std::string respond_text() const;
+    std::string to_string() const;
 
     void add_header_raw(const std::string &name, std::string_view value);
-    void add_header(HeaderType header_type, std::string value);
+    void add_header(HeaderType header_type, std::string_view value);
     const std::unordered_map<std::string, std::string>& get_headers() const { return headers; }
 
     void add_cookie(const Cookie &cookie);

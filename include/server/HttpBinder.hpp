@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <string>
 #include <print>
-
+#include <ranges>
 
 class HttpBinder {
 private:
@@ -18,15 +18,6 @@ public:
         return binder;
     }
 
-    [[nodiscard]]
-    const std::unordered_map<std::string, HttpHandle>& get_handles() const {
-        std::println("=====");
-        for (const auto& [f, s] : handles) {
-            std::println("'{}'", f);
-        }
-        std::println("===");
-        return handles;
-    }
     void register_handler(const std::string& endpoint_name, Handler &&handler, RequestType type) {
         auto handle = handles.find(endpoint_name);
         if (handle != handles.end()) {
@@ -68,5 +59,13 @@ public:
 
         handle->second.add_filter(std::move(filter));
         debug::log_info("Registered filter");
+    }
+
+    const HttpHandle* find_handle(const std::string& endpoint, RequestType type) {
+        auto handle = handles.find(endpoint);
+        if (handle != handles.end() && handle->second.has_method(type)) {
+            return &handle->second;
+        }
+        return nullptr;
     }
 };

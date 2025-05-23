@@ -1,14 +1,14 @@
 #pragma once
 
-#include "server/HttpRequest.hpp"
 #include "server/HttpResponse.hpp"
+#include <algorithm>
 #include <functional>
 #include "RequestType.hpp"
 #include <span>
 #include <vector>
 #include "funcs.hpp"
 
-
+class HttpRequest;
 
 class HttpHandle { // HttpHandle data class
 public:
@@ -19,18 +19,12 @@ public:
     void set_handle_method(Handler&& handle);
     void add_http_method(RequestType method);
 
-    [[nodiscard]] 
-    std::span<const Filter> get_filters() const {
-        return filters;
-    }
-    [[nodiscard]] 
-    std::span<const RequestType> get_methods() const {
-        for (auto method : methods) {
-            std::cout << (int)method;
-        }
-        std::cout << std::endl;
-        return methods;
-    }
+    bool pass_middlewares(const HttpRequest& request) const;
+    bool has_method(RequestType type) {
+        return std::ranges::any_of(methods, [type](auto _type) {
+            return _type == type;
+        });
+    } 
 
     void set_param_names(std::vector<std::string>&& vec);
     [[nodiscard]]

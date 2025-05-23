@@ -1,4 +1,6 @@
 #include "server/RequestType.hpp"
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <ostream>
 #include <server/Utils.hpp>
@@ -79,6 +81,7 @@ std::string process_url_str(std::string_view url) {
 }
 
 
+
 void trim_r(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [] (auto &elem) { return !isspace(elem); }).base(), s.end());
 }
@@ -89,6 +92,11 @@ void trim_l(std::string &s) {
 void trim(std::string &s) {
     utils::trim_l(s);
     utils::trim_r(s);
+}
+
+std::string to_lowercase_str(std::string str) {
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char ch) { return std::tolower(ch); });
+    return str;
 }
 
 std::vector<std::string> extract_params(std::string_view url) {

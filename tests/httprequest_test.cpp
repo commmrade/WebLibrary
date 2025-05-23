@@ -6,7 +6,7 @@
 
 TEST(HttpRequestParsing, GetRequestQueries) {
     std::string request_str =
-    "GET /dashboard?user=42&page=1 HTTP/1.1\r\n"
+    "GET /dashboard/42?page=1&moron=55 HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
     "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
@@ -16,16 +16,56 @@ TEST(HttpRequestParsing, GetRequestQueries) {
     "Cookie: session_id=abc123; theme=dark\r\n"
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
-    std::vector<std::string> param_names{"user", "page"};
+
+    std::vector<std::string> param_names{"user", "page", "moron"};
     HttpRequest request{request_str, param_names};
+
     ASSERT_EQ(request.get_query("user").as<int>(), 42);
     ASSERT_EQ(request.get_query("page").as_str(), "1");
+    ASSERT_EQ(request.get_query("moron").as<int>(), 55);
     ASSERT_EQ(request.get_query("cockfuck").as_str(), "");
+}
+
+TEST(HttpRequestParsing, GetRequestQueries2) {
+    std::string request_str =
+    "GET /42 HTTP/1.1\r\n"
+    "Host: example.com\r\n"
+    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+    "Accept-Language: en-US,en;q=0.9\r\n"
+    "Accept-Encoding: gzip, deflate, br\r\n"
+    "Connection: keep-alive\r\n"
+    "Cookie: session_id=abc123; theme=dark\r\n"
+    "Upgrade-Insecure-Requests: 1\r\n"
+    "\r\n";
+
+    std::vector<std::string> param_names{"user"};
+    HttpRequest request{request_str, param_names};
+
+    ASSERT_EQ(request.get_query("user").as<int>(), 42);
+}
+
+TEST(HttpRequestParsing, CookiesTest) {
+    std::string request_str =
+    "GET /dashboard?user=42&page=1&moron=55 HTTP/1.1\r\n"
+    "Host: example.com\r\n"
+    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+    "Accept-Language: en-US,en;q=0.9\r\n"
+    "Accept-Encoding: gzip, deflate, br\r\n"
+    "Connection: keep-alive\r\n"
+    "Cookie: session_id=abc123; theme=dark\r\n"
+    "Upgrade-Insecure-Requests: 1\r\n"
+    "\r\n";
+    std::vector<std::string> param_names{"user", "page", "moron"};
+    HttpRequest request{request_str, param_names};
+    ASSERT_EQ(request.get_cookie("session_id")->get_value(), "abc123");
+    ASSERT_EQ(request.get_cookie("theme")->get_value(), "dark");
 }
 
 TEST(HttpRequestParsing, GetRequestHeaders) {
     std::string request_str =
-    "GET /dashboard?user=42&page=1 HTTP/1.1\r\n"
+    "GET /dashboard/111/222/333?user=42&page=1 HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
     "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
@@ -35,7 +75,7 @@ TEST(HttpRequestParsing, GetRequestHeaders) {
     "Cookie: session_id=abc123; theme=dark\r\n"
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
-    std::vector<std::string> param_names{"user", "page"};
+    std::vector<std::string> param_names{"id1", "id2", "id3", "user", "page"};
     HttpRequest request{request_str, param_names};
     ASSERT_EQ(request.get_header("User-Agent").value(), "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
     ASSERT_THROW(request.get_header("Mothefucker").value(), std::bad_optional_access);

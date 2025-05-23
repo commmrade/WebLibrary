@@ -15,7 +15,7 @@
 
 class HttpRequest {
 public:
-    HttpRequest(const std::string &resp, std::span<const std::string> vec = {});
+    HttpRequest(const std::string &request_str, std::span<const std::string> vec = {});
    
     [[nodiscard]]
     std::string get_raw() const { return request; }

@@ -1,5 +1,6 @@
 #include <server/Utils.hpp>
 #include <gtest/gtest.h>
+#include <string>
 
 
 TEST(Utils, ProcessUrlStrTest) {
@@ -23,4 +24,9 @@ TEST(Utils, ExtractParamsTest) {
     auto processed = utils::extract_params(url);
     ASSERT_EQ(processed[0], "id1"); ASSERT_EQ(processed[1], "id2"); ASSERT_EQ(processed[2], "name"); ASSERT_EQ(processed[3], "cock"); ASSERT_EQ(processed[4], "moron");
     ASSERT_EQ(processed[5], "russia");
+}
+
+TEST(Utils, ToLowerCaseTest) {
+    std::string str = "FuCkMe";
+    ASSERT_EQ(utils::to_lowercase_str(str), "fuckme");
 }

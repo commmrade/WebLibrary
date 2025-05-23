@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <server/HttpHandle.hpp>
 
 
@@ -22,4 +23,10 @@ void HttpHandle::operator()(const HttpRequest& req, HttpResponseWriter& resp) co
         throw std::runtime_error("Handle is not set");
     }
     handle(req, resp);
+}
+
+bool HttpHandle::pass_middlewares(const HttpRequest& request) const {
+    return !std::ranges::any_of(filters, [&request](auto&& filter) {
+        return !filter(request);
+    });
 }

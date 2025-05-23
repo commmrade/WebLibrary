@@ -4,9 +4,10 @@
 #include <server/HttpResponse.hpp>
 #include <print>
 #include <stdexcept>
+#include <string_view>
 #include <sys/poll.h>
 
-std::string HttpResponse::respond_text() const {
+std::string HttpResponse::to_string() const {
     std::string response = std::format("HTTP/{} {} {}\r\n", http_version, status_code, status_message);
     // Adding headers part
     for (const auto &[header_name, header_value] : headers) {
@@ -27,7 +28,6 @@ void HttpResponse::add_header_raw(const std::string& name, std::string_view valu
     if (name == "Set-Cookie") {
         throw std::runtime_error("Use add_cookie() instead!");
     }
-
     headers[name] = value;
 }
 
@@ -36,7 +36,7 @@ void HttpResponse::add_cookie(const Cookie &cookie) {
     headers["Set-Cookie"] = cookie_str;
 }
 
-void HttpResponse::add_header(HeaderType header_type, std::string value) {
+void HttpResponse::add_header(HeaderType header_type, std::string_view value) {
     switch (header_type) {
         case HeaderType::CONTENT_TYPE: {
             headers["Content-Type"] = value;
@@ -46,22 +46,49 @@ void HttpResponse::add_header(HeaderType header_type, std::string value) {
             headers["Content-Length"] = value;
             break;
         }
-        case HeaderType::AUTH_BASIC: {
-            headers["Authorization"] = "Basic " + value;
+        case HeaderType::CACHE_CONTROL: {
+            headers["Cache-Control"] = value;
             break;
         }
-        case HeaderType::AUTH_BEARER: {
-            headers["Authorization"] = "Bearer " + value;
+        case HeaderType::EXPIRES: {
+            headers["Expires"] = value;
+            break;
+        }
+        case HeaderType::SET_COOKIE: {
+            headers["Set-Cookie"] = value;
+            break;
+        }
+        case HeaderType::LOCATION: {
+            headers["Location"] = value;
+            break;
+        }
+        case HeaderType::SERVER: {
+            headers["Server"] = value;
+            break;
+        }
+        case HeaderType::ACCEPT: {
+            headers["Accept"] = value;
+            break;
+        }
+        case HeaderType::USER_AGENT: {
+            headers["User-Agent"] = value;
+            break;
+        }
+        case HeaderType::HOST: {
+            headers["Host"] = value;
+            break;
+        }
+        case HeaderType::ACCEPT_LANGUAGE: {
+            headers["Accept-Language"] = value;
             break;
         }
         default: {
             throw std::runtime_error("Header type is not implemented > todo!");
-            break;
         }
     }
 }
 
-void HttpResponse::remove_header(const std::string &name) {
+void HttpResponse::remove_header(const std::string& name) {
     headers.erase(name); // Removing if exists (doesn't throw if does not exist)
 }
 
@@ -76,14 +103,52 @@ void HttpResponse::set_type(ResponseType type) {
             break;
         }
         case ResponseType::TEXT: {
-            // Deliberately made without break
+            headers["Content-Type"] = "text/plain";
+            break;
+        }
+        case ResponseType::XML: {
+            headers["Content-Type"] = "application/xml";
+            break;
+        }
+        case ResponseType::CSS: {
+            headers["Content-Type"] = "text/css";
+            break;
+        }
+        case ResponseType::JS: {
+            headers["Content-Type"] = "application/javascript";
+            break;
+        }
+        case ResponseType::JPEG: {
+            headers["Content-Type"] = "image/jpeg";
+            break;
+        }
+        case ResponseType::PNG: {
+            headers["Content-Type"] = "image/png";
+            break;
+        }
+        case ResponseType::GIF: {
+            headers["Content-Type"] = "image/gif";
+            break;
+        }
+        case ResponseType::PDF: {
+            headers["Content-Type"] = "application/pdf";
+            break;
+        }
+        case ResponseType::CSV: {
+            headers["Content-Type"] = "text/csv";
+            break;
+        }
+        case ResponseType::FORM: {
+            headers["Content-Type"] = "application/x-www-form-urlencoded";
+            break;
         }
         default: {
-            headers["Content-Type"] = "text/plain";
+            headers["Content-Type"] = "text/plain"; // Default case
             break;
         }
     }
 }
+
 
 std::optional<std::string> HttpResponse::get_header(const std::string &name) const {
     if (auto hdr = headers.find(name); hdr != headers.end()) {
@@ -105,34 +170,61 @@ void HttpResponse::set_status(int status_code) {
             status_message = "OK";
             break;
         }
+        case 201: {
+            status_message = "Created";
+            break;
+        }
+        case 204: {
+            status_message = "No Content";
+            break;
+        }
         case 400: {
-            status_message = "Bad request";
+            status_message = "Bad Request";
             break;
         }
         case 401: {
             status_message = "Unauthorized";
             break;
         }
+        case 403: {
+            status_message = "Forbidden";
+            break;
+        }
         case 404: {
-            status_message = "Not found";
+            status_message = "Not Found";
+            break;
+        }
+        case 405: {
+            status_message = "Method Not Allowed";
             break;
         }
         case 500: {
-            status_message = "Internal server error";
+            status_message = "Internal Server Error";
+            break;
+        }
+        case 502: {
+            status_message = "Bad Gateway";
+            break;
+        }
+        case 503: {
+            status_message = "Service Unavailable";
+            break;
+        }
+        case 504: {
+            status_message = "Gateway Timeout";
             break;
         }
         default: {
             status_message = "Unknown status code, set msg manually";
             break;
         }
-
     }
     this->status_code = status_code;
 }
 
 
 void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text to the requester
-    auto response = resp.respond_text();
+    auto response = resp.to_string();
     size_t write_total_size = 0;
 
     while (write_total_size < response.size()) {
@@ -148,7 +240,9 @@ void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text 
                 return;
             }
             continue;
-        } else if (bytes_sent < 0) {
+        } else if (bytes_sent == 0) {
+            debug::log_warn("Peer closed connection");
+        } else if (bytes_sent < 0) { // <= because bytes_sent == 0 is kind of weird and possibly wrong but idfc
             debug::log_error("Sending failed");
             throw std::runtime_error("Sending failed");
         }

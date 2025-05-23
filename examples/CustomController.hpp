@@ -7,7 +7,7 @@
 #include "server/RequestType.hpp"
 #include <format>
 #include <json/value.h>
-
+#include <server/HttpRequest.hpp>
 
 
 
@@ -22,9 +22,6 @@ protected:
     void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
         
         auto body = req.body_as_json();
-        std::cout << body->toStyledString() << std::endl;
-        std::cout << body->get("id", 0).as<int>() << std::endl;
-
         auto response = HttpResponseBuilder().set_type(ResponseType::JSON).set_body(*body).build();
 
         resp.respond(response);

@@ -14,7 +14,6 @@ ThreadPool::~ThreadPool() {
         should_terminate = true;
     }
     cond.notify_all();
-
     for (auto &thread : threads) {
         thread.join();
     }
@@ -34,7 +33,6 @@ void ThreadPool::thread_loop() {
             job = jobs.front();
             jobs.pop();
         }
-
         job();
     }
 }

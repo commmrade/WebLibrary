@@ -1,4 +1,5 @@
 #include <cerrno>
+#include <cstring>
 #include <iterator>
 #include <optional>
 #include <ostream>
@@ -35,9 +36,10 @@ void HttpServer::server_setup(int port) {
         throw std::system_error(std::error_code{}, "Could not set flags for client socket");
     }
 
-    bool reuse = true;
+    int reuse = 1;
     int result = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0) {
+        debug::log_error("Could not set flags: ", strerror(errno));
         throw std::system_error{std::error_code{}, "Could not set flags"};
     }
 
@@ -107,10 +109,10 @@ void HttpServer::handle_incoming_request(int client_socket) {
     while (true) {
         auto request_str = read_request(client_socket);
         if (!request_str) {
-            debug::log_warn("Could not read request. Something's wrong");
+            debug::log_warn("Client disconnected");
             break;
         }
-        HttpRouter::instance().process_endpoint(client_socket, request_str.value());
+        HttpRouter::instance().process_request(client_socket, request_str.value());
     }
     close(client_socket);
 }

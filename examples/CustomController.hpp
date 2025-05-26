@@ -16,7 +16,8 @@
 class MyController : public HttpController<MyController> {
 public:
     MyController() {
-        REG_ENDPOINT(reg, "/smth", RequestType::POST, RequestType::OPTIONS);
+        REG_ENDPOINT(reg, "/reg", RequestType::POST, RequestType::OPTIONS);
+        REG_ENDPOINT(smth, "/auth/cock/fuck?age={age}", RequestType::GET, RequestType::OPTIONS);
     }
 protected:
     void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
@@ -27,5 +28,8 @@ protected:
         resp.respond(response);
     }
 
+    void smth(const HttpRequest& req, HttpResponseWriter&& resp) {
+
+    }
     
 };

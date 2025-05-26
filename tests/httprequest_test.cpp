@@ -28,7 +28,7 @@ TEST(HttpRequestParsing, GetRequestQueries) {
 
 TEST(HttpRequestParsing, GetRequestQueries2) {
     std::string request_str =
-    "GET /42 HTTP/1.1\r\n"
+    "GET /auth/cock/fuck?age=42 HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
     "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
@@ -39,10 +39,10 @@ TEST(HttpRequestParsing, GetRequestQueries2) {
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
 
-    std::vector<std::string> param_names{"user"};
+    std::vector<std::string> param_names{"age"};
     HttpRequest request{request_str, param_names};
 
-    ASSERT_EQ(request.get_query("user").as<int>(), 42);
+    ASSERT_EQ(request.get_query("age").as_str(), "42");
 }
 
 TEST(HttpRequestParsing, CookiesTest) {

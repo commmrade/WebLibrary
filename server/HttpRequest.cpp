@@ -63,8 +63,6 @@ void HttpRequest::extract_queries() {
         return;
     }   
     
-    // Slash parsing
-    // TODO: Fix when there is several slashes like /api/auth/{id}
     auto param_name_iter = param_names.begin(); // param_names stores id, user from api/{id}/{user} (example)
     size_t endpoint_start = request.find("/");
     std::string_view request_url{request.data() + endpoint_start + 1, request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account

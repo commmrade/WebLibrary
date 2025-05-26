@@ -73,19 +73,12 @@ void HttpRequest::extract_queries() {
     std::string_view endpoint_name_str{endpoint_name_str_};
     endpoint_name_str.remove_prefix(1);
 
-    auto template_args = endpoint_name_str | std::views::split('/')
-        | std::views::transform([](auto&& range) {
-            return std::string{range.begin(), range.end()};
-        }) | std::ranges::to<std::vector>();;
-    auto args = request_url | std::views::split('/') 
-        | std::views::transform([](auto&& range) {
-        return std::string{range.begin(), range.end()};
-    }) | std::ranges::to<std::vector>();
+    auto template_args = endpoint_name_str | std::views::split('/') | std::ranges::to<std::vector<std::string>>();;
+    auto args = request_url | std::views::split('/') | std::ranges::to<std::vector<std::string>>();;
 
     if (template_args.size() != args.size()) {
         throw std::runtime_error("Template endpoint size != Endpoint size. Please check your endpoint name for errors");
     }
-
     for (size_t i = 0; i < args.size(); ++i) {
         if (i != 0 && i != args.size() - 1 && !args[i].empty() && template_args[i].contains('{')) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
@@ -121,39 +114,26 @@ void HttpRequest::extract_queries() {
         auto ampersand_pos = request_url.find("&");
         size_t end_pos = ampersand_pos != std::string::npos ? ampersand_pos : request_url.size();
         
-        std::string_view key_value = request_url.substr(start_pos, end_pos - start_pos);
-        auto value = key_value.substr(key_value.find("=") + 1);
-        parameters.emplace(utils::to_lowercase_str(*param_name_iter), std::string{value}); 
+        auto value = request_url.substr(start_pos, end_pos - start_pos) 
+            | std::views::split('=') 
+            | std::views::drop(1) 
+            | std::views::join 
+            | std::ranges::to<std::string>();
+        parameters.emplace(utils::to_lowercase_str(*param_name_iter), std::move(value)); 
         param_name_iter++; 
- 
         request_url.remove_prefix(end_pos);   
 
-        std::ranges::for_each(request_url | std::views::split('&') 
-            | std::views::transform([](auto&& range) {
-                std::string str{range.begin(), (size_t)std::ranges::distance(range)};
-                return str | std::views::split('=') | std::views::transform([](auto&& range) {
-                    return std::string{range.begin(), range.end()};
-                }) | std::ranges::to<std::vector>();
-            }), 
-        [this](const auto& vec) {
-            if (vec.size() == 2) {
-                parameters.emplace(vec[0], vec[1]);
+        auto splitted_params = request_url 
+            | std::views::split('&');
+        std::ranges::for_each(splitted_params,
+        [this, param_name_iter](const auto& param) {
+            auto key_value = param | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
+            if (key_value.size() == 2) {
+                parameters.emplace(key_value[0], key_value[1]);
+            } else {
+                if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request: Query parameters");
             }
         });
-
-        // while ((ampersand_pos = request_url.find("&")) != std::string::npos) { // &name={smth} parsing
-        //     if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
-        //     size_t start_pos = ampersand_pos + 1;
-        //     size_t end_pos = request_url.find("&", ampersand_pos + 1);
-        //     end_pos = end_pos == std::string::npos ? request_url.size() : end_pos;
-            
-        //     std::string_view key_value = request_url.substr(start_pos, end_pos - start_pos);
-        //     std::string_view value = key_value.substr(key_value.find("=") + 1);
-            
-        //     parameters.emplace(utils::to_lowercase_str(*param_name_iter), std::string{value});
-        //     request_url.remove_prefix(end_pos == std::string::npos ? request_url.size() : end_pos);
-        //     param_name_iter++;
-        // }   
     }
 }
 
@@ -162,42 +142,38 @@ void HttpRequest::extract_headers() {
     auto header_section_start = request.find("\r\n") + 2;
     auto header_section_end = request.find("\r\n\r\n");
     if (header_section_start == header_section_end) {
-        return; // Headers are empty. Wtf?
+        return; // Empty headers
     }
     std::istringstream strm(request.substr(header_section_start, header_section_end - header_section_start)); // here
     std::string line;
     while (std::getline(strm, line, '\n')) { // Extracting headers one by one
-        utils::trim(line);
+        utils::trim(line); // Get rid of spaces and carriage returns
 
-        auto column_pos = line.find(":");
-        std::string name = line.substr(0, column_pos);
-        auto value_start = line.find_first_not_of(" ", column_pos + 1);
-        if (value_start == std::string::npos) {
+        auto name_value = line | std::views::split(':') | std::ranges::to<std::vector<std::string>>();
+        if (std::ranges::distance(name_value) != 2) {
             throw std::runtime_error("Malformed http request");
         }
-        std::string value = line.substr(value_start); 
-        
+        auto name = std::move(name_value.front());
+        auto value = std::move(name_value.back());
+        utils::trim(value);
+       
         if (utils::to_lowercase_str(name) != "cookie") {
             headers.emplace(utils::to_lowercase_str(name), std::move(value)); // Add header
         } else { // If it is a cookie
-            std::string_view values_str{line.begin() + value_start, line.end()};
-            while (!values_str.empty()) {
-                auto semicolon_pos = values_str.find(";");
-                auto eq_pos = values_str.find("="); 
-                if (eq_pos == std::string::npos) {
+            auto values = value | std::views::split(';') | std::views::transform([](auto&& range) {
+                auto val = std::string{range.begin(), range.end()};
+                utils::trim(val);
+                return val;
+            }) | std::ranges::to<std::vector<std::string>>();
+            std::ranges::for_each(values, [this](auto&& cookie) {
+                auto name_value = cookie | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
+                if (name_value.size() != 2) {
                     throw std::runtime_error("Malformed http request");
                 }
-
-                std::string cookie_name = std::string{values_str.substr(0, eq_pos)};
-                std::string value = (semicolon_pos == std::string::npos) 
-                                    ? std::string{values_str.substr(eq_pos + 1)} 
-                                    : std::string{values_str.substr(eq_pos + 1, semicolon_pos - eq_pos - 1)};
-                utils::trim(cookie_name);
-                utils::trim(value);
-                cookies.emplace(utils::to_lowercase_str(cookie_name), Cookie{std::move(cookie_name), std::move(value)});
-               
-                values_str.remove_prefix(semicolon_pos == std::string::npos ? values_str.size() : semicolon_pos + 1);
-            }
+                auto name = std::move(name_value.front());
+                auto value = std::move(name_value.back());
+                cookies.emplace(utils::to_lowercase_str(name), Cookie{std::move(name), std::move(value)});
+            });
         }
 
     }

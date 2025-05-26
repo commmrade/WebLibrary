@@ -45,6 +45,25 @@ TEST(HttpRequestParsing, GetRequestQueries2) {
     ASSERT_EQ(request.get_query("age").as<int>(), 42);
 }
 
+TEST(HttpRequestParsing, GetRequestQueries3) {
+    std::string request_str =
+    "GET /auth/233/fuck?age=42 HTTP/1.1\r\n"
+    "Host: example.com\r\n"
+    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\r\n"
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+    "Accept-Language: en-US,en;q=0.9\r\n"
+    "Accept-Encoding: gzip, deflate, br\r\n"
+    "Connection: keep-alive\r\n"
+    "Cookie: session_id=abc123; theme=dark\r\n"
+    "Upgrade-Insecure-Requests: 1\r\n"
+    "\r\n";
+
+    std::vector<std::string> param_names{"id", "age"};
+    HttpRequest request{request_str, "/auth/{id}/fuck?age={age}", param_names};
+    ASSERT_EQ(request.get_query("id").as<int>(), 233);
+    ASSERT_EQ(request.get_query("age").as<int>(), 42);
+}
+
 TEST(HttpRequestParsing, CookiesTest) {
     std::string request_str =
     "GET /dashboard?user=42&page=1&moron=55 HTTP/1.1\r\n"

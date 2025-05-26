@@ -7,6 +7,7 @@
 #include <server/HttpRequest.hpp>
 #include <iostream>
 #include <print>
+#include <stdexcept>
 
 HttpRequest::HttpRequest(const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> param_names)
     : request(request_str), param_names(std::vector(param_names.begin(), param_names.end())), endpoint_name_str_(std::move(endpoint_name_str)) 
@@ -80,6 +81,11 @@ void HttpRequest::extract_queries() {
         | std::views::transform([](auto&& range) {
         return std::string{range.begin(), range.end()};
     }) | std::ranges::to<std::vector>();
+
+    if (template_args.size() != args.size()) {
+        throw std::runtime_error("Template endpoint size != Endpoint size. Please check your endpoint name for errors");
+    }
+
     for (size_t i = 0; i < args.size(); ++i) {
         if (i != 0 && i != args.size() - 1 && !args[i].empty() && template_args[i].contains('{')) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
@@ -90,7 +96,7 @@ void HttpRequest::extract_queries() {
     if (args.size() == 1) { // If there is only 1 slash argument, it means there was no slash arguments, hence we can skip to the '?'
         auto question_pos = request_url.find('?');
         request_url.remove_prefix(question_pos);
-    }  else { 
+    }  else { // Moving to the last slash argument
         request_url.remove_prefix(request_url.find_last_of("/") + 1);
         endpoint_name_str.remove_prefix(endpoint_name_str.find_last_of("/") + 1);
     }

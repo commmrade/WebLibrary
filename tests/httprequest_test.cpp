@@ -18,7 +18,7 @@ TEST(HttpRequestParsing, GetRequestQueries) {
     "\r\n";
 
     std::vector<std::string> param_names{"user", "page", "moron"};
-    HttpRequest request{request_str, param_names};
+    HttpRequest request{request_str, "/dashboard/{user}?page={page}&moron={moron}", param_names};
 
     ASSERT_EQ(request.get_query("user").as<int>(), 42);
     ASSERT_EQ(request.get_query("page").as_str(), "1");
@@ -40,9 +40,9 @@ TEST(HttpRequestParsing, GetRequestQueries2) {
     "\r\n";
 
     std::vector<std::string> param_names{"age"};
-    HttpRequest request{request_str, param_names};
+    HttpRequest request{request_str, "/auth/cock/fuck?age={age}", param_names};
 
-    ASSERT_EQ(request.get_query("age").as_str(), "42");
+    ASSERT_EQ(request.get_query("age").as<int>(), 42);
 }
 
 TEST(HttpRequestParsing, CookiesTest) {
@@ -58,7 +58,7 @@ TEST(HttpRequestParsing, CookiesTest) {
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
     std::vector<std::string> param_names{"user", "page", "moron"};
-    HttpRequest request{request_str, param_names};
+    HttpRequest request{request_str, "/dashboard?user={user}&page={page}&moron={moron}", param_names};
     ASSERT_EQ(request.get_cookie("session_id")->get_value(), "abc123");
     ASSERT_EQ(request.get_cookie("theme")->get_value(), "dark");
 }
@@ -76,7 +76,7 @@ TEST(HttpRequestParsing, GetRequestHeaders) {
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
     std::vector<std::string> param_names{"id1", "id2", "id3", "user", "page"};
-    HttpRequest request{request_str, param_names};
+    HttpRequest request{request_str, "/dashboard/{id1}/{id2}/{id3}?user={user}&page={page}", param_names};
     ASSERT_EQ(request.get_header("User-Agent").value(), "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
     ASSERT_THROW(request.get_header("Mothefucker").value(), std::bad_optional_access);
     ASSERT_EQ(request.get_header("Connection").value(), "keep-alive");
@@ -96,7 +96,7 @@ TEST(HttpRequestParsing, PostRequestMethod) {
     "Cookie: session_id=abc123\r\n"
     "\r\n"
     "{\"username\": \"alice\", \"password\": \"secret\"}";
-    HttpRequest request{request_str};
+    HttpRequest request{request_str, "/api/login"};
     ASSERT_EQ(request.get_method(), "POST");
 }
 
@@ -114,7 +114,7 @@ TEST(HttpRequestParsing, PostRequestBody) {
     "Cookie: session_id=abc123\r\n"
     "\r\n"
     "{\"username\": \"alice\", \"password\": \"secret\"}";
-    HttpRequest request{request_str};
+    HttpRequest request{request_str, "/api/login"};
     ASSERT_TRUE(request.body_as_json());
 
     {
@@ -130,7 +130,7 @@ TEST(HttpRequestParsing, PostRequestBody) {
         "Content-Length: 44\r\n"
         "Cookie: session_id=abc123\r\n"
         "\r\n";
-        HttpRequest request{request_str};
+        HttpRequest request{request_str, "/api/login"};
         ASSERT_FALSE(request.body_as_json());
     }
 }

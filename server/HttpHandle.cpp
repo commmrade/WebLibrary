@@ -30,3 +30,8 @@ bool HttpHandle::pass_middlewares(const HttpRequest& request) const {
         return !filter(request);
     });
 }
+
+
+void HttpHandle::set_endpoint_name_str(std::string ep_name) {
+    endpoint_name_str = std::move(ep_name);
+}

@@ -15,7 +15,7 @@
 
 class HttpRequest {
 public:
-    HttpRequest(const std::string &request_str, std::span<const std::string> vec = {});
+    HttpRequest(const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> param_names = {});
    
     [[nodiscard]]
     std::string get_raw() const { return request; }
@@ -63,7 +63,9 @@ private:
     mutable std::unordered_map<std::string, std::string> headers;
     std::unordered_map<int, std::string> path_params;
     std::unordered_map<std::string, Cookie> cookies;
+
     std::vector<std::string> param_names;
+    std::string endpoint_name_str_;
 
     void extract_queries();
     void extract_headers();  

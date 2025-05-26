@@ -32,11 +32,15 @@ public:
         return parameter_names;
     }
 
+    void set_endpoint_name_str(std::string ep_name);
+    const std::string get_endpoint_name_str() const { return endpoint_name_str; }
+
     void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
 
 private:
     std::vector<RequestType> methods;
     std::vector<Filter> filters;
     std::vector<std::string> parameter_names;
+    std::string endpoint_name_str;
     Handler handle;
 };

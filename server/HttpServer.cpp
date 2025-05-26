@@ -73,7 +73,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
             request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
             // Body parsing
             if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
-                HttpRequest req{request_string}; // TODO: Just parse headers, this will be faster
+                HttpRequest req{request_string, ""}; // TODO: Just parse headers, this will be faster
                 try {
                     content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
                 } catch (const std::invalid_argument& ex) {

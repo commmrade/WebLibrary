@@ -8,7 +8,9 @@
 #include <iostream>
 #include <print>
 
-HttpRequest::HttpRequest(const std::string &request_str, std::span<const std::string> vec) : request(request_str), param_names(std::vector<std::string>{vec.begin(), vec.end()}) {
+HttpRequest::HttpRequest(const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> param_names)
+    : request(request_str), param_names(std::vector(param_names.begin(), param_names.end())), endpoint_name_str_(std::move(endpoint_name_str)) 
+{
     extract_headers();
     extract_queries();
 }
@@ -65,13 +67,21 @@ void HttpRequest::extract_queries() {
     auto param_name_iter = param_names.begin(); // param_names stores id, user from api/{id}/{user} (example)
     size_t endpoint_start = request.find("/");
     std::string_view request_url{request.data() + endpoint_start + 1, request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
-    
+
+    // Slash handling
+    std::string_view endpoint_name_str{endpoint_name_str_};
+    endpoint_name_str.remove_prefix(1);
+
+    auto template_args = endpoint_name_str | std::views::split('/')
+        | std::views::transform([](auto&& range) {
+            return std::string{range.begin(), range.end()};
+        }) | std::ranges::to<std::vector>();;
     auto args = request_url | std::views::split('/') 
         | std::views::transform([](auto&& range) {
         return std::string{range.begin(), range.end()};
     }) | std::ranges::to<std::vector>();
     for (size_t i = 0; i < args.size(); ++i) {
-        if (i != 0 && i != args.size() - 1 && !args[i].empty()) { // Last is garbage value, first sometimes is empty or something else we dont need that
+        if (i != 0 && i != args.size() - 1 && !args[i].empty() && template_args[i].contains('{')) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
             parameters.emplace(*param_name_iter, args[i]);
             ++param_name_iter;
@@ -82,14 +92,17 @@ void HttpRequest::extract_queries() {
         request_url.remove_prefix(question_pos);
     }  else { 
         request_url.remove_prefix(request_url.find_last_of("/") + 1);
+        endpoint_name_str.remove_prefix(endpoint_name_str.find_last_of("/") + 1);
     }
+
     if (request_url.front() != '?') {
         if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
-        std::println("Dam {}", request_url.substr(0, request_url.find('?')));
+        auto endpoint_question_pos = endpoint_name_str.find('?');
+        if (endpoint_name_str.substr(0, endpoint_question_pos).contains('{')) {
+            parameters.emplace(*param_name_iter, request_url.substr(0, request_url.find('?')));
+            ++param_name_iter;
+        } 
         auto question_pos = request_url.find('?');
-        parameters.emplace(*param_name_iter, request_url.substr(0, request_url.find('?')));
-        ++param_name_iter;
-
         request_url.remove_prefix(question_pos);
     }
 

@@ -49,25 +49,47 @@ public:
     }
 
     const HttpHandle* find_handle(const std::string& endpoint, std::string_view path, RequestType type) {
-        auto handle = handles.find(endpoint);
-        
-        if (handle != handles.end() && handle->second.has_method(type)) {
-            auto endpoint_name = handle->second.get_endpoint_name_str();
-            if (endpoint_name.find('?') < endpoint_name.find('{')) { // Если аргументов до ? нет, значит можно сравнить части до ? и все
-                auto path_slash = path.substr(0, path.find('?'));
-                auto endpoint_slash = endpoint_name.substr(0, endpoint_name.find('?'));
-                if (path_slash == endpoint_slash) return &handle->second;
-            }
-            // Если аргументы до ? есть, значит нужно сравнить endpoint name и обработанный endpoint (endpoint), если они совпадают после  реплейса у endpoint_name, значит одно и то же => proceed
-            std::regex re(R"(\{[^}]*\})"); // match '{' followed by anything but '}' then '}'
-            auto replace_with_braces = [&](std::string& s) {
-                s = std::regex_replace(s, re, "{}");
-            };
-            auto endpoint_slash = endpoint.substr(0, endpoint.find('?'));
-            auto endpoint_name_slash = endpoint_name.substr(0, endpoint_name.find('?'));
-            replace_with_braces(endpoint_name_slash);
-            if (endpoint_slash == endpoint_name_slash) return &handle->second;
-        }
+    auto handle = handles.find(endpoint);
+    if (handle == handles.end() || !handle->second.has_method(type)) {
         return nullptr;
     }
+
+    auto endpoint_name = handle->second.get_endpoint_name_str();
+    
+    size_t path_query_pos = path.find('?');
+    size_t endpoint_query_pos = endpoint_name.find('?');
+    
+    std::string_view path_slash = path.substr(0, path_query_pos);
+    std::string_view endpoint_name_slash = std::string_view(endpoint_name).substr(0, endpoint_query_pos);
+    
+    if (endpoint_name.find('?') < endpoint_name.find('{')) {
+        if (path_slash == endpoint_name_slash) { // Если слэш параметров до ? нет
+            return &handle->second;
+        }
+    } else {
+        std::string endpoint_name_normalized;
+        endpoint_name_normalized.reserve(endpoint_name.size());
+        size_t idx{0};
+        while (idx < endpoint_name_slash.size()) {
+            if (endpoint_name_slash[idx] == '{' && idx + 1 < endpoint_name_slash.size()) {
+                auto close_bracket_pos = endpoint_name_slash.find('}', idx + 1);
+                if (close_bracket_pos != std::string::npos) {
+                    endpoint_name_normalized += "{}";
+                    idx = close_bracket_pos + 1; // Выйти за пределы {...}
+                    continue;
+                }
+            }
+            endpoint_name_normalized += endpoint_name_slash[idx];
+            ++idx;
+        }
+        
+        std::string_view endpoint_slash = std::string_view(endpoint).substr(0, endpoint.find('?'));
+        std::println("{} {}", endpoint_name_normalized, endpoint_slash);
+        if (endpoint_slash == endpoint_name_normalized) {
+            return &handle->second;
+        }
+    }
+    
+    return nullptr;
+}
 };

@@ -11,15 +11,13 @@ std::string HttpResponse::to_string() const {
     std::string response = std::format("HTTP/{} {} {}\r\n", http_version, status_code, status_message);
     // Adding headers part
     for (const auto &[header_name, header_value] : headers) {
-        response += header_name + ": " + header_value + "\r\n";
+        response += std::format("{}: {}\r\n", header_name, header_value);
     }
     if (headers.find("Content-Length") == headers.end()) { // Setting Content-Length if not already set
-        response += "Content-Length: " + std::to_string(body.size()) + "\r\n";
+        response += std::format("Content-Length: {}\r\n", body.size());
     }
-
     response += "\r\n"; // Separating headers and answer par
     response += body; // Adding user text
-
     return response;
 }
 
@@ -92,53 +90,53 @@ void HttpResponse::remove_header(const std::string& name) {
     headers.erase(name); // Removing if exists (doesn't throw if does not exist)
 }
 
-void HttpResponse::set_type(ResponseType type) {
+void HttpResponse::set_type(ContentType type) {
     switch (type) {
-        case ResponseType::HTML: {
+        case ContentType::HTML: {
             headers["Content-Type"] = "text/html";
             break;
         }   
-        case ResponseType::JSON: {
+        case ContentType::JSON: {
             headers["Content-Type"] = "application/json";
             break;
         }
-        case ResponseType::TEXT: {
+        case ContentType::TEXT: {
             headers["Content-Type"] = "text/plain";
             break;
         }
-        case ResponseType::XML: {
+        case ContentType::XML: {
             headers["Content-Type"] = "application/xml";
             break;
         }
-        case ResponseType::CSS: {
+        case ContentType::CSS: {
             headers["Content-Type"] = "text/css";
             break;
         }
-        case ResponseType::JS: {
+        case ContentType::JS: {
             headers["Content-Type"] = "application/javascript";
             break;
         }
-        case ResponseType::JPEG: {
+        case ContentType::JPEG: {
             headers["Content-Type"] = "image/jpeg";
             break;
         }
-        case ResponseType::PNG: {
+        case ContentType::PNG: {
             headers["Content-Type"] = "image/png";
             break;
         }
-        case ResponseType::GIF: {
+        case ContentType::GIF: {
             headers["Content-Type"] = "image/gif";
             break;
         }
-        case ResponseType::PDF: {
+        case ContentType::PDF: {
             headers["Content-Type"] = "application/pdf";
             break;
         }
-        case ResponseType::CSV: {
+        case ContentType::CSV: {
             headers["Content-Type"] = "text/csv";
             break;
         }
-        case ResponseType::FORM: {
+        case ContentType::FORM: {
             headers["Content-Type"] = "application/x-www-form-urlencoded";
             break;
         }
@@ -160,8 +158,8 @@ std::optional<std::string> HttpResponse::get_header(const std::string &name) con
 
 void HttpResponse::set_body(const Json::Value& json_obj) {
     Json::FastWriter json_writer;
-    const std::string json_str = json_writer.write(json_obj);
-    body = json_str;
+    std::string json_str = json_writer.write(json_obj);
+    body = std::move(json_str);
 }
 
 void HttpResponse::set_status(int status_code) {

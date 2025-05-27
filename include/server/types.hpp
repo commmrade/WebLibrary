@@ -12,7 +12,7 @@ enum class HeaderType {
     ACCEPT_LANGUAGE      // Preferred languages for the response
 };
 
-enum class ResponseType {
+enum class ContentType {
     HTML,
     JSON,
     TEXT,

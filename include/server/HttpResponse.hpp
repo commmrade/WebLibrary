@@ -42,7 +42,7 @@ public:
     void add_cookie(const Cookie &cookie);
     void remove_header(const std::string &name);
 
-    void set_type(ResponseType type);
+    void set_type(ContentType type);
 
     [[nodiscard]]
     std::optional<std::string> get_header(const std::string &name) const;
@@ -117,7 +117,7 @@ public:
         resp.set_status(code);
         return *this;
     }
-    [[nodiscard]] HttpResponseBuilder& set_type(ResponseType type) {
+    [[nodiscard]] HttpResponseBuilder& set_type(ContentType type) {
         resp.set_type(type);
         return *this;
     }

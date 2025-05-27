@@ -26,60 +26,69 @@ RequestType req_type_from_str(std::string_view str) {
     }   
 }
 
+
 std::string process_url_str(std::string_view url) {
-    // Process route and add all key values to the parameters map
     std::string result;
-    result += url.substr(0, url.find("/", 1) != std::string::npos ? url.find("/", 1) : url.find("?"));
 
-    { // Path parameter parsing
-        std::string_view request_url = url.substr(1);  
-
-        if (request_url.find("?") == std::string::npos || request_url.find("/") == std::string::npos) { // If without query
-            return result;
-        }
-
-        if (request_url.find("/") != std::string::npos) { // Parsing path parameters like /{id}/{smth}?name={val}
-            size_t pos;
-            while ((pos = request_url.find("/")) != std::string::npos) {
-                size_t end_pos = (request_url.find("/", pos + 1) == std::string::npos) ? request_url.find("?") : request_url.find("/", pos + 1);
-
-                result += "/{}"; 
-                request_url.remove_prefix(end_pos);
-            }
-        } else {
-            request_url.remove_prefix(request_url.find("?"));
-        }
-        
-
-        if (request_url.find("?") != std::string::npos) {  // Parsing ?name={val}
-          
-            size_t start_pos = request_url.find_first_not_of("?");
-            size_t end_pos = request_url.find("&") != std::string::npos ? request_url.find("&") : request_url.size();
-            
-            std::string_view key_value = request_url.substr(start_pos, end_pos - start_pos - 1);
-
-            std::string_view name = key_value.substr(0, key_value.find("="));
-            result += "?" + std::string{name} + "=" + "{}";
-            
-            request_url.remove_prefix(end_pos);
-            
-            while (request_url.find("&") != std::string::npos) { // Parsing &name={val}&...
-                size_t start_pos = request_url.find_first_not_of("&");
-                size_t end_pos = request_url.find("&", 1);
-
-                std::string_view key_value = request_url.substr(start_pos, end_pos - start_pos - 1);
-                std::string_view name = key_value.substr(0, key_value.find("="));
-                result += "&" + std::string{name} + "=" "{}";
-                
-                request_url.remove_prefix(end_pos == std::string::npos ? request_url.size() : end_pos);
-            }
-            
-        }
-
+    // Step 1: Extract the base path up to the first "/" or "?"
+    size_t first_delim = url.find_first_of("/?", 1);
+    if (first_delim == std::string::npos) {
+        result = std::string(url);
+        return result.empty() ? "/" : result;
     }
-    return result;
-}
+    result = std::string(url.substr(0, first_delim));
 
+    // Step 2: Process the remaining URL
+    std::string_view remaining = url.substr(first_delim);
+
+    // Step 3: Handle path parameters
+    if (remaining[0] == '/') {
+        while (!remaining.empty() && remaining[0] == '/') {
+            remaining.remove_prefix(1); // Skip the '/'
+            size_t next_delim = remaining.find_first_of("/?");
+            std::string_view segment = (next_delim == std::string::npos) ? remaining : remaining.substr(0, next_delim);
+
+            if (!segment.empty()) {
+                result += "/{}"; // Replace path segment with "{}"
+            }
+
+            remaining.remove_prefix(next_delim == std::string::npos ? remaining.size() : next_delim);
+        }
+    }
+
+    // Step 4: Handle query parameters
+    if (!remaining.empty() && remaining[0] == '?') {
+        result += "?";
+        remaining.remove_prefix(1); // Skip the '?'
+        bool first_param = true;
+
+        while (!remaining.empty()) {
+            size_t equal_pos = remaining.find('=');
+            if (equal_pos == std::string::npos) break; // Malformed query, stop processing
+
+            std::string_view key = remaining.substr(0, equal_pos);
+            if (key.empty()) break; // No key, stop processing
+
+            remaining.remove_prefix(equal_pos + 1); // Skip key and '='
+            size_t end_pos = remaining.find('&');
+            // Skip the value
+            remaining.remove_prefix(end_pos == std::string::npos ? remaining.size() : end_pos);
+
+            // Append key with "{}" as value
+            if (!first_param) {
+                result += "&";
+            }
+            result += std::string(key) + "={}";
+            first_param = false;
+
+            if (end_pos != std::string::npos) {
+                remaining.remove_prefix(1); // Skip '&'
+            }
+        }
+    }
+
+    return result.empty() ? "/" : result;
+}
 
 
 void trim_r(std::string &s) {

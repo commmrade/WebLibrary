@@ -22,5 +22,5 @@ public:
     void process_request(int client_socket, std::string_view call); // Processes string and etc
 private:
     std::expected<std::pair<std::string, std::string>, std::string> parse_request_line(std::string_view request_string);
-    void handle_request(HttpResponseWriter& resp, std::string_view request_string, const std::string& processed_endpoint, std::string_view method, RequestType request_type); // Calls handlers and filters
+    void handle_request(HttpResponseWriter& resp, std::string_view path, std::string_view request_string, const std::string& processed_endpoint, std::string_view method, RequestType request_type); // Calls handlers and filters
 };

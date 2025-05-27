@@ -17,6 +17,11 @@ TEST(Utils, ProcessUrlStrTest) {
         auto processed_str = utils::process_url_str(target);
         ASSERT_EQ(processed_str, "/smth/{}/{}?name={}&cock={}&moron={}&russia={}");
     }
+    {
+        std::string target = "/fuck/208";
+        auto processed_str = utils::process_url_str(target);
+        ASSERT_EQ(processed_str, "/fuck/{}");
+    }
 }
 
 TEST(Utils, ExtractParamsTest) {

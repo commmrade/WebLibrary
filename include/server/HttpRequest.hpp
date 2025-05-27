@@ -15,7 +15,7 @@
 
 class HttpRequest {
 public:
-    HttpRequest(const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> param_names = {});
+    HttpRequest(bool hdrs_only_temp, const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
    
     [[nodiscard]]
     std::string get_raw() const { return request; }

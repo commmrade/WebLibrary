@@ -75,6 +75,7 @@ void HttpRequest::extract_queries() {
         throw std::runtime_error("Template endpoint size != Endpoint size. Please check your endpoint name for errors");
     }
     for (size_t i = 0; i < args.size(); ++i) {
+        std::println("{} {}", args[i], template_args[i]);
         if (i != 0 && i != args.size() - 1 && !args[i].empty() && template_args[i].contains('{')) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
             parameters.emplace(*param_name_iter, args[i]);

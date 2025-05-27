@@ -24,6 +24,14 @@ TEST(Utils, ProcessUrlStrTest) {
     }
 }
 
+
+TEST(Utils, ProcessUrlSingleParam) {
+    std::string target = "/204";
+    auto processed_str = utils::process_url_str(target);
+    ASSERT_EQ(processed_str, "/{}");
+}
+
+
 TEST(Utils, ExtractParamsTest) {
     auto url = std::string{"/smth/{id1}/{id2}?name={name}&cock={cock}&moron={moron}&russia={russia}"};
     auto processed = utils::extract_params(url);

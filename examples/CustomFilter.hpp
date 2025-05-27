@@ -1,4 +1,6 @@
 #pragma once
+#include "server/HttpResponse.hpp"
+#include <limits>
 #include <server/HttpFilter.hpp>
 
 
@@ -12,8 +14,7 @@ protected:
     bool doFilter(const HttpRequest &req) {
         std::cout << "Filtering before...\n";
         req.add_header("XXX-origin-cors-shit", "ah");
-
-        if (false) {
+        if (std::numeric_limits<int>::max() != 10) {
             return false;
         }
 

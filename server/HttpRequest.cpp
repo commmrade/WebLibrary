@@ -162,11 +162,15 @@ void HttpRequest::extract_headers() {
         if (utils::to_lowercase_str(name) != "cookie") {
             headers.emplace(utils::to_lowercase_str(name), std::move(value)); // Add header
         } else { // If it is a cookie
-            auto values = value | std::views::split(';') | std::views::transform([](auto&& range) {
-                auto val = std::string{range.begin(), range.end()};
-                utils::trim(val);
-                return val;
-            }) | std::ranges::to<std::vector<std::string>>();
+            auto values = value 
+                | std::views::split(';') 
+                | std::views::transform([](auto&& range) {
+                    auto val = std::string{range.begin(), range.end()};
+                    utils::trim(val);
+                    return val;
+                }) 
+                | std::ranges::to<std::vector<std::string>>();
+                
             std::ranges::for_each(values, [this](auto&& cookie) {
                 auto name_value = cookie | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
                 if (name_value.size() != 2) {

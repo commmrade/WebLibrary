@@ -38,7 +38,9 @@ void ThreadPool::thread_loop() {
 }
 
 void ThreadPool::add_job(std::function<void()> job) {
-    std::unique_lock lock{mtx};
-    jobs.push(job);
+    {
+        std::unique_lock lock{mtx};
+        jobs.push(job);
+    }
     cond.notify_one();
 }

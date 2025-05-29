@@ -10,6 +10,7 @@ static void sigint_handler([[maybe_unused]] int signal) {
     std::exit(0);
 }
 
+[[nodiscard]]
 static HttpServer& app() {
     signal(SIGINT, sigint_handler);
     return HttpServer::instance();

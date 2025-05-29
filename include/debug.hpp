@@ -6,7 +6,7 @@ namespace debug {
 
 
 template<typename... Args>
-void log_info(Args... args) {
+void log_info([[maybe_unused]] Args... args) {
 #ifdef DEBUG
     std::cout << "[INFO]: ";
     ((std::cout << args), ..., (std::cout << std::endl));
@@ -15,7 +15,7 @@ void log_info(Args... args) {
 
 
 template<typename... Args>
-void log_warn(Args... args) {
+void log_warn([[maybe_unused]] Args... args) {
 #ifdef DEBUG
     std::cout << "[WARNING]: ";
     ((std::cout << args), ..., (std::cout << std::endl));
@@ -24,7 +24,7 @@ void log_warn(Args... args) {
 
 
 template<typename... Args>
-void log_error(Args... args) {
+void log_error([[maybe_unused]] Args... args) {
 #ifdef DEBUG
     std::cout << "[ERROR]: ";
     ((std::cout << args), ..., ((std::cout << std::flush), perror(" ")));

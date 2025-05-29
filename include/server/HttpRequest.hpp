@@ -6,17 +6,23 @@
 #include <memory>
 #include <optional>
 #include <span>
+#include <type_traits>
 #include<unordered_map>
 #include<string>
 #include <json/json.h>
 #include <vector>
 #include "Query.hpp"
-
+#include "HeaderView.hpp"
 
 class HttpRequest {
 public:
     HttpRequest(bool hdrs_only_temp, const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
    
+    [[nodiscard]]
+    HeaderView get_headers() const {
+        return HeaderView{headers};
+    }
+
     [[nodiscard]]
     std::string get_raw() const { return request; }
 
@@ -48,10 +54,7 @@ public:
         return line.substr(line.find_last_of("/") + 1);
     }
 
-    [[nodiscard]]
-    const std::unordered_map<std::string, std::string>& get_headers() const {
-        return headers;
-    }
+    
 
     void add_header(const std::string &name, std::string_view value) const {
         headers[name] = value;

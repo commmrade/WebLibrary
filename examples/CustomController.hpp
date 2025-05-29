@@ -5,10 +5,12 @@
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
 #include "server/RequestType.hpp"
+#include <algorithm>
 #include <format>
 #include <json/value.h>
 #include <ostream>
 #include <server/HttpRequest.hpp>
+#include <vector>
 
 
 
@@ -36,9 +38,22 @@ protected:
         auto name = req.get_query("name").as_str();
         auto age = req.get_query("age").as<int>();
         std::println("{} {}", name, age);
+       
+        auto view = req.get_headers();
+        // auto se = std::move(headers);
+        // Using std::ranges::for_each
+
+        // Range-based for loop
+        for (const auto& [key, value] : view) {
+            std::cout << "Header: " << key << " = " << value << "\n";
+        }
+
+
         auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
         resp.respond(response);
     }
+
+
     void test_r2(const HttpRequest& req, HttpResponseWriter&& resp) {
         auto name = req.get_query("name").as_str();
         auto age = req.get_query("skill").as_str();

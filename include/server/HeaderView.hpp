@@ -16,10 +16,11 @@ public:
     public:
         using iter_type = std::unordered_map<std::string, std::string>::const_iterator;
         using iterator_category = typename iter_type::iterator_category;
-        using value_type = std::pair<std::string_view, std::string_view>;
-        using reference = value_type;
-        using pointer = void;
+        using value_type = typename iter_type::value_type;
+        using reference = typename iter_type::reference; 
+        using pointer = typename iter_type::pointer;
         using difference_type = typename iter_type::difference_type;
+        // Now value_type and reference kinda match in the sense value_type isnt string_view when reference is ref to pair of strings not string_views
 
         HeaderIterator(std::unordered_map<std::string, std::string>::const_iterator iter) : iter(iter) {}
 
@@ -32,8 +33,11 @@ public:
             ++iter;
             return temp;
         }
-        value_type operator*() const {
-            return value_type{iter->first, iter->second};
+        reference operator*() const {
+            return *iter;
+        }
+        pointer operator->() const {
+            return &*iter;
         }
         bool operator==(const HeaderIterator& rhs) const {
             return iter == rhs.iter;

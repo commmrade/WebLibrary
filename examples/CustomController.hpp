@@ -42,10 +42,12 @@ protected:
         auto view = req.get_headers();
         // auto se = std::move(headers);
         // Using std::ranges::for_each
-
+        
+        auto it = view.begin();
         // Range-based for loop
-        for (const auto& [key, value] : view) {
+        for (auto&& [key, value] : view) {
             std::cout << "Header: " << key << " = " << value << "\n";
+           
         }
 
 

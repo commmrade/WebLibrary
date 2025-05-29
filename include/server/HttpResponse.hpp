@@ -40,7 +40,7 @@ public:
     void add_header(HeaderType header_type, std::string_view value);
 
     [[nodiscard]]
-    HeaderView get_headers() const { return headers; }
+    HeaderView get_headers() const { return {headers}; }
 
     void add_cookie(const Cookie &cookie);
     void remove_header(const std::string &name);

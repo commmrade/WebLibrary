@@ -18,8 +18,10 @@ class MyController : public HttpController<MyController> {
 public:
     MyController() {
         // REG_ENDPOINT(reg, "/reg", RequestType::POST, RequestType::OPTIONS);
-        REG_ENDPOINT(smth, "/auth/cock/fuck?age={age}", RequestType::GET, RequestType::OPTIONS);
-        REG_ENDPOINT(smth2, "/some/{id}/{id2}?name={name}&surname={surname}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(smth, "/courses/{course_id}?name={name}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(test_r, "/courses/{course_id}?name={name}&age={age}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(test_r2, "/courses/{course_id}?name={name}&cock=big", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(smth2, "/courses/{course_id}/modules/{module_id}", RequestType::GET, RequestType::OPTIONS);
     }
 protected:
     void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
@@ -30,6 +32,22 @@ protected:
         resp.respond(response);
     }
 
+    void test_r(const HttpRequest& req, HttpResponseWriter&& resp) {
+        auto name = req.get_query("name").as_str();
+        auto age = req.get_query("age").as<int>();
+        std::println("{} {}", name, age);
+        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
+        resp.respond(response);
+    }
+    void test_r2(const HttpRequest& req, HttpResponseWriter&& resp) {
+        auto name = req.get_query("name").as_str();
+        auto age = req.get_query("cock").as_str();
+        std::println("{} {}", name, age);
+        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
+        resp.respond(response);
+    }
+
+
     void smth([[maybe_unused]] const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called\n";
         auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("cock").build();
@@ -37,7 +55,6 @@ protected:
     }
     void smth2(const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called 2\n";
-        std::println("{} {} {}", req.get_query("id2").as_str(), req.get_query("name").as_str(), req.get_query("surname").as_str());
         auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("cock").build();
         resp.respond(response);
     }

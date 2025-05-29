@@ -24,9 +24,9 @@ std::expected<std::pair<std::string, std::string>, std::string> HttpRouter::pars
     return std::pair{std::string{method_str}, std::string{endpoint_target}};
 }
 
-void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path, std::string_view request_string, const std::string& processed_endpoint, std::string_view method, RequestType request_type) {
+void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path, std::string_view request_string, std::string_view method, RequestType request_type) {
     try {
-        const HttpHandle* handle = HttpBinder::instance().find_handle(processed_endpoint,path,request_type);
+        const HttpHandle* handle = HttpBinder::instance().find_handle(path,request_type);
         // Do not destroy, since it is stored inside HttpBinder
         if (handle) {  
             HttpRequest request(false, std::string{request_string}, handle->get_endpoint_name_str(), handle->get_param_names()); // Passing param names to then process query part
@@ -40,7 +40,7 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
                 resp.respond(resp_);
                 return;
             }
-            debug::log_info("Proceeding to the endpoint ", processed_endpoint);
+            debug::log_info("Proceeding to the endpoint ");
             (*handle)(request, resp); // Proceeding to endpoint if all middlewares were passed successfuly
         } else { // Endpoint was not found
             debug::log_info("Endpoint not found");
@@ -69,9 +69,8 @@ void HttpRouter::process_request(int client_socket, std::string_view request_str
         .and_then([&](std::pair<std::string, std::string>&& method_path) {
             
             auto& [method, path] = method_path;
-            std::string processed_endpoint = utils::process_url_str(path);
             RequestType request_type = utils::req_type_from_str(method);
-            handle_request(resp, path, request_string, processed_endpoint, method, request_type);
+            handle_request(resp, path, request_string, method, request_type);
             return std::expected<void, std::string>{};
         })
         .or_else([&](std::string&& error) {

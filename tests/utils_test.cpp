@@ -6,7 +6,7 @@
 TEST(Utils, ProcessUrlStrTest) {
     std::string target = "/smth/208?name=pidor";
     auto processed_str = utils::process_url_str(target);
-    ASSERT_EQ(processed_str, "/smth/{}?name={}");
+    ASSERT_EQ(processed_str, "/smth/{}?name=const");
     {
         std::string target = "/smth/208/209?name=pidor&faggot=true";
         auto processed_str = utils::process_url_str(target);

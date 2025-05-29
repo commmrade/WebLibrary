@@ -56,7 +56,6 @@ std::unique_ptr<Json::Value> HttpRequest::body_as_json() const {
 }
 
 void HttpRequest::extract_queries() {
-    std::println("prms WHERE: {}", param_names);
     if (param_names.empty()) {
         return;
     }
@@ -75,7 +74,7 @@ void HttpRequest::extract_queries() {
         throw std::runtime_error("Template endpoint size != Endpoint size. Please check your endpoint name for errors");
     }
     for (size_t i = 0; i < args.size(); ++i) {
-        std::println("{} {}", args[i], template_args[i]);
+        // std::println("{} {}", args[i], template_args[i]);
         if (i != 0 && i != args.size() - 1 && !args[i].empty() && template_args[i].contains('{')) { // Last is garbage value, first sometimes is empty or something else we dont need that
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
             parameters.emplace(*param_name_iter, args[i]);
@@ -122,12 +121,10 @@ void HttpRequest::extract_queries() {
         auto splitted_params = request_url 
             | std::views::split('&');
         std::ranges::for_each(splitted_params,
-        [this, param_name_iter](const auto& param) {
+        [this](const auto& param) {
             auto key_value = param | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
             if (key_value.size() == 2) {
                 parameters.emplace(key_value[0], key_value[1]);
-            } else {
-                if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request: Query parameters");
             }
         });
     }

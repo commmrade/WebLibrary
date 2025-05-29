@@ -113,8 +113,8 @@ TEST(HttpRequestParsing, GetRequestHeaders) {
     "Cookie: session_id=abc123; theme=dark\r\n"
     "Upgrade-Insecure-Requests: 1\r\n"
     "\r\n";
-    std::vector<std::string> param_names{"{id0}", "id1", "id2", "id3", "user", "page"};
-    HttpRequest request{false, request_str, "/{id0}/{id1}/{id2}/{id3}?user={user}&page={page}", param_names};
+    std::vector<std::string> param_names{"id1", "id2", "id3", "user", "page"};
+    HttpRequest request{false, request_str, "/dashboard/{id1}/{id2}/{id3}?user={user}&page={page}", param_names};
     ASSERT_EQ(request.get_header("User-Agent").value(), "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
     ASSERT_THROW(request.get_header("Mothefucker").value(), std::bad_optional_access);
     ASSERT_EQ(request.get_header("Connection").value(), "keep-alive");

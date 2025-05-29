@@ -4,21 +4,21 @@
 
 
 TEST(Utils, ProcessUrlStrTest) {
-    std::string target = "/smth/208?name=pidor";
+    std::string target = "/smth/{id}?name=pidor";
     auto processed_str = utils::process_url_str(target);
-    ASSERT_EQ(processed_str, "/smth/{}?name=const");
+    ASSERT_EQ(processed_str, "/smth/{}?name=pidor");
     {
-        std::string target = "/smth/208/209?name=pidor&faggot=true";
+        std::string target = "/smth/{}/{}?name={name}&faggot={fag}";
         auto processed_str = utils::process_url_str(target);
         ASSERT_EQ(processed_str, "/smth/{}/{}?name={}&faggot={}");
     }
     {
-        std::string target = "/smth/208/209?name=pidor&cock=true&moron=true&russia=fag";
+        std::string target = "/smth/{id1}/{id2}?name={name}&cock={cock}&moron={moron}&russia={fuck}";
         auto processed_str = utils::process_url_str(target);
         ASSERT_EQ(processed_str, "/smth/{}/{}?name={}&cock={}&moron={}&russia={}");
     }
     {
-        std::string target = "/fuck/208";
+        std::string target = "/fuck/{id}";
         auto processed_str = utils::process_url_str(target);
         ASSERT_EQ(processed_str, "/fuck/{}");
     }
@@ -26,7 +26,7 @@ TEST(Utils, ProcessUrlStrTest) {
 
 
 TEST(Utils, ProcessUrlSingleParam) {
-    std::string target = "/204";
+    std::string target = "/{id}";
     auto processed_str = utils::process_url_str(target);
     ASSERT_EQ(processed_str, "/{}");
 }

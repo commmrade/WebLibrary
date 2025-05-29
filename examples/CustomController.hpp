@@ -20,7 +20,7 @@ public:
         // REG_ENDPOINT(reg, "/reg", RequestType::POST, RequestType::OPTIONS);
         REG_ENDPOINT(smth, "/courses/{course_id}?name={name}", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(test_r, "/courses/{course_id}?name={name}&age={age}", RequestType::GET, RequestType::OPTIONS);
-        REG_ENDPOINT(test_r2, "/courses/{course_id}?name={name}&cock=big", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(test_r2, "/courses/{course_id}?name={name}&skill=big", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(smth2, "/courses/{course_id}/modules/{module_id}", RequestType::GET, RequestType::OPTIONS);
     }
 protected:
@@ -41,7 +41,7 @@ protected:
     }
     void test_r2(const HttpRequest& req, HttpResponseWriter&& resp) {
         auto name = req.get_query("name").as_str();
-        auto age = req.get_query("cock").as_str();
+        auto age = req.get_query("skill").as_str();
         std::println("{} {}", name, age);
         auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
         resp.respond(response);
@@ -50,12 +50,12 @@ protected:
 
     void smth([[maybe_unused]] const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called\n";
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("cock").build();
+        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("dasasds").build();
         resp.respond(response);
     }
     void smth2(const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called 2\n";
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("cock").build();
+        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("sdadasdasdas").build();
         resp.respond(response);
     }
   

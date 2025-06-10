@@ -1,73 +1,51 @@
 #pragma once
+#include <optional>
 #include <ranges>
 #include <unordered_map>
 #include <string>
 
 
-class HeaderView : std::ranges::view_interface<HeaderView> {
+
+template <typename Map>
+class InsideView {
 private:
-    const std::unordered_map<std::string, std::string>& headers;
+    const Map& headers;
 public:
-    HeaderView(const std::unordered_map<std::string, std::string>& headers) : headers(headers) {}
-    
-    struct HeaderIterator {
-    private:
-        std::unordered_map<std::string, std::string>::const_iterator iter;
-    public:
-        using iter_type = std::unordered_map<std::string, std::string>::const_iterator;
-        using iterator_category = typename iter_type::iterator_category;
-        using value_type = typename iter_type::value_type;
-        using reference = typename iter_type::reference; 
-        using pointer = typename iter_type::pointer;
-        using difference_type = typename iter_type::difference_type;
-        // Now value_type and reference kinda match in the sense value_type isnt string_view when reference is ref to pair of strings not string_views
-
-        HeaderIterator(std::unordered_map<std::string, std::string>::const_iterator iter) : iter(iter) {}
-
-        HeaderIterator& operator++() {
-            ++iter;
-            return *this;
-        }
-        HeaderIterator operator++(int) {
-            auto temp = *this;
-            ++iter;
-            return temp;
-        }
-        reference operator*() const {
-            return *iter;
-        }
-        pointer operator->() const {
-            return &*iter;
-        }
-        bool operator==(const HeaderIterator& rhs) const {
-            return iter == rhs.iter;
-        }
-        bool operator!=(const HeaderIterator& rhs) const {
-            return !(*this == rhs);
-        }
-    };
+    InsideView(const Map& headers) : headers(headers) {}
+    using iter_type = typename Map::const_iterator;
 
     [[nodiscard]]
-    HeaderIterator begin() {
-        return HeaderIterator{headers.cbegin()};
-    }
-    [[nodiscard]]
-    HeaderIterator end() {
-        return HeaderIterator{headers.cend()};
-    }
-    HeaderIterator begin() const {
-        return HeaderIterator{headers.cbegin()};
-    }
-    HeaderIterator end() const {
-        return HeaderIterator{headers.cend()};
+    std::optional<typename iter_type::value_type> get(const std::string& key) const {
+        auto pos = headers.find(key);
+        if (pos == headers.end()) return std::nullopt;
+        return *pos;
     }
 
     [[nodiscard]]
-    const HeaderIterator cbegin() const {
-        return HeaderIterator{headers.cbegin()};
+    iter_type begin() {
+        return iter_type{headers.cbegin()};
     }
     [[nodiscard]]
-    const HeaderIterator cend() const {
-        return HeaderIterator{headers.cend()};
+    iter_type end() {
+        return iter_type{headers.cend()};
+    }
+    iter_type begin() const {
+        return iter_type{headers.cbegin()};
+    }
+    iter_type end() const {
+        return iter_type{headers.cend()};
+    }
+
+    [[nodiscard]]
+    const iter_type cbegin() const {
+        return iter_type{headers.cbegin()};
+    }
+    [[nodiscard]]
+    const iter_type cend() const {
+        return iter_type{headers.cend()};
     }
 };
+class Cookie;
+using HeaderView = InsideView<std::unordered_map<std::string, std::string>>;
+using CookieView = InsideView<std::unordered_map<std::string, Cookie>>;
+using QueryView = HeaderView;

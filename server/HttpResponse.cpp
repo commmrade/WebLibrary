@@ -22,19 +22,19 @@ std::string HttpResponse::to_string() const {
 }
 
 
-void HttpResponse::add_header_raw(const std::string& name, std::string_view value) {
+void HttpResponse::set_header_raw(const std::string& name, std::string_view value) {
     if (name == "Set-Cookie") {
         throw std::runtime_error("Use add_cookie() instead!");
     }
     headers[name] = value;
 }
 
-void HttpResponse::add_cookie(const Cookie &cookie) {
+void HttpResponse::set_cookie(const Cookie &cookie) {
     std::string cookie_str = cookie.to_string();
     headers["Set-Cookie"] = cookie_str;
 }
 
-void HttpResponse::add_header(HeaderType header_type, std::string_view value) {
+void HttpResponse::set_header(HeaderType header_type, std::string_view value) {
     switch (header_type) {
         case HeaderType::CONTENT_TYPE: {
             headers["Content-Type"] = value;
@@ -88,9 +88,9 @@ void HttpResponse::add_header(HeaderType header_type, std::string_view value) {
 
 void HttpResponse::remove_header(const std::string& name) {
     headers.erase(name); // Removing if exists (doesn't throw if does not exist)
-}
+}  
 
-void HttpResponse::set_type(ContentType type) {
+void HttpResponse::set_content_type(ContentType type) {
     switch (type) {
         case ContentType::HTML: {
             headers["Content-Type"] = "text/html";
@@ -145,21 +145,6 @@ void HttpResponse::set_type(ContentType type) {
             break;
         }
     }
-}
-
-
-std::optional<std::string> HttpResponse::get_header(const std::string &name) const {
-    if (auto hdr = headers.find(name); hdr != headers.end()) {
-        return hdr->second;
-    }
-    return std::nullopt;
-}
-
-
-void HttpResponse::set_body(const Json::Value& json_obj) {
-    Json::FastWriter json_writer;
-    std::string json_str = json_writer.write(json_obj);
-    body = std::move(json_str);
 }
 
 void HttpResponse::set_status(int status_code) {

@@ -9,13 +9,14 @@
 #include <print>
 #include <stdexcept>
 
-HttpRequest::HttpRequest(bool hdrs_only_temp, const std::string &request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
-    : request(request_str), param_names(std::vector(pnames.begin(), pnames.end())), endpoint_name_str_(std::move(endpoint_name_str)) 
+HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
+    : request(std::move(request_str)), param_names(std::vector(pnames.begin(), pnames.end())), endpoint_name_str_(std::move(endpoint_name_str)) 
 {
     extract_headers();
-    if (!hdrs_only_temp) {
-        extract_queries();
-    } 
+    extract_queries(); 
+}
+HttpRequest::HttpRequest(std::string request_str) : request(std::move(request_str)) {
+    extract_headers();
 }
 
 Query HttpRequest::get_query(const std::string& query_name) const {
@@ -159,8 +160,10 @@ void HttpRequest::extract_headers() {
         auto name = std::string(line.begin(), line.begin() + pos);
         auto value = std::string(line.begin() + pos + 1, line.end());
         utils::trim(value);
-        if (utils::to_lowercase_str(name) != "cookie") {
-            headers.emplace(utils::to_lowercase_str(name), std::move(value)); // Add header
+
+        auto lowercase_name = utils::to_lowercase_str(name);
+        if (lowercase_name != "cookie") {
+            headers.emplace(lowercase_name, std::move(value)); // Add header
         } else { // If it is a cookie
             auto values = value 
                 | std::views::split(';') 
@@ -171,14 +174,14 @@ void HttpRequest::extract_headers() {
                 }) 
                 | std::ranges::to<std::vector<std::string>>();
                 
-            std::ranges::for_each(values, [this](auto&& cookie) {
+            std::ranges::for_each(values, [&](auto&& cookie) {
                 auto name_value = cookie | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
                 if (name_value.size() != 2) {
                     throw std::runtime_error("Malformed http request");
                 }
                 auto name = std::move(name_value.front());
                 auto value = std::move(name_value.back());
-                cookies.emplace(utils::to_lowercase_str(name), Cookie{std::move(name), std::move(value)});
+                cookies.emplace(lowercase_name, Cookie{std::move(name), std::move(value)});
             });
         }
 

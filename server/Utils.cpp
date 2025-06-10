@@ -23,7 +23,7 @@ RequestType req_type_from_str(std::string_view str) {
     } else if (str == "DELETE") {
         return RequestType::DELETE;
     } else {
-        return RequestType::DELETE;
+        return RequestType::GET;
     }   
 }
 

@@ -46,7 +46,7 @@ std::optional<Cookie> HttpRequest::get_cookie(const std::string &name) const {
 
 std::unique_ptr<Json::Value> HttpRequest::body_as_json() const {
     const std::string raw_json = request.substr(request.find("\r\n\r\n") + 4);
-    Json::Value json_obj;
+    Json::Value json_obj{};
 
 
     Json::Reader json_reader;
@@ -62,36 +62,38 @@ void HttpRequest::extract_queries() {
     }
     
     auto param_name_iter = param_names.begin(); // param_names stores id, user from api/{id}/{user} (example)
-    size_t endpoint_start = request.find("/");
+    if (param_name_iter == param_names.end()) {
+        throw std::runtime_error("Malformed http request");
+    }
+    
+    size_t const endpoint_start = request.find("/");
     if (endpoint_start == std::string::npos) {
         throw std::runtime_error("Wtf");
     }
-    std::string_view path{request.data() + endpoint_start + 1, request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
+    std::string_view const path{request.data() + endpoint_start + 1, request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
 
     // Slash handling
     std::string_view pattern{endpoint_name_str_};
     pattern.remove_prefix(1);
-    std::println("Quries: '{}' '{}'", pattern, path);
 
     // Processing path arguments
     auto pattern_slash = pattern.substr(0, pattern.find('?'));
     auto pattern_slash_args = pattern_slash 
         | std::views::split('/')
-        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), (size_t)std::ranges::distance(range)}; })
+        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), static_cast<size_t>(std::ranges::distance(range))}; })
         | std::ranges::to<std::vector>();
     
     auto path_slash = path.substr(0, path.find('?'));
     auto path_slash_args = path_slash 
         | std::views::split('/')
-        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), (size_t)std::ranges::distance(range)}; })
+        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), static_cast<size_t>(std::ranges::distance(range))}; })
         | std::ranges::to<std::vector>();
-    std::println("Slash: {} {}", pattern_slash_args, path_slash_args);
     if (pattern_slash_args.size() != path_slash_args.size()) {
         throw std::runtime_error("Pattern slash args size != Path slash args size");
     }
 
     for (const auto&& [pattern_arg, path_arg] : std::views::zip(pattern_slash_args, path_slash_args)) {
-        if (pattern_arg.contains('{')) {
+        if (pattern_arg.contains('{')) { // Если есть скобка, значит параметр шаблонный
             if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
             parameters.emplace(*param_name_iter, path_arg);
             ++param_name_iter;
@@ -105,11 +107,11 @@ void HttpRequest::extract_queries() {
 
     auto pattern_query_args = pattern_query 
         | std::views::split('&')
-        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), (size_t)std::ranges::distance(range)}; })
+        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), static_cast<size_t>(std::ranges::distance(range))}; })
         | std::ranges::to<std::vector>();
     auto path_query_args = path_query 
         | std::views::split('&')
-        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), (size_t)std::ranges::distance(range)}; })
+        | std::views::transform([](auto&& range) { return std::string_view{range.begin(), static_cast<size_t>(std::ranges::distance(range))}; })
         | std::ranges::to<std::vector>();
     if (pattern_query_args.size() != path_query_args.size()) {
         throw std::runtime_error("Pattern query args size != Path query args size");
@@ -118,7 +120,7 @@ void HttpRequest::extract_queries() {
     auto split_kv_query = [](std::string_view key_value) -> std::pair<std::string_view, std::string_view> {
         auto k_v = key_value 
             | std::views::split('=')
-            | std::views::transform([](auto&& range) { return std::string_view{range.begin(), (size_t)std::ranges::distance(range)}; })
+            | std::views::transform([](auto&& range) { return std::string_view{range.begin(), static_cast<size_t>(std::ranges::distance(range))}; })
             | std::ranges::to<std::vector>();
         if (k_v.size() != 2) {
             throw std::runtime_error("Ill-formed request");
@@ -129,8 +131,10 @@ void HttpRequest::extract_queries() {
     for (const auto&& [pattern_kv, path_kv] : std::views::zip(pattern_query_args, path_query_args)) {
         auto [pattern_name, pattern_value] = split_kv_query(pattern_kv);
         auto [path_name, path_value] = split_kv_query(path_kv);
-        if (pattern_value.contains('{')) {
-            if (param_name_iter == param_names.end()) throw std::runtime_error("Malformed http request");
+        if (pattern_value.contains('{')) { // Если есть скобка, значит параметр шаблонный
+            if (param_name_iter == param_names.end()) {
+                throw std::runtime_error("Malformed http request");
+            }
             parameters.emplace(*param_name_iter, path_value);
             ++param_name_iter;
         } else { // Means a static query parameter, not dynamic
@@ -179,8 +183,8 @@ void HttpRequest::extract_headers() {
                 if (name_value.size() != 2) {
                     throw std::runtime_error("Malformed http request");
                 }
-                auto name = std::move(name_value.front());
-                auto value = std::move(name_value.back());
+                auto const  name = std::move(name_value.front());
+                auto const value = std::move(name_value.back());
                 cookies.emplace(lowercase_name, Cookie{std::move(name), std::move(value)});
             });
         }

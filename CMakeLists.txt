@@ -1,6 +1,24 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(proj VERSION 0.1.0 LANGUAGES C CXX)
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(NOT CLANG_TIDY_EXE)
+    message(WARNING "clang-tidy не найден. Проверка кода не будет выполнена.")
+else()
+    # Просто укажите исполняемый файл clang-tidy.
+    # CMake будет запускать его для каждого компилируемого файла,
+    # и clang-tidy сам найдет .clang-tidy файл.
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+
+    # Если вы хотите передать дополнительные аргументы, которые не зависят от .clang-tidy,
+    # например, --extra-arg для специфичных флагов компилятора,
+    # вы можете сделать это здесь:
+    # set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--extra-arg=-Wno-unused-variable")
+    # Но для Check/WarningAsError/HeaderFilterRegex лучше использовать .clang-tidy.
+
+    message(STATUS "Clang-Tidy настроен на использование: ${CMAKE_CXX_CLANG_TIDY} (через .clang-tidy файл)")
+endif()
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED true) 
 # -DDEBUG for debug prints

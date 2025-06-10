@@ -1,0 +1,125 @@
+---
+Checks: >-
+  # Disable all default checks first to have full control
+  -*,
+
+  # Enable common and highly recommended checks:
+  # Bug Prone: Catching common bugs
+  bugprone-*,
+  # Cpp Core Guidelines: Best practices from the C++ Core Guidelines
+  cppcoreguidelines-*,
+  # Modernize: Suggesting modern C++ features
+  modernize-*,
+  # Performance: Optimizing for performance
+  performance-*,
+  # Readability: Improving code clarity
+  readability-*,
+  # Portability: Ensuring cross-platform compatibility
+  portability-*,
+
+  # Specific useful checks that are often missed by broad categories:
+  # LLVM: General LLVM checks, e.g., for header guards
+  llvm-header-guard,
+  # Google: Specific checks from Google's style guide
+  google-explicit-constructor, # Prefer explicit constructors to avoid implicit conversions
+  google-runtime-int,         # Enforce fixed-width integer types for clarity and portability
+  google-default-arguments,   # Discourage default arguments in virtual functions
+
+  # MISRA: More specific checks for safety-critical systems (can be very strict)
+  #misra-*, # Uncomment if you need MISRA compliance, but be prepared for many warnings.
+
+  # Concurrency: Checks related to multi-threading
+  concurrency-*,
+
+  # Clang: General Clang specific checks
+  clang-analyzer-*, # Enable static analyzer checks
+
+  # Security: Checks for common security vulnerabilities
+  security-*,
+
+  # Very strict naming conventions (customize CheckOptions below for details)
+  # readability-identifier-naming # This is controlled via CheckOptions
+  
+WarningsAsErrors: >-
+  # Treat most warnings as errors to enforce strict code quality.
+  # This makes the build fail if these issues are present.
+  bugprone-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  portability-*,
+  llvm-header-guard,
+  google-*,
+  concurrency-*,
+  clang-analyzer-*,
+  security-*
+  # misra-*, # Uncomment if you enabled misra checks above
+
+HeaderFilterRegex: '^(src|include|test|utility|library)/.*' # Customize your project source directories here
+# This regex tells clang-tidy to only report warnings/errors from files
+# located in 'src/', 'include/', 'test/', 'utility/', or 'library/' directories
+# (adjust these paths to match your project structure).
+# It implicitly excludes system headers (like <iostream>, <vector>)
+# and third-party libraries not within your specified source trees.
+# An empty string '' means only the main translation unit file (the .cpp)
+# will be checked, excluding any headers it includes.
+
+FormatStyle: file # Use .clang-format if it exists for automatic formatting fixes.
+                  # Otherwise, choose a predefined style like 'llvm', 'google', etc.
+
+# Customize options for specific checks
+CheckOptions:
+  # Naming conventions (readability-identifier-naming)
+  - Key: readability-identifier-naming.VariableCase
+    Value: 'camelCase' # e.g., myVariable
+  - Key: readability-identifier-naming.FunctionCase
+    Value: 'camelCase' # e.g., myFunction()
+  - Key: readability-identifier-naming.MethodCase
+    Value: 'camelCase' # e.g., myObject.myMethod()
+  - Key: readability-identifier-naming.ParameterCase
+    Value: 'camelCase' # e.g., myFunction(int myParameter)
+  - Key: readability-identifier-naming.MemberCase
+    Value: 'm_camelCase' # e.g., class MyClass { int m_myMember; };
+  - Key: readability-identifier-naming.ConstantCase
+    Value: 'SCREAMING_SNAKE_CASE' # e.g., const int MAX_VALUE = 100;
+  - Key: readability-identifier-naming.ClassCase
+    Value: 'PascalCase' # e.g., class MyClass {};
+  - Key: readability-identifier-naming.StructCase
+    Value: 'PascalCase' # e.g., struct MyStruct {};
+  - Key: readability-identifier-naming.EnumCase
+    Value: 'PascalCase' # e.g., enum MyEnum {};
+  - Key: readability-identifier-naming.EnumConstantCase
+    Value: 'PascalCase' # e.g., enum MyEnum { ValueOne, ValueTwo };
+  - Key: readability-identifier-naming.NamespaceCase
+    Value: 'snake_case' # e.g., namespace my_namespace {}
+  - Key: readability-identifier-naming.GlobalConstantCase
+    Value: 'SCREAMING_SNAKE_CASE' # e.g., const int GLOBAL_CONSTANT = 42;
+
+  # modernize-use-nullptr: Ensure NULL is replaced with nullptr
+  - Key: modernize-use-nullptr.NullMacros
+    Value: 'NULL, nullptr_t, nullptr' # Customize if you have other specific null macros
+
+  # cppcoreguidelines-pro-type-member-init: Enforce member initialization
+  - Key: cppcoreguidelines-pro-type-member-init.CheckedTypes
+    Value: 'class,struct' # Only check for classes and structs, not unions
+
+  # modernize-pass-by-value: Suggest passing by value for copyable types
+  - Key: modernize-pass-by-value.IncludeHeaders
+    Value: 'false' # Prevent clang-tidy from automatically adding headers for this fix
+
+  # readability-qualified-auto: Encourage explicit type for auto where clarity improves
+  - Key: readability-qualified-auto.IgnoredClasses
+    Value: 'std::unique_ptr, std::shared_ptr' # Ignore smart pointers for this check
+
+  # bugprone-string-integer-conversion: Detect dangerous string-integer conversions
+  - Key: bugprone-string-integer-conversion.StrictMode
+    Value: 'true' # Enable stricter checking for this category
+
+  # performance-unnecessary-value-param: Find parameters passed by value that could be const&
+  - Key: performance-unnecessary-value-param.AllowedTypes
+    Value: 'std::string' # Allow std::string to be passed by value for some cases (e.g., move semantics)
+
+# You can add more specific CheckOptions here as you encounter relevant warnings
+# and decide to fine-tune their behavior.
+...

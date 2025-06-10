@@ -11,13 +11,15 @@ class InsideView {
 private:
     const Map& headers;
 public:
-    InsideView(const Map& headers) : headers(headers) {}
+    explicit InsideView(const Map& headers) : headers(headers) {}
     using iter_type = typename Map::const_iterator;
 
     [[nodiscard]]
     std::optional<typename iter_type::value_type> get(const std::string& key) const {
         auto pos = headers.find(key);
-        if (pos == headers.end()) return std::nullopt;
+        if (pos == headers.end()) {
+            return std::nullopt;
+        }
         return *pos;
     }
 
@@ -37,11 +39,11 @@ public:
     }
 
     [[nodiscard]]
-    const iter_type cbegin() const {
+    iter_type cbegin() const {
         return iter_type{headers.cbegin()};
     }
     [[nodiscard]]
-    const iter_type cend() const {
+    iter_type cend() const {
         return iter_type{headers.cend()};
     }
 };

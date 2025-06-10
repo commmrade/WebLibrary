@@ -19,6 +19,8 @@ class HttpResponseBuilder;
 enum class HeaderType;
 enum class ResponseType; 
 
+inline constexpr int MAX_WAIT = 5000;
+
 class HttpResponse {
 private:
     

@@ -23,8 +23,6 @@ private:
     using Job = std::function<void()>;
 
     std::mutex mtx;
-
-    // std::condition_variable cond;
     std::counting_semaphore<std::numeric_limits<int>::max()> semaphore{0};
     std::vector<std::thread> threads;
     std::queue<Job> jobs;

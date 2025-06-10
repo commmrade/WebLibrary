@@ -33,7 +33,7 @@ public:
     }
 
     void set_endpoint_name_str(std::string ep_name);
-    const std::string get_endpoint_name_str() const { return endpoint_name_str; }
+    [[nodiscard]] std::string get_endpoint_name_str() const { return endpoint_name_str; }
 
     void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
 

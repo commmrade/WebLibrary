@@ -1,7 +1,7 @@
 #include <requests/response.hpp>
 
 
-response::response(int status_code, const std::string &headers, const std::string &body) : headers_raw(headers), body(body), status(status_code) {
+response::response(int status_code, const std::string &headers, const std::string &body) : status(status_code), headers_raw(headers), body(body) {
     extract_headers();
 }
 

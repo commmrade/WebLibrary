@@ -15,7 +15,7 @@ void hash_combine(std::size_t & s, const T & v)
 namespace std {
     template<>
     struct hash<std::pair<std::string, RequestType>> {
-        size_t operator()(const std::pair<std::string, RequestType> &x) const {
+        size_t operator()(const std::pair<std::string, RequestType> &x) const noexcept {
             size_t res = 0;
             hash_combine(res, x.first);
             hash_combine(res, x.second);
@@ -25,7 +25,7 @@ namespace std {
     };
     template<>
     struct hash<RequestType> {
-        size_t operator()(const RequestType &x) const {
+        size_t operator()(const RequestType &x) const noexcept {
             auto hash = std::hash<int>()(static_cast<int>(x));
 
             return hash;

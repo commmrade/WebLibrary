@@ -1,3 +1,4 @@
+#pragma once
 enum class HeaderType {
     CONTENT_TYPE,        // Indicates the media type of the resource
     CONTENT_LENGTH,      // Specifies the size of the response body in bytes

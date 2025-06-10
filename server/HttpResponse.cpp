@@ -30,7 +30,7 @@ void HttpResponse::set_header_raw(const std::string& name, std::string_view valu
 }
 
 void HttpResponse::set_cookie(const Cookie &cookie) {
-    std::string cookie_str = cookie.to_string();
+    std::string const cookie_str = cookie.to_string();
     headers["Set-Cookie"] = cookie_str;
 }
 
@@ -211,19 +211,20 @@ void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text 
     size_t write_total_size = 0;
 
     while (write_total_size < response.size()) {
-        ssize_t bytes_sent = send(client_socket, response.c_str() + write_total_size, response.size() - write_total_size, 0);
+        ssize_t const bytes_sent = send(client_socket, response.c_str() + write_total_size, response.size() - write_total_size, 0);
         if (bytes_sent < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
-            pollfd client;
+            pollfd client{};
             client.fd = client_socket;
             client.events = POLLOUT;
 
-            int poll_result = poll(&client, 1, 5000);
+            int const poll_result = poll(&client, 1, MAX_WAIT);
             if (poll_result <= 0) {
                 debug::log_error("Connection is lost");
                 return;
             }
             continue;
-        } else if (bytes_sent == 0) {
+        }
+        if (bytes_sent == 0) {
             debug::log_warn("Peer closed connection");
         } else if (bytes_sent < 0) { // <= because bytes_sent == 0 is kind of weird and possibly wrong but idfc
             debug::log_error("Sending failed");

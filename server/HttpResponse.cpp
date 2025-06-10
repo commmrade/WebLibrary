@@ -1,7 +1,7 @@
+#include <server/HttpResponse.hpp>
 #include "debug.hpp"
 #include <cerrno>
 #include <format>
-#include <server/HttpResponse.hpp>
 #include <print>
 #include <stdexcept>
 #include <string_view>

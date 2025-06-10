@@ -1,8 +1,8 @@
+#include <server/HttpServer.hpp>
 #include <cerrno>
 #include <cstring>
 #include <iterator>
 #include <optional>
-#include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
 #include <stdexcept>
 #include <sys/poll.h>

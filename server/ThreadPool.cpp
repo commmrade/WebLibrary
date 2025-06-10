@@ -1,5 +1,5 @@
-#include <functional>
 #include <server/ThreadPool.hpp>
+#include <functional>
 #include <print>
 
 ThreadPool::ThreadPool() {

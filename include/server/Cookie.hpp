@@ -12,7 +12,7 @@ enum class SameSite {
 
 class Cookie {
 public:
-    Cookie(std::string_view key, std::string_view val) : m_name(key), m_value(val) {}
+    explicit Cookie(std::string_view key, std::string_view val) : m_name(key), m_value(val) {}
 
     Cookie() = default;
 

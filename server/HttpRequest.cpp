@@ -1,8 +1,8 @@
+#include <server/HttpRequest.hpp>
 #include "server/Utils.hpp"
 #include <algorithm>
 #include <iterator>
 #include <ranges>
-#include <server/HttpRequest.hpp>
 #include <iostream>
 #include <print>
 #include <stdexcept>

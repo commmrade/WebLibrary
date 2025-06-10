@@ -16,8 +16,8 @@
 
 class HttpRequest {
 public:
-    HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
-    HttpRequest(std::string request_str); // For parsing only headers
+    explicit HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
+    explicit HttpRequest(std::string request_str); // For parsing only headers
 
     [[nodiscard]]
     Query get_query(const std::string& query_name) const;

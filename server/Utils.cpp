@@ -1,10 +1,6 @@
-#include "server/RequestType.hpp"
+#include <server/Utils.hpp>
 #include <algorithm>
 #include <cctype>
-#include <filesystem>
-#include <ostream>
-#include <server/Utils.hpp>
-#include <iostream>
 #include <print>
 #include <stdexcept>
 

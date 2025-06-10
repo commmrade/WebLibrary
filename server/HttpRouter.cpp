@@ -71,7 +71,7 @@ void HttpRouter::process_request(int client_socket, std::string_view request_str
         .and_then([&](std::pair<std::string, std::string>&& method_path) {
             
             auto& [method, path] = method_path;
-            RequestType request_type = utils::req_type_from_str(method);
+            RequestType const request_type = req_type_from_str(method);
             handle_request(resp, path, request_string, method, request_type);
             return std::expected<void, std::string>{};
         })

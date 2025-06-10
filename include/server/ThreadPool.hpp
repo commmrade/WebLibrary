@@ -1,11 +1,13 @@
 #pragma once
 
+#include <atomic>
+#include <cstddef>
 #include <functional>
+#include <limits>
 #include <queue>
-#include<thread>
-#include<mutex>
-#include<condition_variable>
-
+#include <thread>
+#include <mutex>
+#include <semaphore>
 
 
 class ThreadPool {
@@ -21,8 +23,10 @@ private:
     using Job = std::function<void()>;
 
     std::mutex mtx;
-    std::condition_variable cond;
+
+    // std::condition_variable cond;
+    std::counting_semaphore<std::numeric_limits<int>::max()> semaphore{0};
     std::vector<std::thread> threads;
     std::queue<Job> jobs;
-    bool should_terminate{false};
+    std::atomic<bool> should_terminate{false};
 };

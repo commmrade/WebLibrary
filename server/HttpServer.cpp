@@ -74,7 +74,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
             // Body parsing
             if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
                 // std::println("1");
-                HttpRequest req{true, request_string, ""}; // TODO: Just parse headers, this will be faster
+                HttpRequest req{request_string, ""}; // TODO: Just parse headers, this will be faster
                 // std::println("2");
                 try {
                     content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
@@ -131,7 +131,9 @@ void HttpServer::listen_start(int port) {
     std::vector<pollfd> polls_fd;
     polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
+        std::println("here");
         int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
+        
         if (poll_result < 0) {
             debug::log_error("Polling error"); // Critical error
             throw std::runtime_error("");

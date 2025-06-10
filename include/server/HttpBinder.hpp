@@ -38,7 +38,6 @@ public:
         handle_obj.set_endpoint_name_str(endpoint_name);
         // std::println("Extract: {}", utils::extract_params(endpoint_name));
         handles.emplace(utils::process_url_str(endpoint_name), std::move(handle_obj)); // Turning route to name={} kinda
-        std::println("Processed: {}", utils::process_url_str(endpoint_name));
         debug::log_info("Registered handler");
     }
 

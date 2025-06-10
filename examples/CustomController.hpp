@@ -10,6 +10,7 @@
 #include <json/value.h>
 #include <ostream>
 #include <server/HttpRequest.hpp>
+#include <thread>
 #include <vector>
 
 
@@ -20,7 +21,7 @@ class MyController : public HttpController<MyController> {
 public:
     MyController() {
         // REG_ENDPOINT(reg, "/reg", RequestType::POST, RequestType::OPTIONS);
-        REG_ENDPOINT(smth, "/courses/{course_id}?name={name}", RequestType::GET, RequestType::OPTIONS);
+        REG_ENDPOINT(reg, "/courses", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(test_r, "/courses/{course_id}?name={name}&age={age}", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(test_r2, "/courses/{course_id}?name={name}&skill=big", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(smth2, "/courses/{course_id}/modules/{module_id}", RequestType::GET, RequestType::OPTIONS);
@@ -28,9 +29,8 @@ public:
 protected:
     void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
         
-        auto body = req.body_as_json();
-        auto response = HttpResponseBuilder().set_type(ContentType::JSON).set_body(*body).build();
-
+        auto response = HttpResponseBuilder{}.set_body_str("pidor").build();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         resp.respond(response);
     }
 
@@ -51,7 +51,7 @@ protected:
         }
 
 
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
+        auto response = HttpResponseBuilder().set_content_type(ContentType::TEXT).set_body_str("test").build();
         resp.respond(response);
     }
 
@@ -60,19 +60,19 @@ protected:
         auto name = req.get_query("name").as_str();
         auto age = req.get_query("skill").as_str();
         std::println("{} {}", name, age);
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("test").build();
+        auto response = HttpResponseBuilder().set_content_type(ContentType::TEXT).set_body_str("test").build();
         resp.respond(response);
     }
 
 
     void smth([[maybe_unused]] const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called\n";
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("dasasds").build();
+        auto response = HttpResponseBuilder().set_content_type(ContentType::TEXT).set_body_str("dasasds").build();
         resp.respond(response);
     }
     void smth2(const HttpRequest& req, HttpResponseWriter&& resp) {
         std::cout << "Called 2\n";
-        auto response = HttpResponseBuilder().set_type(ContentType::TEXT).set_body("sdadasdasdas").build();
+        auto response = HttpResponseBuilder().set_content_type(ContentType::TEXT).set_body_str("sdadasdasdas").build();
         resp.respond(response);
     }
   

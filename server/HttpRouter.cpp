@@ -29,13 +29,13 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
         const HttpHandle* handle = HttpBinder::instance().find_handle(path,request_type);
         // Do not destroy, since it is stored inside HttpBinder
         if (handle) {  
-            HttpRequest request(false, std::string{request_string}, handle->get_endpoint_name_str(), handle->get_param_names()); // Passing param names to then process query part
+            HttpRequest request(std::string{request_string}, handle->get_endpoint_name_str(), handle->get_param_names()); // Passing param names to then process query part
             if (!handle->pass_middlewares(request)) {
                 debug::log_warn("Filtering not passed");
                 auto resp_ = HttpResponseBuilder()
                     .set_status(403)
-                    .set_body("Access denied") // TODO: Universal error JSON response struct
-                    .set_type(ContentType::TEXT)
+                    .set_body_str("Access denied") // TODO: Universal error JSON response struct
+                    .set_content_type(ContentType::TEXT)
                     .build();
                 resp.respond(resp_);
                 return;
@@ -46,8 +46,8 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
             debug::log_info("Endpoint not found");
             auto resp_ = HttpResponseBuilder()
                 .set_status(404)
-                .set_body("Not found")
-                .set_type(ContentType::TEXT)
+                .set_body_str("Not found")
+                .set_content_type(ContentType::TEXT)
                 .build();
             resp.respond(resp_);
         }
@@ -55,8 +55,8 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
         debug::log_error("Server internal error ", method, " ", ex.what());
         auto resp_ = HttpResponseBuilder()
             .set_status(500)
-            .set_body("Server internal error")
-            .set_type(ContentType::TEXT)
+            .set_body_str("Server internal error")
+            .set_content_type(ContentType::TEXT)
             .build();
         resp.respond(resp_);
     }
@@ -77,8 +77,8 @@ void HttpRouter::process_request(int client_socket, std::string_view request_str
              
             auto resp_ = HttpResponseBuilder()
                 .set_status(400)
-                .set_body(error)
-                .set_type(ContentType::TEXT)
+                .set_body_str(error)
+                .set_content_type(ContentType::TEXT)
                 .build();
             resp.respond(resp_);
             return std::expected<void, std::string>{};

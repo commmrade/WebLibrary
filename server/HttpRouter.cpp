@@ -1,5 +1,4 @@
 #include <expected>
-#include <ostream>
 #include <server/HttpRouter.hpp>
 #include "server/HttpBinder.hpp"
 #include "server/HttpHandle.hpp"
@@ -10,7 +9,6 @@
 #include <server/Utils.hpp>
 #include <server/hash.hpp>
 #include <print>
-
 
 std::expected<std::pair<std::string, std::string>, std::string> HttpRouter::parse_request_line(std::string_view request_string) {
     auto method_str = request_string.substr(0, request_string.find(' '));

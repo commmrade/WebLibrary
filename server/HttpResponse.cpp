@@ -8,16 +8,16 @@
 #include <sys/poll.h>
 
 std::string HttpResponse::to_string() const {
-    std::string response = std::format("HTTP/{} {} {}\r\n", http_version, status_code, status_message);
-    // Adding headers part
-    for (const auto &[header_name, header_value] : headers) {
+    std::string response = std::format("HTTP/{} {} {}\r\n", m_http_version, m_status_code, m_status_message);
+    // Adding m_headers part
+    for (const auto &[header_name, header_value] : m_headers) {
         response += std::format("{}: {}\r\n", header_name, header_value);
     }
-    if (headers.find("Content-Length") == headers.end()) { // Setting Content-Length if not already set
-        response += std::format("Content-Length: {}\r\n", body.size());
+    if (m_headers.find("Content-Length") == m_headers.end()) { // Setting Content-Length if not already set
+        response += std::format("Content-Length: {}\r\n", m_body.size());
     }
-    response += "\r\n"; // Separating headers and answer par
-    response += body; // Adding user text
+    response += "\r\n"; // Separating m_headers and answer par
+    response += m_body; // Adding user text
     return response;
 }
 
@@ -26,58 +26,58 @@ void HttpResponse::set_header_raw(const std::string& name, std::string_view valu
     if (name == "Set-Cookie") {
         throw std::runtime_error("Use add_cookie() instead!");
     }
-    headers[name] = value;
+    m_headers[name] = value;
 }
 
 void HttpResponse::set_cookie(const Cookie &cookie) {
     std::string const cookie_str = cookie.to_string();
-    headers["Set-Cookie"] = cookie_str;
+    m_headers["Set-Cookie"] = cookie_str;
 }
 
 void HttpResponse::set_header(HeaderType header_type, std::string_view value) {
     switch (header_type) {
         case HeaderType::CONTENT_TYPE: {
-            headers["Content-Type"] = value;
+            m_headers["Content-Type"] = value;
             break;
         }
         case HeaderType::CONTENT_LENGTH: {
-            headers["Content-Length"] = value;
+            m_headers["Content-Length"] = value;
             break;
         }
         case HeaderType::CACHE_CONTROL: {
-            headers["Cache-Control"] = value;
+            m_headers["Cache-Control"] = value;
             break;
         }
         case HeaderType::EXPIRES: {
-            headers["Expires"] = value;
+            m_headers["Expires"] = value;
             break;
         }
         case HeaderType::SET_COOKIE: {
-            headers["Set-Cookie"] = value;
+            m_headers["Set-Cookie"] = value;
             break;
         }
         case HeaderType::LOCATION: {
-            headers["Location"] = value;
+            m_headers["Location"] = value;
             break;
         }
         case HeaderType::SERVER: {
-            headers["Server"] = value;
+            m_headers["Server"] = value;
             break;
         }
         case HeaderType::ACCEPT: {
-            headers["Accept"] = value;
+            m_headers["Accept"] = value;
             break;
         }
         case HeaderType::USER_AGENT: {
-            headers["User-Agent"] = value;
+            m_headers["User-Agent"] = value;
             break;
         }
         case HeaderType::HOST: {
-            headers["Host"] = value;
+            m_headers["Host"] = value;
             break;
         }
         case HeaderType::ACCEPT_LANGUAGE: {
-            headers["Accept-Language"] = value;
+            m_headers["Accept-Language"] = value;
             break;
         }
         default: {
@@ -87,122 +87,122 @@ void HttpResponse::set_header(HeaderType header_type, std::string_view value) {
 }
 
 void HttpResponse::remove_header(const std::string& name) {
-    headers.erase(name); // Removing if exists (doesn't throw if does not exist)
+    m_headers.erase(name); // Removing if exists (doesn't throw if does not exist)
 }  
 
 void HttpResponse::set_content_type(ContentType type) {
     switch (type) {
         case ContentType::HTML: {
-            headers["Content-Type"] = "text/html";
+            m_headers["Content-Type"] = "text/html";
             break;
         }   
         case ContentType::JSON: {
-            headers["Content-Type"] = "application/json";
+            m_headers["Content-Type"] = "application/json";
             break;
         }
         case ContentType::TEXT: {
-            headers["Content-Type"] = "text/plain";
+            m_headers["Content-Type"] = "text/plain";
             break;
         }
         case ContentType::XML: {
-            headers["Content-Type"] = "application/xml";
+            m_headers["Content-Type"] = "application/xml";
             break;
         }
         case ContentType::CSS: {
-            headers["Content-Type"] = "text/css";
+            m_headers["Content-Type"] = "text/css";
             break;
         }
         case ContentType::JS: {
-            headers["Content-Type"] = "application/javascript";
+            m_headers["Content-Type"] = "application/javascript";
             break;
         }
         case ContentType::JPEG: {
-            headers["Content-Type"] = "image/jpeg";
+            m_headers["Content-Type"] = "image/jpeg";
             break;
         }
         case ContentType::PNG: {
-            headers["Content-Type"] = "image/png";
+            m_headers["Content-Type"] = "image/png";
             break;
         }
         case ContentType::GIF: {
-            headers["Content-Type"] = "image/gif";
+            m_headers["Content-Type"] = "image/gif";
             break;
         }
         case ContentType::PDF: {
-            headers["Content-Type"] = "application/pdf";
+            m_headers["Content-Type"] = "application/pdf";
             break;
         }
         case ContentType::CSV: {
-            headers["Content-Type"] = "text/csv";
+            m_headers["Content-Type"] = "text/csv";
             break;
         }
         case ContentType::FORM: {
-            headers["Content-Type"] = "application/x-www-form-urlencoded";
+            m_headers["Content-Type"] = "application/x-www-form-urlencoded";
             break;
         }
         default: {
-            headers["Content-Type"] = "text/plain"; // Default case
+            m_headers["Content-Type"] = "text/plain"; // Default case
             break;
         }
     }
 }
 
-void HttpResponse::set_status(int status_code) {
-    switch (status_code) {
+void HttpResponse::set_status(int m_status_code) {
+    switch (m_status_code) {
         case 200: {
-            status_message = "OK";
+            m_status_message = "OK";
             break;
         }
         case 201: {
-            status_message = "Created";
+            m_status_message = "Created";
             break;
         }
         case 204: {
-            status_message = "No Content";
+            m_status_message = "No Content";
             break;
         }
         case 400: {
-            status_message = "Bad Request";
+            m_status_message = "Bad Request";
             break;
         }
         case 401: {
-            status_message = "Unauthorized";
+            m_status_message = "Unauthorized";
             break;
         }
         case 403: {
-            status_message = "Forbidden";
+            m_status_message = "Forbidden";
             break;
         }
         case 404: {
-            status_message = "Not Found";
+            m_status_message = "Not Found";
             break;
         }
         case 405: {
-            status_message = "Method Not Allowed";
+            m_status_message = "Method Not Allowed";
             break;
         }
         case 500: {
-            status_message = "Internal Server Error";
+            m_status_message = "Internal Server Error";
             break;
         }
         case 502: {
-            status_message = "Bad Gateway";
+            m_status_message = "Bad Gateway";
             break;
         }
         case 503: {
-            status_message = "Service Unavailable";
+            m_status_message = "Service Unavailable";
             break;
         }
         case 504: {
-            status_message = "Gateway Timeout";
+            m_status_message = "Gateway Timeout";
             break;
         }
         default: {
-            status_message = "Unknown status code, set msg manually";
+            m_status_message = "Unknown status code, set msg manually";
             break;
         }
     }
-    this->status_code = status_code;
+    this->m_status_code = m_status_code;
 }
 
 
@@ -211,10 +211,10 @@ void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text 
     size_t write_total_size = 0;
 
     while (write_total_size < response.size()) {
-        ssize_t const bytes_sent = send(client_socket, response.c_str() + write_total_size, response.size() - write_total_size, 0);
+        ssize_t const bytes_sent = send(m_client_socket, response.c_str() + write_total_size, response.size() - write_total_size, 0);
         if (bytes_sent < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
             pollfd client{};
-            client.fd = client_socket;
+            client.fd = m_client_socket;
             client.events = POLLOUT;
 
             int const poll_result = poll(&client, 1, MAX_WAIT);

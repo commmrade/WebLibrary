@@ -1,9 +1,6 @@
 #pragma once
 #include "json/writer.h"
 #include <json/value.h>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
 #include <sys/socket.h>
 #include<unordered_map>
 #include<string>
@@ -11,7 +8,6 @@
 #include <json/json.h>
 #include <json/json.h>
 #include <debug.hpp>
-#include <fstream>
 #include "server/HeaderView.hpp"
 #include "types.hpp"
 
@@ -24,13 +20,13 @@ inline constexpr int MAX_WAIT = 5000;
 class HttpResponse {
 private:
     
-    std::unordered_map<std::string, std::string> headers{{"Content-Type", "plain/text"}};
-    std::string body{};
-    int status_code{200};
+    std::unordered_map<std::string, std::string> m_headers{{"Content-Type", "plain/text"}};
+    std::string m_body{};
+    int m_status_code{200};
 
-    std::string status_message{"OK"};
+    std::string m_status_message{"OK"};
 
-    std::string http_version{"1.1"};
+    std::string m_http_version{"1.1"};
 
 public:
     HttpResponse() = default;
@@ -45,30 +41,30 @@ public:
     void set_cookie(const Cookie &cookie);
 
     void set_body(std::string text) {
-        body = std::move(text);
+        m_body = std::move(text);
     }
     void set_body_json(const Json::Value& json_obj);
 
     void set_status(int status_code);
 
     void set_version(std::string_view http_ver) {
-        http_version = http_ver;
+        m_http_version = http_ver;
     }
 
     void set_custom_message(std::string msg) {
-        status_message = std::move(msg);
+        m_status_message = std::move(msg);
     }
 };
 
 class HttpResponseWriter {
 public:    
-    HttpResponseWriter(int client_socket) : client_socket(client_socket) {}
+    HttpResponseWriter(int client_socket) : m_client_socket(client_socket) {}
     HttpResponseWriter(const HttpResponseWriter&) = delete;
     HttpResponseWriter& operator=(const HttpResponseWriter&) = delete;
 
     void respond(HttpResponse &resp);
 private:
-    int client_socket;
+    int m_client_socket;
 };
 
 class HttpResponseBuilder {

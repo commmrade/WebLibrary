@@ -3,33 +3,33 @@
 
 
 std::string Cookie::to_string() const {
-    if (name.empty() || value.empty()) {
+    if (m_name.empty() || m_value.empty()) {
         throw std::runtime_error("Cookie is not properly set up");
     }
-    std::string final_str = name + "=" + value;
-    if (!response_cookie) {
-        return name + "=" + value;
+    std::string final_str = m_name + "=" + m_value;
+    if (!m_response_cookie) {
+        return m_name + "=" + m_value;
     } 
 
     final_str += "; ";
-    if (max_age) {
-        final_str += "Max-Age=" + std::to_string(max_age.value()) + "; ";
+    if (m_max_age) {
+        final_str += "Max-Age=" + std::to_string(m_max_age.value()) + "; ";
     }
-    if (secure) {
+    if (m_secure) {
         final_str += "Secure; ";
     }
-    if (httpOnly) {
+    if (m_httpOnly) {
         final_str += "HttpOnly; ";
     }
-    if (!path.empty()) {
-        final_str += "Path=" + path + "; ";
+    if (!m_path.empty()) {
+        final_str += "Path=" + m_path + "; ";
     }
-    if (!domain.empty()) {
-        final_str += "Domain=" + domain + "; ";
+    if (!m_domain.empty()) {
+        final_str += "Domain=" + m_domain + "; ";
     }
     {
         using std::string_literals::operator""s;
-        switch (samesite) {
+        switch (m_samesite) {
             case SameSite::Lax: {
                 final_str += "SameSite=" + "Lax"s;
                 break;
@@ -54,33 +54,33 @@ std::string Cookie::to_string() const {
 
 
 void Cookie::set_name(std::string_view new_name) {
-    name = new_name;
+    m_name = new_name;
 } 
 void Cookie::set_value(std::string_view new_val) {
-    value = new_val;
+    m_value = new_val;
 }
 
 void Cookie::set_httponly(bool val) {
-    httpOnly = val;
-    response_cookie = true;
+    m_httpOnly = val;
+    m_response_cookie = true;
 }
 void Cookie::set_secure(bool val) {
-    secure = val;
-    response_cookie = true;
+    m_secure = val;
+    m_response_cookie = true;
 }
 void Cookie::set_max_age(int new_max_age) {
-    max_age = new_max_age;
-    response_cookie = true;
+    m_max_age = new_max_age;
+    m_response_cookie = true;
 }
 void Cookie::set_path(std::string_view new_path) {
-    path = new_path;
-    response_cookie = true;
+    m_path = new_path;
+    m_response_cookie = true;
 }
 void Cookie::set_domain(std::string_view new_domain) {
-    domain = new_domain;
-    response_cookie = true;
+    m_domain = new_domain;
+    m_response_cookie = true;
 }
 void Cookie::set_samesite(SameSite new_rule) {
-    response_cookie = true;
-    samesite = new_rule;
+    m_response_cookie = true;
+    m_samesite = new_rule;
 }

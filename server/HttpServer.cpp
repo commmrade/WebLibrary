@@ -2,7 +2,6 @@
 #include <cstring>
 #include <iterator>
 #include <optional>
-#include <ostream>
 #include <server/HttpServer.hpp>
 #include <server/HttpRouter.hpp>
 #include <stdexcept>
@@ -14,10 +13,10 @@
 #include <system_error>
 
 HttpServer::HttpServer() {
-    thread_pool = std::make_unique<ThreadPool>();
+    m_thread_pool = std::make_unique<ThreadPool>();
 }
 HttpServer::~HttpServer() {
-    close(serv_socket);
+    close(m_serv_socket);
 }
 
 static constexpr std::string HEADERS_END = "\r\n\r\n";
@@ -26,29 +25,29 @@ void HttpServer::server_setup(int port) {
     debug::log_info("Setting up server");
 
     debug::log_info("Creating a socket");
-    serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
-    if (serv_socket < 0) {
+    m_serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
+    if (m_serv_socket < 0) {
         debug::log_error("Socket error");
         throw std::system_error{std::error_code{}, "Could not create a socket"}; // Since socket() interfaces with the OS, throw system_error 
     }   
-    int flags = fcntl(serv_socket, F_GETFL, 0);
-    if (flags < 0 || fcntl(serv_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
+    int flags = fcntl(m_serv_socket, F_GETFL, 0);
+    if (flags < 0 || fcntl(m_serv_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
         throw std::system_error(std::error_code{}, "Could not set flags for client socket");
     }
 
     int reuse = 1;
-    int result = setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
+    int result = setsockopt(m_serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0) {
         debug::log_error("Could not set flags: ", strerror(errno));
         throw std::system_error{std::error_code{}, "Could not set flags"};
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port); // Settings app addres info
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    m_serv_addr.sin_family = AF_INET;
+    m_serv_addr.sin_port = htons(port); // Settings app addres info
+    m_serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     debug::log_info("Binding socket");
-    if (bind(serv_socket, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { // Binding socket
+    if (bind(m_serv_socket, (sockaddr*)&m_serv_addr, sizeof(m_serv_addr)) < 0) { // Binding socket
         debug::log_error("Binding socket error");
         throw std::system_error(std::error_code{}, "Could not bind the server socket");
     } 
@@ -124,12 +123,12 @@ void HttpServer::listen_start(int port) {
     server_setup(port);
 
     debug::log_info("Starting listening for incoming requests");
-    if (listen(serv_socket, SOMAXCONN) < 0) { // Listening for incoming requests
+    if (listen(m_serv_socket, SOMAXCONN) < 0) { // Listening for incoming requests
         debug::log_error("Listening error");
         throw std::runtime_error("");
     }
     std::vector<pollfd> polls_fd;
-    polls_fd.push_back({serv_socket, POLLIN, 0}); // Setting server socket
+    polls_fd.push_back({m_serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
         std::println("here");
         int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
@@ -140,8 +139,8 @@ void HttpServer::listen_start(int port) {
         }
         for (size_t i = 0; i < polls_fd.size(); i++) {
             if (polls_fd[i].revents & POLLIN) {
-                if (polls_fd[i].fd == serv_socket) { // If server socket got something
-                    int client_socket = accept(serv_socket, nullptr, nullptr);
+                if (polls_fd[i].fd == m_serv_socket) { // If server socket got something
+                    int client_socket = accept(m_serv_socket, nullptr, nullptr);
                     if (client_socket < 0) {
                         debug::log_error("Accepting user error");
                         continue; // Moving on
@@ -153,7 +152,7 @@ void HttpServer::listen_start(int port) {
                     polls_fd.push_back({client_socket, POLLIN, 0}); // Add new user
                 } else {
                     int client_socket = polls_fd[i].fd;
-                    thread_pool->add_job([this, client_socket](){ 
+                    m_thread_pool->add_job([this, client_socket](){ 
                         try {
                             handle_incoming_request(client_socket);
                         } catch (const std::exception& ex) {
@@ -170,5 +169,5 @@ void HttpServer::listen_start(int port) {
     }
 }
 void HttpServer::stop_server() {
-    close(serv_socket);
+    close(m_serv_socket);
 }

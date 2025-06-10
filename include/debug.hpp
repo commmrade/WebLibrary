@@ -1,6 +1,7 @@
 #pragma once
+#ifdef DEBUG
 #include <iostream>
-
+#endif
 
 namespace debug {
 

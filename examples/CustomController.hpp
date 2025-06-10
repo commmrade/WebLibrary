@@ -1,17 +1,12 @@
 #pragma once
-
-
-#include "server/Cookie.hpp"
 #include "server/HttpController.hpp"
 #include "server/HttpResponse.hpp"
 #include "server/RequestType.hpp"
-#include <algorithm>
 #include <format>
 #include <json/value.h>
-#include <ostream>
 #include <server/HttpRequest.hpp>
 #include <thread>
-#include <vector>
+#include <iostream>
 
 
 

@@ -13,10 +13,10 @@
 class HttpServer {
 private:
    
-    int serv_socket;
-    sockaddr_in serv_addr;
+    int m_serv_socket;
+    sockaddr_in m_serv_addr;
 
-    std::unique_ptr<ThreadPool> thread_pool;
+    std::unique_ptr<ThreadPool> m_thread_pool;
 public: 
 
     HttpServer(const HttpServer&) = delete;

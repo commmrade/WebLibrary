@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <span>
-#include <type_traits>
 #include<unordered_map>
 #include<string>
 #include <json/json.h>
@@ -14,7 +13,6 @@
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "server/RequestType.hpp"
-#include "server/Utils.hpp"
 
 class HttpRequest {
 public:
@@ -26,14 +24,14 @@ public:
 
     [[nodiscard]]
     QueryView get_queries() const {
-        return QueryView{parameters};
+        return QueryView{m_parameters};
     }
 
     [[nodiscard]]
     std::optional<std::string> get_header(const std::string &header_name) const;
     [[nodiscard]]
     HeaderView get_headers() const {
-        return HeaderView{headers};
+        return HeaderView{m_headers};
     }
 
     [[nodiscard]]
@@ -41,11 +39,11 @@ public:
 
     [[nodiscard]] 
     CookieView get_cookies() const {
-        return CookieView{cookies};
+        return CookieView{m_cookies};
     }
 
     [[nodiscard]]
-    std::string body_as_str() const { return request.substr(request.find("\r\n\r\n") + 4); }
+    std::string body_as_str() const { return m_request.substr(m_request.find("\r\n\r\n") + 4); }
 
     [[nodiscard]]
     std::unique_ptr<Json::Value> body_as_json() const;
@@ -53,28 +51,28 @@ public:
 
     [[nodiscard]]
     RequestType get_method() const { 
-        auto method_str = request.substr(0, request.find(" ")); 
-        return utils::req_type_from_str(method_str);
+        auto method_str = m_request.substr(0, m_request.find(" ")); 
+        return req_type_from_str(method_str);
     }
 
     [[nodiscard]]
     std::string get_version() const {
-        auto line = request.substr(0, request.find("\r\n"));
+        auto line = m_request.substr(0, m_request.find("\r\n"));
         return line.substr(line.find_last_of("/") + 1);
     }
 
     void add_header(const std::string &name, std::string_view value) const {
-        headers[name] = value;
+        m_headers[name] = value;
     }
 private:
-    std::string request;
-    std::unordered_map<std::string, std::string> parameters;
-    mutable std::unordered_map<std::string, std::string> headers;
-    std::unordered_map<int, std::string> path_params;
-    std::unordered_map<std::string, Cookie> cookies;
+    std::string m_request;
+    std::unordered_map<std::string, std::string> m_parameters;
+    mutable std::unordered_map<std::string, std::string> m_headers;
+    std::unordered_map<int, std::string> m_path_params;
+    std::unordered_map<std::string, Cookie> m_cookies;
 
-    std::vector<std::string> param_names;
-    std::string endpoint_name_str_;
+    std::vector<std::string> m_param_names;
+    std::string m_endpoint_name_str;
 
     void extract_queries();
     void extract_headers();  

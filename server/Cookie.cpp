@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 
-std::string Cookie::to_string() const {
+auto Cookie::to_string() const -> std::string {
     if (m_name.empty() || m_value.empty()) {
         throw std::runtime_error("Cookie is not properly set up");
     }
@@ -46,7 +46,7 @@ std::string Cookie::to_string() const {
         final_str += "; "; 
     }
     
-    if (final_str.find_last_of(";") >= final_str.size() - 2) { // If there is ";" at the end, truncate "; "
+    if (final_str.find_last_of(';') >= final_str.size() - 2) { // If there is ";" at the end, truncate "; "
         final_str.resize(final_str.size() - 2);
     }
     return final_str;

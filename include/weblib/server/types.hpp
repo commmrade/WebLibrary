@@ -1,5 +1,6 @@
 #pragma once
-enum class HeaderType {
+#include <cstdint>
+enum class HeaderType : std::uint8_t {
     CONTENT_TYPE,        // Indicates the media type of the resource
     CONTENT_LENGTH,      // Specifies the size of the response body in bytes
     CACHE_CONTROL,       // Directives for caching mechanisms
@@ -13,7 +14,7 @@ enum class HeaderType {
     ACCEPT_LANGUAGE      // Preferred languages for the response
 };
 
-enum class ContentType {
+enum class ContentType : std::uint8_t {
     HTML,
     JSON,
     TEXT,

@@ -3,10 +3,10 @@
 #include <print>
 
 ThreadPool::ThreadPool() {
-    int num_thrs = std::thread::hardware_concurrency();
+    auto num_thrs = std::thread::hardware_concurrency();
 
-    for (auto i{0}; i < num_thrs; i++) {
-        m_threads.emplace_back(std::thread(&ThreadPool::thread_loop, this)); // Creating "empty" m_threads
+    for (decltype(num_thrs) i{0}; i < num_thrs; i++) {
+        m_threads.emplace_back(&ThreadPool::thread_loop, this); // Creating "empty" m_threads
     }
 }
 ThreadPool::~ThreadPool() {
@@ -34,11 +34,13 @@ void ThreadPool::thread_loop() {
 
             }
         }
-        if (job) job();
+        if (job) { 
+            job();
+        }
     }
 }
 
-void ThreadPool::add_job(std::function<void()> job) {
+void ThreadPool::add_job(std::function<void()>&& job) {
     {
         std::unique_lock lock{m_mtx};
         m_jobs.push(job);

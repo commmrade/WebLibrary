@@ -17,7 +17,7 @@ HttpRequest::HttpRequest(std::string request_str) : m_request(std::move(request_
     extract_headers();
 }
 
-Query HttpRequest::get_query(const std::string& query_name) const {
+auto HttpRequest::get_query(const std::string& query_name) const -> Query {
     Query query;
     auto pos = m_parameters.find(utils::to_lowercase_str(query_name));
     if (pos != m_parameters.end()) { //If header exists
@@ -26,7 +26,7 @@ Query HttpRequest::get_query(const std::string& query_name) const {
     return query;
 }
 
-std::optional<std::string> HttpRequest::get_header(const std::string &header_name) const {
+auto HttpRequest::get_header(const std::string &header_name) const -> std::optional<std::string> {
     auto pos = m_headers.find(utils::to_lowercase_str(header_name));
     if (pos != m_headers.end()) { //If header exists
         return pos->second;
@@ -34,7 +34,7 @@ std::optional<std::string> HttpRequest::get_header(const std::string &header_nam
     return std::nullopt;
 }
 
-std::optional<Cookie> HttpRequest::get_cookie(const std::string &name) const {
+auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Cookie> {
     auto pos = m_cookies.find(utils::to_lowercase_str(name));
     if (pos != m_cookies.end()) {
         return pos->second;
@@ -42,7 +42,7 @@ std::optional<Cookie> HttpRequest::get_cookie(const std::string &name) const {
     return std::nullopt;
 }
 
-std::unique_ptr<Json::Value> HttpRequest::body_as_json() const {
+auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value> {
     const std::string raw_json = m_request.substr(m_request.find("\r\n\r\n") + 4);
     Json::Value json_obj{};
 
@@ -64,11 +64,13 @@ void HttpRequest::extract_queries() {
         throw std::runtime_error("Malformed http m_request");
     }
     
-    size_t const endpoint_start = m_request.find("/");
+    size_t const endpoint_start = m_request.find('/');
     if (endpoint_start == std::string::npos) {
         throw std::runtime_error("Wtf");
     }
     std::string_view const path{m_request.data() + endpoint_start + 1, m_request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
+
+
 
     // Slash handling
     std::string_view pattern{m_endpoint_name_str};
@@ -92,7 +94,9 @@ void HttpRequest::extract_queries() {
 
     for (const auto&& [pattern_arg, path_arg] : std::views::zip(pattern_slash_args, path_slash_args)) {
         if (pattern_arg.contains('{')) { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == m_param_names.end()) throw std::runtime_error("Malformed http m_request");
+            if (param_name_iter == m_param_names.end()) { 
+                throw std::runtime_error("Malformed http m_request");
+            }
             m_parameters.emplace(*param_name_iter, path_arg);
             ++param_name_iter;
         }
@@ -159,8 +163,8 @@ void HttpRequest::extract_headers() {
             throw std::runtime_error("Malformed http m_request 1");
         }
 
-        auto name = std::string(line.begin(), line.begin() + pos);
-        auto value = std::string(line.begin() + pos + 1, line.end());
+        auto name = std::string(line.begin(), line.begin() + static_cast<std::string::difference_type>(pos));
+        auto value = std::string(line.begin() + static_cast<std::string::difference_type>(pos) + 1, line.end());
         utils::trim(value);
 
         auto lowercase_name = utils::to_lowercase_str(name);

@@ -24,7 +24,7 @@ public:
     HttpServer& operator=(const HttpServer&) = delete;
     HttpServer& operator=(HttpServer&&) = delete;
 
-    static HttpServer& instance() {
+    static auto instance() -> HttpServer& {
         static HttpServer serv;
         return serv;
     }
@@ -38,5 +38,5 @@ private:
 
     void server_setup(int port);
     void handle_incoming_request(int client_socket);
-    std::optional<std::string> read_request(int client_socket);
+    auto read_request(int client_socket) -> std::optional<std::string>;
 };

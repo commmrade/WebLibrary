@@ -1,9 +1,10 @@
 #pragma once
+#include <cstdint>
 #include <string>
 #include <utility>
 
 
-enum class RequestType;
+enum class RequestType : std::uint8_t;
 
 template <class T>
 void hash_combine(std::size_t & s, const T & v)

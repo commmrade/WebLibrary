@@ -7,13 +7,13 @@
 #include <string_view>
 #include <sys/poll.h>
 
-std::string HttpResponse::to_string() const {
+auto HttpResponse::to_string() const -> std::string {
     std::string response = std::format("HTTP/{} {} {}\r\n", m_http_version, m_status_code, m_status_message);
     // Adding m_headers part
     for (const auto &[header_name, header_value] : m_headers) {
         response += std::format("{}: {}\r\n", header_name, header_value);
     }
-    if (m_headers.find("Content-Length") == m_headers.end()) { // Setting Content-Length if not already set
+    if (!m_headers.contains("Content-Length")) { // Setting Content-Length if not already set
         response += std::format("Content-Length: {}\r\n", m_body.size());
     }
     response += "\r\n"; // Separating m_headers and answer par

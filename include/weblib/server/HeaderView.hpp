@@ -14,7 +14,7 @@ public:
     using iter_type = typename Map::const_iterator;
 
     [[nodiscard]]
-    std::optional<typename iter_type::value_type> get(const std::string& key) const {
+    auto get(const std::string& key) const -> std::optional<typename iter_type::value_type> {
         auto pos = m_headers.find(key);
         if (pos == m_headers.end()) {
             return std::nullopt;
@@ -23,26 +23,26 @@ public:
     }
 
     [[nodiscard]]
-    iter_type begin() {
+    auto begin() -> iter_type {
         return iter_type{m_headers.cbegin()};
     }
     [[nodiscard]]
-    iter_type end() {
+    auto end() -> iter_type {
         return iter_type{m_headers.cend()};
     }
-    iter_type begin() const {
+    auto begin() const -> iter_type {
         return iter_type{m_headers.cbegin()};
     }
-    iter_type end() const {
+    auto end() const -> iter_type {
         return iter_type{m_headers.cend()};
     }
 
     [[nodiscard]]
-    iter_type cbegin() const {
+    auto cbegin() const -> iter_type {
         return iter_type{m_headers.cbegin()};
     }
     [[nodiscard]]
-    iter_type cend() const {
+    auto cend() const -> iter_type {
         return iter_type{m_headers.cend()};
     }
 };

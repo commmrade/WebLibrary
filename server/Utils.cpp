@@ -1,11 +1,12 @@
-#include <server/Utils.hpp>
 #include <algorithm>
+#include <ranges>
+#include <server/Utils.hpp>
 #include <cctype>
 #include <print>
 #include <stdexcept>
 
 namespace utils {
-std::string process_url_str(std::string_view url) {
+auto process_url_str(std::string_view url) -> std::string {
     std::string result;
 
     size_t idx{0}; // Pos of pointer
@@ -26,29 +27,29 @@ std::string process_url_str(std::string_view url) {
     return result;
 }
 
-void trim_r(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [] (auto &elem) { return !isspace(elem); }).base(), s.end());
+void trim_r(std::string &str) {
+    str.erase(std::ranges::find_if(std::ranges::views::reverse(str), [] (auto &elem) { return !isspace(elem); }).base(), str.end());
 }
-void trim_l(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char elem) { return !std::isspace(elem); }));
-}
-
-void trim(std::string &s) {
-    utils::trim_l(s);
-    utils::trim_r(s);
+void trim_l(std::string &str) {
+    str.erase(str.begin(), std::ranges::find_if(str, [](unsigned char elem) { return !std::isspace(elem); }));
 }
 
-std::string to_lowercase_str(std::string str) {
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char ch) { return std::tolower(ch); });
+void trim(std::string &str) {
+    utils::trim_l(str);
+    utils::trim_r(str);
+}
+
+auto to_lowercase_str(std::string str) -> std::string {
+    std::ranges::transform(str, str.begin(), [](unsigned char cha) { return std::tolower(cha); });
     return str;
 }
 
-std::vector<std::string> extract_params(std::string_view url) {
+auto extract_params(std::string_view url) -> std::vector<std::string> {
     std::vector<std::string> key_names;
 
-    while (url.find("{") != std::string::npos && url.find("}") != std::string::npos) {
-        size_t start_pos = url.find("{");
-        size_t end_pos = url.find("}");
+    while (url.find('{') != std::string::npos && url.find('}') != std::string::npos) {
+        size_t start_pos = url.find('{');
+        size_t end_pos = url.find('}');
 
         key_names.emplace_back(url.substr(start_pos + 1, end_pos - start_pos - 1));
         url.remove_prefix(end_pos + 1);

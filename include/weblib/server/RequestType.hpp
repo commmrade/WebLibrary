@@ -1,7 +1,8 @@
 #pragma once
+#include <cstdint>
 #include <string_view>
 
-enum class RequestType {
+enum class RequestType : std::uint8_t {
     POST,
     GET,
     PUT,
@@ -9,7 +10,7 @@ enum class RequestType {
     OPTIONS,
 };
 
-inline RequestType req_type_from_str(std::string_view str) {
+inline auto req_type_from_str(std::string_view str) -> RequestType {
     if (str == "GET") {
         return RequestType::GET;
     } else if (str == "POST") {

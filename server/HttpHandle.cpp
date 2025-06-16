@@ -26,7 +26,7 @@ void HttpHandle::operator()(const HttpRequest& req, HttpResponseWriter& resp) co
     m_handle(req, resp);
 }
 
-bool HttpHandle::pass_middlewares(const HttpRequest& request) const {
+auto HttpHandle::pass_middlewares(const HttpRequest& request) const -> bool {
     return !std::ranges::any_of(m_filters, [&](auto&& filter) {
         return !filter(request);
     });

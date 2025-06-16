@@ -17,8 +17,9 @@ public:
     HttpFilter(HttpFilter &&) = delete;
     HttpFilter& operator=(const HttpFilter&) = delete;
     HttpFilter& operator=(HttpFilter&&) = delete;
+    ~HttpFilter() = default;
 
-    [[nodiscard]] bool do_filter(const HttpRequest &req) {
+    [[nodiscard]] auto do_filter(const HttpRequest &req) -> bool {
         return static_cast<Derived*>(this)->doFilter(req);
     }
 

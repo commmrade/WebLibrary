@@ -12,7 +12,8 @@ TEST(CookieRequestTest, NoTrailingSemicolon) {
 TEST(CookieRequestTest, ThrowsOnEmptyToString) {
     Cookie cookie;
     cookie.set_value("cock");
-    ASSERT_THROW(cookie.to_string(), std::runtime_error);
+    std::string a;
+    ASSERT_THROW((a = cookie.to_string()), std::runtime_error);
 }
 
 TEST(CookieResponseTest, NoTrailingSemicolon) {
@@ -41,6 +42,7 @@ TEST(CookieResponseTest, NoTrailingSemicolon) {
     {
         Cookie cookie;
         cookie.set_name("Session-id");
-        ASSERT_THROW(cookie.to_string(), std::runtime_error);
+        std::string a;
+        ASSERT_THROW((a = cookie.to_string()), std::runtime_error);
     }
 }

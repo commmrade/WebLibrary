@@ -10,7 +10,7 @@
 #include <server/hash.hpp>
 #include <print>
 
-std::expected<std::pair<std::string, std::string>, std::string> HttpRouter::parse_request_line(std::string_view request_string) {
+auto HttpRouter::parse_request_line(std::string_view request_string) -> std::expected<std::pair<std::string, std::string>, std::string> {
     auto method_str = request_string.substr(0, request_string.find(' '));
     auto first_space = request_string.find(' ');
     auto second_space = request_string.find(' ', first_space + 1);
@@ -26,7 +26,7 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
     try {
         const HttpHandle* handle = HttpBinder::instance().find_handle(path,request_type);
         // Do not destroy, since it is stored inside HttpBinder
-        if (handle) {  
+        if (handle != nullptr) {  
             HttpRequest const request(std::string{request_string}, handle->get_endpoint_name_str(), handle->get_param_names()); // Passing param names to then process query part
             if (!handle->pass_middlewares(request)) {
                 debug::log_warn("Filtering not passed");
@@ -65,7 +65,7 @@ void HttpRouter::process_request(int client_socket, std::string_view request_str
         return;
     }
     HttpResponseWriter resp{client_socket};
-    auto _ = parse_request_line(request_string)
+    auto _ = HttpRouter::parse_request_line(request_string)
         .and_then([&](std::pair<std::string, std::string>&& method_path) {
             
             auto& [method, path] = method_path;

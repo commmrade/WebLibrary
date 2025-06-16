@@ -16,7 +16,7 @@ class HttpBinder {
 private:
     std::unordered_map<std::string, HttpHandle> m_handles; 
 public:
-    static HttpBinder& instance() {
+    static auto instance() -> HttpBinder& {
         static HttpBinder binder;
         return binder;
     }
@@ -48,7 +48,7 @@ public:
         handle->second.add_filter(std::move(filter));
         debug::log_info("Registered filter");
     }
-    static bool match_path(std::string_view pattern, std::string_view path) {
+    static auto match_path(std::string_view pattern, std::string_view path) -> bool {
         auto split_path = [](std::string_view str) -> std::vector<std::string_view> {
             return str | std::views::split('/') | std::views::transform([](auto&& range) {
                 return std::string_view{range.begin(), static_cast<size_t>(std::distance(range.begin(), range.end()))};
@@ -122,7 +122,7 @@ public:
     }
 
 
-    const HttpHandle* find_handle(std::string_view path, RequestType type) {
+    auto find_handle(std::string_view path, RequestType type) -> const HttpHandle* {
         for (auto& [pattern, handle] : m_handles) {
             if (!handle.has_method(type)) {
                 continue;

@@ -2,7 +2,7 @@
 #include <debug.hpp>
 #include <signal.h>
 
-static HttpServer& app();
+static auto app() -> HttpServer&;
 
 static void sigint_handler([[maybe_unused]] int signal) {
     debug::log_info("SIGINT: Closing the server");
@@ -11,7 +11,7 @@ static void sigint_handler([[maybe_unused]] int signal) {
 }
 
 [[nodiscard]]
-static HttpServer& app() {
+static auto app() -> HttpServer& {
     signal(SIGINT, sigint_handler);
     return HttpServer::instance();
 }

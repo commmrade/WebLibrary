@@ -18,8 +18,8 @@ public:
     void set_handle_method(Handler&& handle);
     void add_http_method(RequestType method);
 
-    bool pass_middlewares(const HttpRequest& request) const;
-    bool has_method(RequestType type) {
+    auto pass_middlewares(const HttpRequest& request) const -> bool;
+    auto has_method(RequestType type) -> bool {
         return std::ranges::any_of(m_methods, [type](auto _type) {
             return _type == type;
         });
@@ -27,12 +27,12 @@ public:
 
     void set_param_names(std::vector<std::string>&& vec);
     [[nodiscard]]
-    std::span<const std::string> get_param_names() const {
+    auto get_param_names() const -> std::span<const std::string> {
         return m_parameter_names;
     }
 
     void set_endpoint_name_str(std::string ep_name);
-    [[nodiscard]] std::string get_endpoint_name_str() const { return m_endpoint_name_str; }
+    [[nodiscard]] auto get_endpoint_name_str() const -> std::string { return m_endpoint_name_str; }
 
     void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
 

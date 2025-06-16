@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -13,13 +14,13 @@ public:
     
 
     [[nodiscard]]
-    std::string as_str() {
+    auto as_str() -> std::string {
         return m_content;
     }
 
     template <typename T>
     [[nodiscard]]
-    T as() const {
+    auto as() const -> T {
         return m_content;
     } 
 
@@ -27,7 +28,7 @@ public:
 
 template <>
 [[nodiscard]]
-inline float Query::as<float>() const {
+inline auto Query::as<float>() const -> float {
     if (m_content.empty()) {
         throw std::invalid_argument("Could not be converted");
     }
@@ -37,7 +38,7 @@ inline float Query::as<float>() const {
 }
 template <>
 [[nodiscard]]
-inline int Query::as<int>() const {
+inline auto Query::as<int>() const -> int {
     if (m_content.empty()) {
         throw std::invalid_argument("Could not be converted");
     }
@@ -47,7 +48,7 @@ inline int Query::as<int>() const {
 }
 template <>
 [[nodiscard]]
-inline long long Query::as<long long>() const {
+inline auto Query::as<int64_t>() const -> int64_t {
     if (m_content.empty()) {
         throw std::invalid_argument("Could not be converted");
     }
@@ -57,7 +58,7 @@ inline long long Query::as<long long>() const {
 }
 template <>
 [[nodiscard]]
-inline double Query::as<double>() const {
+inline auto Query::as<double>() const -> double {
     if (m_content.empty()) {
         throw std::invalid_argument("Could not be converted");
     }
@@ -67,6 +68,6 @@ inline double Query::as<double>() const {
 }
 template<>
 [[nodiscard]]
-inline const char* Query::as<const char*>() const {
+inline auto Query::as<const char*>() const -> const char* {
     return m_content.c_str();
 }

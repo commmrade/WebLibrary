@@ -20,45 +20,45 @@ public:
     explicit HttpRequest(std::string request_str); // For parsing only headers
 
     [[nodiscard]]
-    Query get_query(const std::string& query_name) const;
+    auto get_query(const std::string& query_name) const -> Query;
 
     [[nodiscard]]
-    QueryView get_queries() const {
+    auto get_queries() const -> QueryView {
         return QueryView{m_parameters};
     }
 
     [[nodiscard]]
-    std::optional<std::string> get_header(const std::string &header_name) const;
+    auto get_header(const std::string &header_name) const -> std::optional<std::string>;
     [[nodiscard]]
-    HeaderView get_headers() const {
+    auto get_headers() const -> HeaderView {
         return HeaderView{m_headers};
     }
 
     [[nodiscard]]
-    std::optional<Cookie> get_cookie(const std::string &name) const;
+    auto get_cookie(const std::string &name) const -> std::optional<Cookie>;
 
     [[nodiscard]] 
-    CookieView get_cookies() const {
+    auto get_cookies() const -> CookieView {
         return CookieView{m_cookies};
     }
 
     [[nodiscard]]
-    std::string body_as_str() const { return m_request.substr(m_request.find("\r\n\r\n") + 4); }
+    auto body_as_str() const -> std::string { return m_request.substr(m_request.find("\r\n\r\n") + 4); }
 
     [[nodiscard]]
-    std::unique_ptr<Json::Value> body_as_json() const;
+    auto body_as_json() const -> std::unique_ptr<Json::Value>;
 
 
     [[nodiscard]]
-    RequestType get_method() const { 
-        auto method_str = m_request.substr(0, m_request.find(" ")); 
+    auto get_method() const -> RequestType { 
+        auto method_str = m_request.substr(0, m_request.find(' ')); 
         return req_type_from_str(method_str);
     }
 
     [[nodiscard]]
-    std::string get_version() const {
+    auto get_version() const -> std::string {
         auto line = m_request.substr(0, m_request.find("\r\n"));
-        return line.substr(line.find_last_of("/") + 1);
+        return line.substr(line.find_last_of('/') + 1);
     }
 
     void add_header(const std::string &name, std::string_view value) const {

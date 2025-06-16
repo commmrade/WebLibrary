@@ -11,6 +11,7 @@
 #include "server/HttpRequest.hpp"
 #include <print>
 #include <system_error>
+#include <array>
 
 HttpServer::HttpServer() {
     m_thread_pool = std::make_unique<ThreadPool>();
@@ -53,23 +54,23 @@ void HttpServer::server_setup(int port) {
     } 
 }
 
-std::optional<std::string> HttpServer::read_request(int client_socket) {
+auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
     std::string request_string; 
 
     int content_length{-1};
     int current_body_read{0};
     bool in_body{false};
 
-    size_t header_end_pos;
+    size_t header_end_pos = 0;
     while (true) {
-        char buffer[4096];
-        ssize_t rd_bytes = read(client_socket, buffer, 4096);
+        std::array<char, 4096> buffer{};
+        ssize_t rd_bytes = read(client_socket, buffer.data(), 4096);
         if (rd_bytes == 0) { // CLient disconnected
             debug::log_info("Client has disconnected");
             return std::nullopt;
         }
         if (rd_bytes > 0) { // If something to read...
-            request_string.append(buffer, rd_bytes); // This way to need for some resizing logic
+            request_string.append(buffer.data(), rd_bytes); // This way to need for some resizing logic
             // Body parsing
             if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
                 // std::println("1");
@@ -90,7 +91,7 @@ std::optional<std::string> HttpServer::read_request(int client_socket) {
                 }
             }
         } else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
-            pollfd client;
+            pollfd client{};
             client.fd = client_socket;
             client.events = POLLIN;
             int poll_result = poll(&client, 1, 5000);
@@ -130,7 +131,6 @@ void HttpServer::listen_start(int port) {
     std::vector<pollfd> polls_fd;
     polls_fd.push_back({m_serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
-        std::println("here");
         int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
         
         if (poll_result < 0) {
@@ -138,7 +138,7 @@ void HttpServer::listen_start(int port) {
             throw std::runtime_error("");
         }
         for (size_t i = 0; i < polls_fd.size(); i++) {
-            if (polls_fd[i].revents & POLLIN) {
+            if ((polls_fd[i].revents & POLLIN) == 1) {
                 if (polls_fd[i].fd == m_serv_socket) { // If server socket got something
                     int client_socket = accept(m_serv_socket, nullptr, nullptr);
                     if (client_socket < 0) {

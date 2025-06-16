@@ -5,7 +5,6 @@
 
 namespace debug {
 
-
 template<typename... Args>
 void log_info([[maybe_unused]] Args... args) {
 #ifdef DEBUG

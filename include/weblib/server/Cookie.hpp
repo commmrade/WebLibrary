@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 
 
-enum class SameSite {
+enum class SameSite : std::uint8_t {
     None,
     Lax,
     Strict,
@@ -17,30 +18,30 @@ public:
     Cookie() = default;
 
     [[nodiscard]]
-    std::string to_string() const;
+    auto to_string() const -> std::string;
 
     [[nodiscard]]
-    std::string get_name() const {
+    auto get_name() const -> std::string {
         return m_name;
     }
     [[nodiscard]]
-    std::string get_value() const {
+    auto get_value() const -> std::string {
         return m_value;
     }
     [[nodiscard]]
-    std::optional<int> get_max_age() const {
+    auto get_max_age() const -> std::optional<int> {
         return m_max_age;
     }
     [[nodiscard]]
-    std::optional<bool> get_httponly() const {
+    auto get_httponly() const -> std::optional<bool> {
         return m_httpOnly;
     }
     [[nodiscard]]
-    std::optional<bool> get_is_secure() const {
+    auto get_is_secure() const -> std::optional<bool> {
         return m_secure;
     }
     [[nodiscard]]
-    SameSite get_samesite_policy() const {
+    auto get_samesite_policy() const -> SameSite {
         return m_samesite;
     }
 
@@ -75,41 +76,41 @@ class CookieBuilder {
 private:
     Cookie m_cookie;
 public:
-    CookieBuilder& set_name(std::string_view name) {
+    auto set_name(std::string_view name) -> CookieBuilder& {
         m_cookie.set_name(name);
         return *this;
     }
-    CookieBuilder& set_value(std::string_view new_val) {
+    auto set_value(std::string_view new_val) -> CookieBuilder& {
         m_cookie.set_value(new_val);
         return *this;
     }
 
-    CookieBuilder& set_httponly(bool val) {
+    auto set_httponly(bool val) -> CookieBuilder& {
         m_cookie.set_httponly(val);
         return *this;
     }
-    CookieBuilder& set_secure(bool val) {
+    auto set_secure(bool val) -> CookieBuilder& {
         m_cookie.set_secure(val);
         return *this;
     }
-    CookieBuilder& set_max_age(int new_max_age) {
+    auto set_max_age(int new_max_age) -> CookieBuilder& {
         m_cookie.set_max_age(new_max_age);
         return *this;
     }
-    CookieBuilder& set_path(std::string_view new_path) {
+    auto set_path(std::string_view new_path) -> CookieBuilder& {
         m_cookie.set_path(new_path);
         return *this;
     }
-    CookieBuilder& set_domain(std::string_view new_domain) {
+    auto set_domain(std::string_view new_domain) -> CookieBuilder& {
         m_cookie.set_domain(new_domain);
         return *this;
     }
-    CookieBuilder& set_samesite(SameSite new_rule) {
+    auto set_samesite(SameSite new_rule) -> CookieBuilder& {
         m_cookie.set_samesite(new_rule);
         return *this;
     }
 
-    Cookie build() {
+    auto build() -> Cookie {
         return std::move(m_cookie);
     }
 

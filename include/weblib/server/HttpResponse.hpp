@@ -12,8 +12,8 @@
 #include "types.hpp"
 
 class HttpResponseBuilder;
-enum class HeaderType;
-enum class ResponseType; 
+enum class HeaderType : std::uint8_t;
+enum class ResponseType : std::uint8_t; 
 
 inline constexpr int MAX_WAIT = 5000;
 
@@ -32,7 +32,7 @@ public:
     HttpResponse() = default;
 
     [[nodiscard]]
-    std::string to_string() const;
+    auto to_string() const -> std::string;
 
     void set_header_raw(const std::string &name, std::string_view value);
     void set_header(HeaderType header_type, std::string_view value);
@@ -71,31 +71,31 @@ class HttpResponseBuilder {
 private:
     HttpResponse resp{};
 public:
-    HttpResponseBuilder() {}
+    HttpResponseBuilder() = default;
     
-    [[nodiscard]] HttpResponseBuilder& set_body_str(std::string text) {
+    [[nodiscard]] auto set_body_str(std::string text) -> HttpResponseBuilder& {
         resp.set_body(std::move(text));
         return *this;
     }
-    [[nodiscard]] HttpResponseBuilder& set_body_json(const Json::Value& json_obj) {
+    [[nodiscard]] auto set_body_json(const Json::Value& json_obj) -> HttpResponseBuilder& {
         resp.set_body_json(json_obj);
         return *this;
     }
 
-    [[nodiscard]] HttpResponseBuilder& set_status(int code) {
+    [[nodiscard]] auto set_status(int code) -> HttpResponseBuilder& {
         resp.set_status(code);
         return *this;
     }
-    [[nodiscard]] HttpResponseBuilder& set_content_type(ContentType type) {
+    [[nodiscard]] auto set_content_type(ContentType type) -> HttpResponseBuilder& {
         resp.set_content_type(type);
         return *this;
     }
-    [[nodiscard]] HttpResponseBuilder& set_custom_message(const std::string &msg) {
+    [[nodiscard]] auto set_custom_message(const std::string &msg) -> HttpResponseBuilder& {
         resp.set_custom_message(msg);
         return *this;
     }
     
-    [[nodiscard]] HttpResponse build() {
+    [[nodiscard]] auto build() -> HttpResponse {
         return std::move(resp);
     }
 };

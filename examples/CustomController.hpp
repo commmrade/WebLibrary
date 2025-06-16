@@ -24,7 +24,7 @@ public:
 protected:
     void reg(const HttpRequest& req, HttpResponseWriter&& resp) {
         
-        auto response = HttpResponseBuilder{}.set_body_str("pidor").build();
+        auto response = HttpResponseBuilder{}.set_body_str("Hello friend").build();
         std::this_thread::sleep_for(std::chrono::seconds(1));
         resp.respond(response);
     }

@@ -2,7 +2,7 @@
 
 `weblib` is a C++ framework that lets you make web applications
 
-[![Documentation](https://en.wikipedia.org/wiki/Subject%E2%80%93verb%E2%80%93object_word_order)][docs]
+(https://en.wikipedia.org/wiki/Subject%E2%80%93verb%E2%80%93object_word_order)][Documentation]
 
 More information about this crate can be found in the documentation, that I didn't make.
 

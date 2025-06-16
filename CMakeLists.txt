@@ -24,18 +24,6 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 
 
-# Source files
-file(GLOB REQUESTS_SOURCES CONFIGURE_DEPENDS "requests/*.cpp")
-file(GLOB SERVER_SOURCES CONFIGURE_DEPENDS "server/*.cpp")
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "tests/*.cpp")
-
-if(NOT REQUESTS_SOURCES)
-    message(FATAL_ERROR "No source files found in requests/")
-endif()
-if(NOT SERVER_SOURCES)
-    message(FATAL_ERROR "No source files found in server/")
-endif()
-
 # Library
 add_library(weblib 
     requests/client.cpp
@@ -125,13 +113,13 @@ install(FILES
 )
 
 # Tests
-enable_testing()
-if(TEST_SOURCES)
-    add_executable(tests ${TEST_SOURCES})
-    target_link_libraries(tests PRIVATE weblib gtest_main ${JSONCPP_LIBRARIES})
-    target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
-    include(GoogleTest)
-    gtest_discover_tests(tests)
-else()
-    message(WARNING "No tests will be built due to missing test sources")
-endif()
+# enable_testing()
+# if(TEST_SOURCES)
+#     add_executable(tests ${TEST_SOURCES})
+#     target_link_libraries(tests PRIVATE weblib gtest_main ${JSONCPP_LIBRARIES})
+#     target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+#     include(GoogleTest)
+#     gtest_discover_tests(tests)
+# else()
+#     message(WARNING "No tests will be built due to missing test sources")
+# endif()

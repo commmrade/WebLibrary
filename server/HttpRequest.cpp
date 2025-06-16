@@ -164,7 +164,7 @@ void HttpRequest::extract_headers() {
         }
 
         auto name = std::string(line.begin(), line.begin() + static_cast<std::string::difference_type>(pos));
-        auto value = std::string(line.begin() + static_cast<std::string::difference_type>(pos) + 1, line.end());
+        auto value = std::string(line.begin() + static_cast<std::string::difference_type>(pos) + 2, line.end());
         utils::trim(value);
 
         auto lowercase_name = utils::to_lowercase_str(name);
@@ -179,15 +179,15 @@ void HttpRequest::extract_headers() {
                     return val;
                 }) 
                 | std::ranges::to<std::vector<std::string>>();
-                
             std::ranges::for_each(values, [&](auto&& cookie) {
                 auto name_value = cookie | std::views::split('=') | std::ranges::to<std::vector<std::string>>();
                 if (name_value.size() != 2) {
                     throw std::runtime_error("Malformed http m_request");
                 }
-                auto const  name = std::move(name_value.front());
-                auto const value = std::move(name_value.back());
-                m_cookies.emplace(lowercase_name, Cookie{std::move(name), std::move(value)});
+                auto const  name_cookie = std::move(name_value.front());
+                auto const value_cookie = std::move(name_value.back());
+                std::println("Cook: '{}' '{}'", name_cookie, value_cookie);
+                m_cookies.emplace(utils::to_lowercase_str(name_cookie), Cookie{std::move(name_cookie), std::move(value_cookie)});
             });
         }
 

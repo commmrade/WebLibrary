@@ -14,12 +14,13 @@
 template<typename Derived> // Currently no real need for CRTP  but maybe in the future
 class HttpController {
 public:
+    HttpController() = default;
     HttpController(const HttpController&) = delete;
     HttpController(HttpController &&) = delete;
     HttpController& operator=(const HttpController&) = delete;
     HttpController& operator=(HttpController&&) = delete;
 
-    
+
     template<typename ... RequestTypes>
     static void register_method(const std::string &endpoint_name, Handler &&handler, RequestTypes&&... types) {
         debug::log_info("Registering a handler");

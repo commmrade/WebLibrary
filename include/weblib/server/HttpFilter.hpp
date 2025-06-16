@@ -14,6 +14,7 @@ template<typename Derived> // CRTP needed to avoid dynamic dispatching
 // TODO: Maybe give ability for use to specify error themself
 class HttpFilter {
 public:
+    HttpController() = default;
     HttpFilter(const HttpFilter&) = delete;
     HttpFilter(HttpFilter &&) = delete;
     HttpFilter& operator=(const HttpFilter&) = delete;

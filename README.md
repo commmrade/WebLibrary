@@ -1,3 +1,4 @@
+
 # WebLib
 
 `weblib` is a C++ framework that lets you make web applications
@@ -12,7 +13,6 @@ More information about this crate can be found in the documentation, that I didn
 - Simple and predictable error handling model.
 - Write code with mininal boilerplate.
 - Take full advantage of C++23 features. (I mean the lib doesn't really need C++23, but it looks cool and I like `ranges` library)
-
 
 ## Usage example
 
@@ -45,7 +45,7 @@ int main(int, char**){
 }
 ```
 
-You can find more examples in [examples][examples]
+You can find more examples in `examples`
 
 See the documentation, that i didn't make for more
 
@@ -68,7 +68,7 @@ I don't need no contributors, to contribute send 1 BTC to my crypto wallet.
 
 ## License
 
-This project is licensed under some license. !!!!!TODODODODOTOTOTDODODODOODO !!!!!TODODODODOTOTOTDODODODOODO !!!!!TODODODODOTOTOTDODODODOODO !!!!!TODODODODOTOTOTDODODODOODO !!!!!TODODODODOTOTOTDODODODOODO
+This project is licensed under [MIT License](LICENSE)
 
 ## Structure of this project
 
@@ -83,13 +83,12 @@ This is just a library made for learning purposes. I don't think it is productio
 - HttpBinder - registering endpoints, filters
 - HttpRequest - responsible for incoming requests (client to server)
 - HttpResponse - responsible for outgoing requests (server to client)
-- HttpResController - controller that sets up endpoints for resource requests (static files (located in PROJECT_DIR/static/\[public|private\])).
+- HttpResController - controller that sets up endpoints for resource requests (static files (located in PROJECT_DIR/static/[public|private]))
 /private and /public are needed so that you can have both public resources and private (by default they are all public, but you can apply a filter)
 - HttpRouter - responsible for managing incoming requests (routing to the correct endpoint, checking if it's a file request or not) 
 - HttpServer - responsible for starting server, accepting requests
 - Utils - different string utils
 - Query - query for HttpRequest
-
 
 ### requests
 - i put all my efforts into making "server" functionality, so requests part of the library is really basic and I don't really wanna rewrite it nor i care

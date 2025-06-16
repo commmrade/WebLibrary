@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Klewy
 #pragma once
 #include <cstdint>
 #include <string_view>

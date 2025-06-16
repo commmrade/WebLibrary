@@ -37,7 +37,20 @@ if(NOT SERVER_SOURCES)
 endif()
 
 # Library
-add_library(weblib ${REQUESTS_SOURCES} ${SERVER_SOURCES})
+add_library(weblib 
+    requests/client.cpp
+    requests/request.cpp
+    requests/response.cpp
+
+    server/Cookie.cpp
+    server/HttpHandle.cpp
+    server/HttpRequest.cpp
+    server/HttpResponse.cpp
+    server/HttpRouter.cpp
+    server/HttpServer.cpp
+    server/ThreadPool.cpp
+    server/Utils.cpp
+)
 
 if(JSONCPP_FOUND)
     message(STATUS "jsoncpp include dirs: ${JSONCPP_INCLUDE_DIRS}")

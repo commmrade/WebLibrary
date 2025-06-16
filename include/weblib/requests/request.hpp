@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Klewy
+#pragma once 
 #include <cerrno>
 #include <exception>
 #include <iostream>
@@ -12,8 +15,6 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include<unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 #include "client.hpp"
 #include "response.hpp"
@@ -35,7 +36,7 @@ public:
     ~Request();
     
     template<typename T>
-    static response execute(client<T> &client, int port = 80) {
+    static auto execute(client<T> &client, int port = 80) -> response {
         Request req(client.get_url(), port);
         req.send(client.prepare_request_str());
         return req.receive();

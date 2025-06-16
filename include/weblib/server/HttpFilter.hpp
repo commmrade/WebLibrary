@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Klewy
 #pragma once
 #include "server/HttpBinder.hpp"
 #include "server/HttpRequest.hpp"
@@ -12,12 +14,10 @@ template<typename Derived> // CRTP needed to avoid dynamic dispatching
 // TODO: Maybe give ability for use to specify error themself
 class HttpFilter {
 public:
-    HttpFilter() = default;
     HttpFilter(const HttpFilter&) = delete;
     HttpFilter(HttpFilter &&) = delete;
     HttpFilter& operator=(const HttpFilter&) = delete;
     HttpFilter& operator=(HttpFilter&&) = delete;
-    ~HttpFilter() = default;
 
     [[nodiscard]] auto do_filter(const HttpRequest &req) -> bool {
         return static_cast<Derived*>(this)->doFilter(req);

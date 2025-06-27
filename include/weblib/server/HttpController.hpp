@@ -5,7 +5,7 @@
 #include<cstdarg>
 #include <utility>
 #include "debug.hpp"
-#include "server/HttpBinder.hpp"
+#include "weblib/server/HttpBinder.hpp"
 
 #define mv(X) std::move(X)         
 #define REG_ENDPOINT(FUNCTION, NAME, TYPE, ...) register_method(NAME, [this] (const HttpRequest &req, HttpResponseWriter &resp) { FUNCTION(req, mv(resp)); }, TYPE, __VA_ARGS__)

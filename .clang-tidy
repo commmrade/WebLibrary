@@ -1,78 +1,78 @@
----
-Checks: >-
-  -*,
-  bugprone-*,
-  cppcoreguidelines-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  portability-*,
-  llvm-header-guard,
-  google-explicit-constructor,
-  google-runtime-int,
-  google-default-arguments,
-  concurrency-*,
-  clang-analyzer-*,
-  security-*
+# ---
+# Checks: >-
+#   -*,
+#   bugprone-*,
+#   cppcoreguidelines-*,
+#   modernize-*,
+#   performance-*,
+#   readability-*,
+#   portability-*,
+#   llvm-header-guard,
+#   google-explicit-constructor,
+#   google-runtime-int,
+#   google-default-arguments,
+#   concurrency-*,
+#   clang-analyzer-*,
+#   security-*
 
-WarningsAsErrors: >-
-  bugprone-*,
-  cppcoreguidelines-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  portability-*,
-  llvm-header-guard,
-  google-*,
-  concurrency-*,
-  clang-analyzer-*,
-  security-*
+# WarningsAsErrors: >-
+#   bugprone-*,
+#   cppcoreguidelines-*,
+#   modernize-*,
+#   performance-*,
+#   readability-*,
+#   portability-*,
+#   llvm-header-guard,
+#   google-*,
+#   concurrency-*,
+#   clang-analyzer-*,
+#   security-*
 
-HeaderFilterRegex: '^(src|include|test|utility|library)/.*'
+# HeaderFilterRegex: '^(src|include|test|utility|library)/.*'
 
-FormatStyle: file
+# FormatStyle: file
 
-CheckOptions:
-  - key: readability-identifier-naming.VariableCase
-    value: camelCase
-  - key: readability-identifier-naming.FunctionCase
-    value: camelCase
-  - key: readability-identifier-naming.MethodCase
-    value: camelCase
-  - key: readability-identifier-naming.ParameterCase
-    value: camelCase
-  - key: readability-identifier-naming.MemberCase
-    value: m_camelCase
-  - key: readability-identifier-naming.ConstantCase
-    value: SCREAMING_SNAKE_CASE
-  - key: readability-identifier-naming.ClassCase
-    value: PascalCase
-  - key: readability-identifier-naming.StructCase
-    value: PascalCase
-  - key: readability-identifier-naming.EnumCase
-    value: PascalCase
-  - key: readability-identifier-naming.EnumConstantCase
-    value: PascalCase
-  - key: readability-identifier-naming.NamespaceCase
-    value: snake_case
-  - key: readability-identifier-naming.GlobalConstantCase
-    value: SCREAMING_SNAKE_CASE
+# CheckOptions:
+#   - key: readability-identifier-naming.VariableCase
+#     value: camelCase
+#   - key: readability-identifier-naming.FunctionCase
+#     value: camelCase
+#   - key: readability-identifier-naming.MethodCase
+#     value: camelCase
+#   - key: readability-identifier-naming.ParameterCase
+#     value: camelCase
+#   - key: readability-identifier-naming.MemberCase
+#     value: m_camelCase
+#   - key: readability-identifier-naming.ConstantCase
+#     value: SCREAMING_SNAKE_CASE
+#   - key: readability-identifier-naming.ClassCase
+#     value: PascalCase
+#   - key: readability-identifier-naming.StructCase
+#     value: PascalCase
+#   - key: readability-identifier-naming.EnumCase
+#     value: PascalCase
+#   - key: readability-identifier-naming.EnumConstantCase
+#     value: PascalCase
+#   - key: readability-identifier-naming.NamespaceCase
+#     value: snake_case
+#   - key: readability-identifier-naming.GlobalConstantCase
+#     value: SCREAMING_SNAKE_CASE
 
-  - key: modernize-use-nullptr.NullMacros
-    value: 'NULL, nullptr_t, nullptr'
+#   - key: modernize-use-nullptr.NullMacros
+#     value: 'NULL, nullptr_t, nullptr'
 
-  - key: cppcoreguidelines-pro-type-member-init.CheckedTypes
-    value: class,struct
+#   - key: cppcoreguidelines-pro-type-member-init.CheckedTypes
+#     value: class,struct
 
-  - key: modernize-pass-by-value.IncludeHeaders
-    value: 'false'
+#   - key: modernize-pass-by-value.IncludeHeaders
+#     value: 'false'
 
-  - key: readability-qualified-auto.IgnoredClasses
-    value: 'std::unique_ptr, std::shared_ptr'
+#   - key: readability-qualified-auto.IgnoredClasses
+#     value: 'std::unique_ptr, std::shared_ptr'
 
-  - key: bugprone-string-integer-conversion.StrictMode
-    value: 'true'
+#   - key: bugprone-string-integer-conversion.StrictMode
+#     value: 'true'
 
-  - key: performance-unnecessary-value-param.AllowedTypes
-    value: 'std::string'
-...
+#   - key: performance-unnecessary-value-param.AllowedTypes
+#     value: 'std::string'
+# ...

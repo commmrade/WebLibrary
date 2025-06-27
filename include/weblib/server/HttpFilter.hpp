@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
 #pragma once
-#include "server/HttpBinder.hpp"
-#include "server/HttpRequest.hpp"
-#include <server/HttpServer.hpp>
-#include <server/HttpRouter.hpp>
+#include "weblib/server/HttpBinder.hpp"
+#include "weblib/server/HttpRequest.hpp"
+#include "weblib/server/HttpServer.hpp"
+#include "weblib/server/HttpRouter.hpp"
 #include <debug.hpp>
 
 #define mv(X) std::move(X)
@@ -14,7 +14,7 @@ template<typename Derived> // CRTP needed to avoid dynamic dispatching
 // TODO: Maybe give ability for use to specify error themself
 class HttpFilter {
 public:
-    HttpController() = default;
+    HttpFilter() = default;
     HttpFilter(const HttpFilter&) = delete;
     HttpFilter(HttpFilter &&) = delete;
     HttpFilter& operator=(const HttpFilter&) = delete;

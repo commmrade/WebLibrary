@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
-#include "server/HttpHandle.hpp"
-#include "server/RequestType.hpp"
-#include "server/Utils.hpp"
+#include "weblib/server/HttpHandle.hpp"
+#include "weblib/server/RequestType.hpp"
+#include "weblib/server/Utils.hpp"
 #include <algorithm>
 #include <string_view>
 #include <unordered_map>

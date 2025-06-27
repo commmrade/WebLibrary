@@ -1,4 +1,4 @@
-#include <server/HttpResponse.hpp>
+#include "weblib/server/HttpResponse.hpp"
 #include "debug.hpp"
 #include <cerrno>
 #include <format>
@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <sys/poll.h>
+
 
 auto HttpResponse::to_string() const -> std::string {
     std::string response = std::format("HTTP/{} {} {}\r\n", m_http_version, m_status_code, m_status_message);
@@ -149,51 +150,51 @@ void HttpResponse::set_content_type(ContentType type) {
 
 void HttpResponse::set_status(int m_status_code) {
     switch (m_status_code) {
-        case 200: {
+        case OK: {
             m_status_message = "OK";
             break;
         }
-        case 201: {
+        case CREATED: {
             m_status_message = "Created";
             break;
         }
-        case 204: {
+        case NO_CONTENT: {
             m_status_message = "No Content";
             break;
         }
-        case 400: {
+        case BAD_REQUEST: {
             m_status_message = "Bad Request";
             break;
         }
-        case 401: {
+        case UNAUTHORIZED: {
             m_status_message = "Unauthorized";
             break;
         }
-        case 403: {
+        case FORBIDDEN: {
             m_status_message = "Forbidden";
             break;
         }
-        case 404: {
+        case NOT_FOUND: {
             m_status_message = "Not Found";
             break;
         }
-        case 405: {
+        case METHOD_NOT_ALLOWED: {
             m_status_message = "Method Not Allowed";
             break;
         }
-        case 500: {
+        case INTERNAL_SERVER_ERROR: {
             m_status_message = "Internal Server Error";
             break;
         }
-        case 502: {
+        case BAD_GATEWAY: {
             m_status_message = "Bad Gateway";
             break;
         }
-        case 503: {
+        case SERVICE_UNAVAILABLE: {
             m_status_message = "Service Unavailable";
             break;
         }
-        case 504: {
+        case GATEWAY_TIMEOUT: {
             m_status_message = "Gateway Timeout";
             break;
         }

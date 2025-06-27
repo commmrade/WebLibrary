@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
-#include "server/Cookie.hpp"
+#include "weblib/server/Cookie.hpp"
 #include <json/reader.h>
 #include <json/value.h>
 #include <memory>
@@ -14,7 +14,7 @@
 #include <vector>
 #include "Query.hpp"
 #include "HeaderView.hpp"
-#include "server/RequestType.hpp"
+#include "weblib/server/RequestType.hpp"
 
 class HttpRequest {
 public:

@@ -1,21 +1,20 @@
-#include <server/HttpRouter.hpp>
+#include <optional>
+#include "weblib/server/HttpRouter.hpp"
+#include "weblib/server/HttpHandle.hpp"
+#include "weblib/server/HttpRequest.hpp"
+#include "weblib/server/HttpBinder.hpp"
 #include <expected>
-#include "server/HttpBinder.hpp"
-#include "server/HttpHandle.hpp"
-#include "server/HttpRequest.hpp"
-#include "server/HttpResponse.hpp"
-#include "server/RequestType.hpp"
 #include <exception>
-#include <server/Utils.hpp>
-#include <server/hash.hpp>
+#include "weblib/server/Utils.hpp"
+#include "weblib/server/hash.hpp"
 #include <print>
 
-auto HttpRouter::parse_request_line(std::string_view request_string) -> std::expected<std::pair<std::string, std::string>, std::string> {
+auto HttpRouter::parse_request_line(std::string_view request_string) -> std::optional<std::pair<std::string, std::string>> {
     auto method_str = request_string.substr(0, request_string.find(' '));
     auto first_space = request_string.find(' ');
     auto second_space = request_string.find(' ', first_space + 1);
     if (first_space == std::string_view::npos || second_space == std::string_view::npos) {
-        return std::unexpected{"Malformed request"};
+        return std::nullopt;
     }
     std::string_view const endpoint_target = request_string.substr(first_space + 1, second_space - first_space - 1);
 
@@ -65,22 +64,18 @@ void HttpRouter::process_request(int client_socket, std::string_view request_str
         return;
     }
     HttpResponseWriter resp{client_socket};
-    auto _ = HttpRouter::parse_request_line(request_string)
-        .and_then([&](std::pair<std::string, std::string>&& method_path) {
-            
-            auto& [method, path] = method_path;
-            RequestType const request_type = req_type_from_str(method);
-            handle_request(resp, path, request_string, method, request_type);
-            return std::expected<void, std::string>{};
-        })
-        .or_else([&](std::string&& error) {
-             
-            auto resp_ = HttpResponseBuilder()
-                .set_status(400)
-                .set_body_str(error)
-                .set_content_type(ContentType::TEXT)
-                .build();
-            resp.respond(resp_);
-            return std::expected<void, std::string>{};
-        });
+
+
+    auto val = HttpRouter::parse_request_line(request_string);
+    if (!val.has_value()) {
+        auto resp_ = HttpResponseBuilder()
+            .set_status(400)
+            .set_body_str("Malformed request")
+            .set_content_type(ContentType::TEXT)
+            .build();
+        resp.respond(resp_);
+    }
+    auto& [method, path] = val.value();
+    RequestType const request_type = req_type_from_str(method);
+    handle_request(resp, path, request_string, method, request_type);
 }

@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
-#include "server/HttpResponse.hpp"
+#include "weblib/server/HttpResponse.hpp"
 #include <algorithm>
 #include "RequestType.hpp"
 #include <span>

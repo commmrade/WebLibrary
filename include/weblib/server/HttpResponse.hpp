@@ -10,7 +10,7 @@
 #include <json/json.h>
 #include <json/json.h>
 #include <debug.hpp>
-#include "server/HeaderView.hpp"
+#include "weblib/server/HeaderView.hpp"
 #include "types.hpp"
 
 class HttpResponseBuilder;
@@ -18,6 +18,22 @@ enum class HeaderType : std::uint8_t;
 enum class ResponseType : std::uint8_t; 
 
 inline constexpr int MAX_WAIT = 5000;
+
+enum StatusCode {
+    OK = 200,
+    CREATED = 201,
+    NO_CONTENT = 204,
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    METHOD_NOT_ALLOWED = 405,
+    INTERNAL_SERVER_ERROR = 500,
+    BAD_GATEWAY = 502,
+    SERVICE_UNAVAILABLE = 503,
+    GATEWAY_TIMEOUT = 504
+};
+
 
 class HttpResponse {
 private:

@@ -22,7 +22,7 @@ public:
         if (pos == m_headers.end()) {
             return std::nullopt;
         }
-        return *pos;
+        return std::optional<typename iter_type::value_type>{*pos};
     }
 
     [[nodiscard]]

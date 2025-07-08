@@ -18,7 +18,7 @@ auto HttpRouter::parse_request_line(std::string_view request_string) -> std::opt
     }
     std::string_view const endpoint_target = request_string.substr(first_space + 1, second_space - first_space - 1);
 
-    return std::pair{std::string{method_str}, std::string{endpoint_target}};
+    return std::optional<std::pair<std::string, std::string>>{std::pair{std::string{method_str}, std::string{endpoint_target}}};
 }
 
 void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path, std::string_view request_string, std::string_view method, RequestType request_type) {

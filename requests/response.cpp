@@ -8,7 +8,7 @@ response::response(int status_code, const std::string &headers, const std::strin
 auto response::get_header(const std::string &name) -> std::optional<std::string> {
     auto pos = headers.find(name);
     if (pos != headers.end()) {
-        return (*pos).second;
+        return std::optional<std::string>{(*pos).second};
     }
     return std::nullopt;
 }

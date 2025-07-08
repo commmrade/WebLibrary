@@ -33,15 +33,15 @@ public:
     }
     [[nodiscard]]
     auto get_max_age() const -> std::optional<int> {
-        return m_max_age;
+        return std::optional<int>{m_max_age};
     }
     [[nodiscard]]
     auto get_httponly() const -> std::optional<bool> {
-        return m_httpOnly;
+        return std::optional<bool>{m_httpOnly};
     }
     [[nodiscard]]
     auto get_is_secure() const -> std::optional<bool> {
-        return m_secure;
+        return std::optional<bool>{m_secure};
     }
     [[nodiscard]]
     auto get_samesite_policy() const -> SameSite {

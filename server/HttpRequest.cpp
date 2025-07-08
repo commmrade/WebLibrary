@@ -29,7 +29,7 @@ auto HttpRequest::get_query(const std::string& query_name) const -> Query {
 auto HttpRequest::get_header(const std::string &header_name) const -> std::optional<std::string> {
     auto pos = m_headers.find(utils::to_lowercase_str(header_name));
     if (pos != m_headers.end()) { //If header exists
-        return pos->second;
+        return std::optional<std::string>{pos->second};
     }
     return std::nullopt;
 }
@@ -37,7 +37,7 @@ auto HttpRequest::get_header(const std::string &header_name) const -> std::optio
 auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Cookie> {
     auto pos = m_cookies.find(utils::to_lowercase_str(name));
     if (pos != m_cookies.end()) {
-        return pos->second;
+        return std::optional<Cookie>{pos->second};
     }
     return std::nullopt;
 }

@@ -1,6 +1,7 @@
 #include "weblib/server/HttpServer.hpp"
 #include <cerrno>
 #include <cstring>
+#include <exception>
 #include <iterator>
 #include <optional>
 #include "weblib/server/HttpRouter.hpp"
@@ -14,7 +15,7 @@
 #include <array>
 
 HttpServer::HttpServer() {
-    m_thread_pool = std::make_unique<ThreadPool>();
+    m_thread_pool = std::make_unique<ThreadPool<>>();
 }
 HttpServer::~HttpServer() {
     close(m_serv_socket);
@@ -108,15 +109,20 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
 
 void HttpServer::handle_incoming_request(int client_socket) {
     debug::log_info("Reading user request");
-    while (true) {
-        auto request_str = read_request(client_socket);
-        if (!request_str) {
-            break;
+    try {
+        while (true) {
+            auto request_str = read_request(client_socket);
+            if (!request_str) {
+                break;
+            }
+            
+            HttpRouter::instance().process_request(client_socket, request_str.value());
         }
-        
-        HttpRouter::instance().process_request(client_socket, request_str.value());
+        close(client_socket);
+    } catch (const std::exception& ex) {
+        close(client_socket);
     }
-    close(client_socket);
+    
 }
 
 
@@ -152,14 +158,9 @@ void HttpServer::listen_start(int port) {
                     polls_fd.push_back({client_socket, POLLIN, 0}); // Add new user
                 } else {
                     int client_socket = polls_fd[i].fd;
-                    m_thread_pool->add_job([this, client_socket](){ 
-                        try {
-                            handle_incoming_request(client_socket);
-                        } catch (const std::exception& ex) {
-                            close(client_socket);
-                            debug::log_error("Could not handle: ", ex.what());
-                        }
-                    });
+
+                    m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this, client_socket);
+                    
                     polls_fd.erase(polls_fd.begin() + i);
                     i--;
                 }

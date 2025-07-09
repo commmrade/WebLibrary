@@ -3,29 +3,100 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
 #include <functional>
+#include <future>
 #include <limits>
+#include <print>
 #include <queue>
 #include <thread>
 #include <mutex>
 #include <semaphore>
 
 
+using default_func_type = std::move_only_function<void()>;
+template <typename FunctionType = default_func_type> requires std::invocable<FunctionType>
 class ThreadPool {
 public:
+    ThreadPool(unsigned int threads_count = std::thread::hardware_concurrency()) {
+        m_workers.reserve(threads_count); // Reserve space, avoid reallocations
+        for (unsigned int i = 0; i < threads_count; ++i) {
+            m_workers.emplace_back([this] {
+                while (true) {
+                    std::unique_lock lock{m_mutex};
+                    m_condvar.wait(lock, [this]{ return !m_tasks.empty() || !m_should_work.load(std::memory_order_acquire); });
+                    if (!m_should_work.load(std::memory_order_acquire)) { // If tasks must be finished, end the loop
+                        return;
+                    }
+                    
+                    FunctionType task = std::move(m_tasks.front()); // Get task and run it
+                    m_tasks.pop_front();
+                    lock.unlock(); // Dont need lock anymore
 
-    ThreadPool();
-    ~ThreadPool();
+                    task(); // Cant really be broken i suppose
+                }
+            });
+        }
+    }
+    ThreadPool(const ThreadPool& rhs) = delete;
+    ThreadPool& operator=(const ThreadPool& rhs) = delete;
+
+    ~ThreadPool() {
+        m_should_work.store(false, std::memory_order_release);
+        m_condvar.notify_all();
+    }
+
+    template<typename Function, typename ... Args, typename ReturnT = std::invoke_result_t<Function, Args...>> requires std::invocable<Function, Args...>
+    [[nodiscard]]
+    auto enqueue(Function&& function, Args&&... args) -> std::future<ReturnT> {
+        std::promise<ReturnT> promise;
+        auto future = promise.get_future(); // Make a promise which we will use to return value in a future
+        enqueue_task([function = std::forward<Function>(function), promise = std::move(promise), ...args = std::forward<Args>(args)]() mutable {
+            try {
+                if constexpr (std::is_same_v<void, std::invoke_result_t<Function, Args...>>) {
+                    std::invoke(function, args...);
+                } else {
+                    promise.set_value(std::invoke(function, args...));
+                }
+            } catch (...) {
+                promise.set_exception(std::current_exception());
+            }
+        });
+        return future;
+    }
+
+    template<typename Function, typename ... Args> requires std::invocable<Function, Args...>
+    void enqueue_detach(Function&& function, Args&&... args) {
+        enqueue_task([function = std::forward<Function>(function), ...args = std::forward<Args>(args)]() mutable {
+            try {
+                std::invoke(function, args...); // Ignore return value if it is marked with [[nodiscard]]
+            } catch (const std::exception& ex) {
+                std::println("Exception in worker: {}", ex.what());
+            }
+        });
+    }
 
 
-    void thread_loop();
-    void add_job(std::function<void()>&& job); // Make it accept not only void<int> store a lambda with all params captured then task is executed like task()
+    void clear() {
+        std::unique_lock lock{m_mutex};
+        m_tasks.clear();
+    }
+
+    std::deque<FunctionType>::size_type queue_size() const {
+        std::unique_lock lock{m_mutex};
+        return m_tasks.size();
+    }
+
 private:
-    using Job = std::function<void()>;
+    void enqueue_task(FunctionType&& task) {
+        std::unique_lock lock{m_mutex};
+        m_tasks.push_back(std::move(task));
+        m_condvar.notify_one();
+    }
 
-    std::mutex m_mtx;
-    std::counting_semaphore<std::numeric_limits<int>::max()> m_semaphore{0};
-    std::vector<std::thread> m_threads;
-    std::queue<Job> m_jobs;
-    std::atomic<bool> m_should_terminate{false};
+    std::vector<std::jthread> m_workers;
+    std::deque<FunctionType> m_tasks; // Deque because we can easily pop_front, back and etc
+    std::atomic<bool> m_should_work{true};
+    std::condition_variable m_condvar;
+    mutable std::mutex m_mutex;
 };

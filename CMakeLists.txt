@@ -36,7 +36,6 @@ add_library(weblib
     server/HttpResponse.cpp
     server/HttpRouter.cpp
     server/HttpServer.cpp
-    server/ThreadPool.cpp
     server/Utils.cpp
 )
 

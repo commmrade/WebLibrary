@@ -12,6 +12,7 @@ option(BUILD_SHARED_LIBS "Build shared library" ON)
 
 # Dependencies
 include(FetchContent)
+include_directories(include)
 
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(

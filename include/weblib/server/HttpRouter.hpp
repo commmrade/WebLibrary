@@ -2,7 +2,9 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 #include <cstdint>
-#include <debug.hpp>
+#include <string_view>
+#include <optional>
+#include "weblib/debug.hpp"
 #include <expected>
 #include <string_view>
 

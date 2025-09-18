@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <sys/poll.h>
 #include <sys/types.h>
-#include "debug.hpp"
+#include "weblib/debug.hpp"
 #include "weblib/server/HttpRequest.hpp"
 #include <print>
 #include <system_error>

@@ -9,7 +9,8 @@
 #include "Cookie.hpp"
 #include <json/json.h>
 #include <json/json.h>
-#include <debug.hpp>
+#include "weblib/debug.hpp"
+#include <string_view>
 #include "weblib/server/HeaderView.hpp"
 #include "types.hpp"
 

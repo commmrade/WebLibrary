@@ -1,5 +1,5 @@
 #include "weblib/server/HttpResponse.hpp"
-#include "debug.hpp"
+#include "weblib/debug.hpp"
 #include <cerrno>
 #include <format>
 #include <print>

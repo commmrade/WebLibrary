@@ -2,14 +2,21 @@
 #include "weblib/server/HttpRequest.hpp"
 #include <algorithm>
 #include <iostream>
+#include <print>
 #include <ranges>
 
 
-HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
-    : m_request(std::move(request_str)), m_parameters(std::vector(pnames.begin(), pnames.end())), m_path(endpoint_name_str)
+HttpRequest::HttpRequest(std::string request_str, std::string path, std::span<const std::string> pnames)
+    // : m_request(std::move(request_str)), m_parameters(std::vector(pnames.begin(), pnames.end())), m_path(endpoint_name_str)
 {
-    extract_headers();
-    extract_queries(); 
+    extract_headers(request_str);
+    extract_queries(request_str, path, pnames); 
+
+    m_method = request_str.substr(0, request_str.find(' '));
+    m_body = request_str.substr(request_str.find("\r\n\r\n") + 4);
+
+    auto line = request_str.substr(0, request_str.find("\r\n"));
+    m_version = line.substr(line.find_last_of('/') + 1);
 }
 
 auto HttpRequest::get_query(const std::string& query_name) const -> Query {
@@ -25,25 +32,23 @@ auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Coo
 }
 
 auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value> {
-    const std::string raw_json = m_request.substr(m_request.find("\r\n\r\n") + 4);
     Json::Value json_obj{};
-
-
     Json::Reader json_reader;
-    if (!json_reader.parse(raw_json, json_obj)) {
+    if (!json_reader.parse(m_body, json_obj)) {
         return nullptr;
     }
-    return std::make_unique<Json::Value>(std::move(json_obj)); // Hopefuly Json::Value is good at move semantics
+    return std::make_unique<Json::Value>(std::move(json_obj));
 }
 
-void HttpRequest::extract_queries() {
-   m_query.parse_from_string(m_request, m_parameters, m_path);
+void HttpRequest::extract_queries(const std::string& request_str, const std::string& endpoint_name_str, std::span<const std::string> pnames) {
+    auto params = std::vector<std::string>{pnames.begin(), pnames.end()};
+    m_query.parse_from_string(request_str, params, endpoint_name_str);
 }
 
 
-void HttpRequest::extract_headers() {
-    auto header_start_pos = m_request.find("\r\n") + 2;
-    auto header_end_pos = m_request.find("\r\n\r\n");
-    auto headers_section = m_request.substr(header_start_pos, header_end_pos - header_start_pos);
+void HttpRequest::extract_headers(const std::string& request_str) {
+    auto header_start_pos = request_str.find("\r\n") + 2;
+    auto header_end_pos = request_str.find("\r\n\r\n");
+    auto headers_section = request_str.substr(header_start_pos, header_end_pos - header_start_pos);
     m_headers.parse_from_string(headers_section);
 }

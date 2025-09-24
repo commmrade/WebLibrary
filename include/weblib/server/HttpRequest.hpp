@@ -48,7 +48,7 @@ public:
     }
 
     [[nodiscard]]
-    auto body_as_str() const -> std::string { return m_request.substr(m_request.find("\r\n\r\n") + 4); }
+    auto body_as_str() const -> std::string { return m_body; }
 
     [[nodiscard]]
     auto body_as_json() const -> std::unique_ptr<Json::Value>;
@@ -56,31 +56,28 @@ public:
 
     [[nodiscard]]
     auto get_method() const -> RequestType {
-        auto method_str = m_request.substr(0, m_request.find(' '));
-        return req_type_from_str(method_str);
+        return req_type_from_str(m_method);
     }
 
     [[nodiscard]]
     auto get_version() const -> std::string {
-        auto line = m_request.substr(0, m_request.find("\r\n"));
-        return line.substr(line.find_last_of('/') + 1);
+        return m_version;
     }
 
     void set_header(const std::string &name, std::string_view value) {
-        // m_headers[name] = value;
         m_headers.set_header(name, value);
     }
 private:
-    std::string m_request;
+    // std::string m_request;
 
     HttpHeaders m_headers;
     HttpQuery m_query;
-    // std::unordered_map<std::string, std::string> m_parameters;
-    // std::unordered_map<int, std::string> m_path_params;
-    std::vector<std::string> m_parameters;
-    std::string m_path;
+    
+    std::string m_method;
+    std::string m_body;
 
+    std::string m_version;
 
-    void extract_queries();
-    void extract_headers();
+    void extract_queries(const std::string& request_str, const std::string& endpoint_name_str, std::span<const std::string> pnames);
+    void extract_headers(const std::string& request_str);
 };

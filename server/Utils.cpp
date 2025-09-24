@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <json/value.h>
 #include <ranges>
+
 #include "weblib/server/Utils.hpp"
 #include <cctype>
 #include <print>
@@ -37,6 +39,13 @@ void trim_l(std::string &str) {
 void trim(std::string &str) {
     utils::trim_l(str);
     utils::trim_r(str);
+}
+
+auto error_response(std::string_view type, std::string_view message) -> Json::Value {
+    Json::Value resp;
+    resp["type"] = std::string{type};
+    resp["message"] = std::string{message};
+    return resp;
 }
 
 auto to_lowercase_str(std::string str) -> std::string {

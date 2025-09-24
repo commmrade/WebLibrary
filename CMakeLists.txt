@@ -15,11 +15,11 @@ include(FetchContent)
 include_directories(include)
 
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-FetchContent_MakeAvailable(googletest)
+# FetchContent_Declare(
+#     googletest
+#     URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+# )
+# FetchContent_MakeAvailable(googletest)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

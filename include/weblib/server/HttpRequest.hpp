@@ -3,6 +3,7 @@
 #pragma once
 
 #include "weblib/server/Cookie.hpp"
+#include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
 #include <memory>
@@ -15,6 +16,31 @@
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
+#include "weblib/server/Utils.hpp"
+
+
+class HttpHeaders {
+private:
+    std::unordered_map<std::string, std::string> m_headers;
+    void extract_headers_from_str(const std::string& request_str);
+public:
+    HttpHeaders() = default;
+    explicit HttpHeaders(const std::string& request_str) {
+        extract_headers_from_str(request_str);  
+    }
+
+    void parse_from_string(const std::string& request_str) {
+        extract_headers_from_str(request_str);
+    }
+    
+    [[nodiscard]]
+    auto get_header(const std::string &header_name) const -> std::optional<std::string>;
+    [[nodiscard]]
+    auto get_headers() const -> HeaderView {
+        return HeaderView{m_headers};
+    }
+};
+
 
 class HttpRequest {
 public:
@@ -70,8 +96,8 @@ private:
     std::string m_request;
     std::unordered_map<std::string, std::string> m_parameters;
     mutable std::unordered_map<std::string, std::string> m_headers;
-    std::unordered_map<int, std::string> m_path_params;
     std::unordered_map<std::string, Cookie> m_cookies;
+    std::unordered_map<int, std::string> m_path_params;
 
     std::vector<std::string> m_param_names;
     std::string m_endpoint_name_str;

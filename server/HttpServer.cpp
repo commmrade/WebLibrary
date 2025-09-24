@@ -74,11 +74,13 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
             request_string.append(buffer.data(), rd_bytes); // This way to need for some resizing logic
             // Body parsing
             if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
-                // std::println("1");
-                HttpRequest req{request_string, ""}; // TODO: Just parse headers, this will be faster
-                // std::println("2");
+                // HttpRequest req{request_string}; // TODO: Just parse headers, this will be faster
+                auto headers_start = request_string.find("\r\n") + 2;
+                auto header_string = request_string.substr(headers_start, header_end_pos - headers_start);
+                HttpHeaders headers{std::move(header_string)};
+           
                 try {
-                    content_length = std::stoi(req.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
+                    content_length = std::stoi(headers.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
                 } catch (const std::invalid_argument& ex) {
                     debug::log_warn("Could not parse content-length: ", ex.what());
                     content_length = 0; // We don't care what exception it is just set c-l to 0

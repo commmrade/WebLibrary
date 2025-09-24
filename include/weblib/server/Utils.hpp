@@ -4,6 +4,7 @@
 
 
 #include "weblib/server/RequestType.hpp"
+#include <json/value.h>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,8 @@ auto req_type_from_str(std::string_view str) -> RequestType;
 
 auto process_url_str(std::string_view url) -> std::string;
 
+
+auto error_response(std::string_view type, std::string_view message) -> Json::Value;
 
 auto extract_params(std::string_view url) -> std::vector<std::string>;
 

@@ -5,13 +5,11 @@
 #include "weblib/server/HttpRequest.hpp"
 #include "weblib/server/HttpServer.hpp"
 #include "weblib/server/HttpRouter.hpp"
-#include <debug.hpp>
 
 #define mv(X) std::move(X)
 #define REG_FILTER(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION((req)); }) // Macro to register filter
 
 template<typename Derived> // CRTP needed to avoid dynamic dispatching
-// TODO: Maybe give ability for use to specify error themself
 class HttpFilter {
 public:
     HttpFilter() = default;

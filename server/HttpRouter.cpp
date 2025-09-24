@@ -31,7 +31,7 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
                 debug::log_warn("Filtering not passed");
                 auto resp_ = HttpResponseBuilder()
                     .set_status(403)
-                    .set_body_str("Access denied") // TODO: Universal error JSON response struct
+                    .set_body_json(utils::error_response("Middleware", "Access denied"))
                     .set_content_type(ContentType::TEXT)
                     .build();
                 resp.respond(resp_);
@@ -43,7 +43,8 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
             debug::log_info("Endpoint not found");
             auto resp_ = HttpResponseBuilder()
                 .set_status(404)
-                .set_body_str("Not found")
+                // .set_body_str("Not found")
+                .set_body_json(utils::error_response("Not found", "No such handle"))
                 .set_content_type(ContentType::TEXT)
                 .build();
             resp.respond(resp_);
@@ -52,7 +53,7 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
         debug::log_error("Server internal error ", method, " ", ex.what());
         auto resp_ = HttpResponseBuilder()
             .set_status(500)
-            .set_body_str("Server internal error")
+            .set_body_json(utils::error_response("Internal error", std::format("Server internal error: {}", ex.what())))
             .set_content_type(ContentType::TEXT)
             .build();
         resp.respond(resp_);

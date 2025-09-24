@@ -7,6 +7,44 @@
 #include <print>
 #include <stdexcept>
 
+
+
+void HttpHeaders::extract_headers_from_str(const std::string& request_str) {
+    if (request_str.empty()) {
+        return; // Empty headers
+    }
+    std::istringstream strm(request_str); // here
+    std::string line;
+    while (std::getline(strm, line, '\n')) { // Extracting headers one by one
+        utils::trim(line); // Get rid of spaces and carriage returns
+
+        auto pos = line.find(':');
+        if (pos == std::string::npos) {
+            std::cerr << "Malformed http m_request: no colon\n";
+            throw std::runtime_error("Malformed http m_request 1");
+        }
+
+        auto name = std::string(line.begin(), line.begin() + static_cast<std::string::difference_type>(pos));
+        auto value = std::string(line.begin() + static_cast<std::string::difference_type>(pos) + 2, line.end());
+        utils::trim(value);
+
+        auto lowercase_name = utils::to_lowercase_str(name);
+        if (lowercase_name != "cookie") {
+            m_headers.emplace(lowercase_name, std::move(value)); // Add header
+        }
+    }
+}
+
+auto HttpHeaders::get_header(const std::string &header_name) const -> std::optional<std::string> {
+    auto pos = m_headers.find(utils::to_lowercase_str(header_name));
+    if (pos != m_headers.end()) { //If header exists
+        return std::optional<std::string>{pos->second};
+    }
+    return std::nullopt;
+}
+
+
+
 HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
     : m_request(std::move(request_str)), m_param_names(std::vector(pnames.begin(), pnames.end())), m_endpoint_name_str(std::move(endpoint_name_str)) 
 {
@@ -152,6 +190,7 @@ void HttpRequest::extract_headers() {
     if (header_section_start == header_section_end) {
         return; // Empty headers
     }
+
     std::istringstream strm(m_request.substr(header_section_start, header_section_end - header_section_start)); // here
     std::string line;
     while (std::getline(strm, line, '\n')) { // Extracting headers one by one
@@ -186,7 +225,6 @@ void HttpRequest::extract_headers() {
                 }
                 auto const  name_cookie = std::move(name_value.front());
                 auto const value_cookie = std::move(name_value.back());
-                std::println("Cook: '{}' '{}'", name_cookie, value_cookie);
                 m_cookies.emplace(utils::to_lowercase_str(name_cookie), Cookie{std::move(name_cookie), std::move(value_cookie)});
             });
         }

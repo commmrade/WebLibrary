@@ -89,14 +89,14 @@ void HttpResponse::set_header(HeaderType header_type, std::string_view value) {
 
 void HttpResponse::remove_header(const std::string& name) {
     m_headers.erase(name); // Removing if exists (doesn't throw if does not exist)
-}  
+}
 
 void HttpResponse::set_content_type(ContentType type) {
     switch (type) {
         case ContentType::HTML: {
             m_headers["Content-Type"] = "text/html";
             break;
-        }   
+        }
         case ContentType::JSON: {
             m_headers["Content-Type"] = "application/json";
             break;
@@ -234,4 +234,3 @@ void HttpResponseWriter::respond(HttpResponse &resp) { // Sending response text 
         write_total_size += bytes_sent;
     }
 }
-

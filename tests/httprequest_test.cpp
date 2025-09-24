@@ -1,7 +1,7 @@
-#include "server/RequestType.hpp"
+#include "weblib/server/RequestType.hpp"
 #include <optional>
 #include <ostream>
-#include <server/HttpRequest.hpp>
+#include <weblib/server/HttpRequest.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 

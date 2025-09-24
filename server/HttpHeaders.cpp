@@ -48,7 +48,13 @@ void HttpHeaders::extract_headers_from_str(const std::string& request_str) {
         }
     }
 }
-
+auto HttpHeaders::get_cookie(const std::string &name) const -> std::optional<Cookie> {
+    auto pos = m_cookies.find(utils::to_lowercase_str(name));
+    if (pos != m_cookies.end()) { //If header exists
+        return std::optional<Cookie>{pos->second};
+    }
+    return std::nullopt;
+}
 
 auto HttpHeaders::get_header(const std::string &header_name) const -> std::optional<std::string> {
     auto pos = m_headers.find(utils::to_lowercase_str(header_name));

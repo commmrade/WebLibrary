@@ -7,7 +7,6 @@
 
 
 HttpRequest::HttpRequest(std::string request_str, std::string path, std::span<const std::string> pnames)
-    // : m_request(std::move(request_str)), m_parameters(std::vector(pnames.begin(), pnames.end())), m_path(endpoint_name_str)
 {
     extract_headers(request_str);
     extract_queries(request_str, path, pnames); 

@@ -115,13 +115,18 @@ install(FILES
 )
 
 # Tests
-# enable_testing()
-# if(TEST_SOURCES)
-#     add_executable(tests ${TEST_SOURCES})
-#     target_link_libraries(tests PRIVATE weblib gtest_main ${JSONCPP_LIBRARIES})
-#     target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
-#     include(GoogleTest)
-#     gtest_discover_tests(tests)
-# else()
-#     message(WARNING "No tests will be built due to missing test sources")
-# endif()
+file(GLOB TEST_SOURCES
+    tests/*.cpp
+    server/*.cpp
+)
+
+enable_testing()
+if(TEST_SOURCES)
+    add_executable(tests ${TEST_SOURCES})
+    target_link_libraries(tests PRIVATE weblib gtest_main ${JSONCPP_LIBRARIES})
+    target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+    include(GoogleTest)
+    gtest_discover_tests(tests)
+else()
+    message(WARNING "No tests found in tests/ directory")
+endif()

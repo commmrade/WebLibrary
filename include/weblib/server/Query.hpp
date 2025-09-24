@@ -1,3 +1,4 @@
+#pragma once
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
 #include <cstdint>
@@ -5,16 +6,16 @@
 #include <string>
 
 class HttpRequest;
+class HttpQuery;
 
 class Query {
 private:
     std::string m_content{};
     friend HttpRequest;
+    friend HttpQuery;
 
-    Query() = default;
+    Query() = default;    
 public:
-    
-
     [[nodiscard]]
     auto as_str() -> std::string {
         return m_content;

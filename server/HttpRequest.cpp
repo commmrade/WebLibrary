@@ -52,70 +52,24 @@ void HttpHeaders::extract_headers_from_str(const std::string& request_str) {
     }
 }
 
-auto HttpHeaders::get_header(const std::string &header_name) const -> std::optional<std::string> {
-    auto pos = m_headers.find(utils::to_lowercase_str(header_name));
-    if (pos != m_headers.end()) { //If header exists
-        return std::optional<std::string>{pos->second};
-    }
-    return std::nullopt;
-}
-
-
-
-HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
-    : m_request(std::move(request_str)), m_param_names(std::vector(pnames.begin(), pnames.end())), m_endpoint_name_str(std::move(endpoint_name_str)) 
-{
-    extract_headers();
-    extract_queries(); 
-}
-
-auto HttpRequest::get_query(const std::string& query_name) const -> Query {
-    Query query;
-    auto pos = m_parameters.find(utils::to_lowercase_str(query_name));
-    if (pos != m_parameters.end()) { //If header exists
-        query.m_content = pos->second;
-    }
-    return query;
-}
-
-auto HttpRequest::get_header(const std::string &header_name) const -> std::optional<std::string> {
-    return m_headers.get_header(header_name);
-}
-
-auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Cookie> {
-    return m_headers.get_cookie(name);
-}
-
-auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value> {
-    const std::string raw_json = m_request.substr(m_request.find("\r\n\r\n") + 4);
-    Json::Value json_obj{};
-
-
-    Json::Reader json_reader;
-    if (!json_reader.parse(raw_json, json_obj)) {
-        return nullptr;
-    }
-    return std::make_unique<Json::Value>(std::move(json_obj)); // Hopefuly Json::Value is good at move semantics
-}
-
-void HttpRequest::extract_queries() {
-    if (m_param_names.empty()) {
+void HttpQuery::parse_from_string(const std::string& request_str, const std::vector<std::string>& param_names, const std::string& serv_path) {
+    if (param_names.empty()) {
         return;
     }
     
-    auto param_name_iter = m_param_names.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
-    if (param_name_iter == m_param_names.end()) {
+    auto param_name_iter = param_names.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
+    if (param_name_iter == param_names.end()) {
         throw std::runtime_error("Malformed http m_request");
     }
     
-    size_t const endpoint_start = m_request.find('/');
+    size_t const endpoint_start = request_str.find('/');
     if (endpoint_start == std::string::npos) {
         throw std::runtime_error("Wtf");
     }
-    std::string_view const path{m_request.data() + endpoint_start + 1, m_request.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
+    std::string_view const path{request_str.data() + endpoint_start + 1, request_str.find("HTTP") - endpoint_start - 2}; // additional 1 taking a space into account
 
     // Slash handling
-    std::string_view pattern{m_endpoint_name_str};
+    std::string_view pattern{serv_path};
     pattern.remove_prefix(1);
 
     // Processing path arguments
@@ -136,7 +90,7 @@ void HttpRequest::extract_queries() {
 
     for (const auto&& [pattern_arg, path_arg] : std::views::zip(pattern_slash_args, path_slash_args)) {
         if (pattern_arg.contains('{')) { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == m_param_names.end()) { 
+            if (param_name_iter == param_names.end()) { 
                 throw std::runtime_error("Malformed http m_request");
             }
             m_parameters.emplace(*param_name_iter, path_arg);
@@ -176,7 +130,7 @@ void HttpRequest::extract_queries() {
         auto [pattern_name, pattern_value] = split_kv_query(pattern_kv);
         auto [path_name, path_value] = split_kv_query(path_kv);
         if (pattern_value.contains('{')) { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == m_param_names.end()) {
+            if (param_name_iter == param_names.end()) {
                 throw std::runtime_error("Malformed http m_request");
             }
             m_parameters.emplace(*param_name_iter, path_value);
@@ -185,6 +139,63 @@ void HttpRequest::extract_queries() {
             m_parameters.emplace(path_name, path_value); 
         }
     }
+}
+
+auto HttpQuery::get_query(const std::string& query_name) const -> Query {
+    Query query;
+    auto pos = m_parameters.find(utils::to_lowercase_str(query_name));
+    if (pos != m_parameters.end()) { //If header exists
+        query.m_content = pos->second;
+    }
+    return query;
+}
+// TODO: Factor in a separate file
+
+
+
+auto HttpHeaders::get_header(const std::string &header_name) const -> std::optional<std::string> {
+    auto pos = m_headers.find(utils::to_lowercase_str(header_name));
+    if (pos != m_headers.end()) { //If header exists
+        return std::optional<std::string>{pos->second};
+    }
+    return std::nullopt;
+}
+
+
+
+HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
+    : m_request(std::move(request_str)), m_parameters(std::vector(pnames.begin(), pnames.end())), m_path(endpoint_name_str)
+{
+    extract_headers();
+    extract_queries(); 
+}
+
+auto HttpRequest::get_query(const std::string& query_name) const -> Query {
+    return m_query.get_query(query_name);
+}
+
+auto HttpRequest::get_header(const std::string &header_name) const -> std::optional<std::string> {
+    return m_headers.get_header(header_name);
+}
+
+auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Cookie> {
+    return m_headers.get_cookie(name);
+}
+
+auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value> {
+    const std::string raw_json = m_request.substr(m_request.find("\r\n\r\n") + 4);
+    Json::Value json_obj{};
+
+
+    Json::Reader json_reader;
+    if (!json_reader.parse(raw_json, json_obj)) {
+        return nullptr;
+    }
+    return std::make_unique<Json::Value>(std::move(json_obj)); // Hopefuly Json::Value is good at move semantics
+}
+
+void HttpRequest::extract_queries() {
+   m_query.parse_from_string(m_request, m_parameters, m_path);
 }
 
 

@@ -16,6 +16,7 @@
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
+#include "weblib/server/Utils.hpp"
 
 class HttpHeaders {
 private:
@@ -54,6 +55,25 @@ public:
 };
 
 
+class HttpQuery {
+private:
+    std::unordered_map<std::string, std::string> m_parameters;
+public:
+    HttpQuery() = default;
+    explicit HttpQuery(const std::string& request_str, const std::vector<std::string>& param_names, const std::string& serv_path) {
+        parse_from_string(request_str, param_names, serv_path);  
+    }
+
+    auto get_query(const std::string& query_name) const -> Query;
+    [[nodiscard]]
+    auto get_queries() const -> QueryView {
+        return QueryView{m_parameters};
+    }
+
+    void parse_from_string(const std::string& request_str, const std::vector<std::string>& param_names, const std::string& serv_path);
+};
+
+
 class HttpRequest {
 public:
     explicit HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
@@ -63,7 +83,7 @@ public:
 
     [[nodiscard]]
     auto get_queries() const -> QueryView {
-        return QueryView{m_parameters};
+        return m_query.get_queries();
     }
 
     [[nodiscard]]
@@ -106,12 +126,14 @@ public:
     }
 private:
     std::string m_request;
-    std::unordered_map<std::string, std::string> m_parameters;
+    
     HttpHeaders m_headers;
-    std::unordered_map<int, std::string> m_path_params;
-
-    std::vector<std::string> m_param_names;
-    std::string m_endpoint_name_str;
+    HttpQuery m_query;
+    // std::unordered_map<std::string, std::string> m_parameters;
+    // std::unordered_map<int, std::string> m_path_params;
+    std::vector<std::string> m_parameters;
+    std::string m_path;
+    
 
     void extract_queries();
     void extract_headers();  

@@ -161,8 +161,6 @@ auto HttpHeaders::get_header(const std::string &header_name) const -> std::optio
     return std::nullopt;
 }
 
-
-
 HttpRequest::HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames)
     : m_request(std::move(request_str)), m_parameters(std::vector(pnames.begin(), pnames.end())), m_path(endpoint_name_str)
 {

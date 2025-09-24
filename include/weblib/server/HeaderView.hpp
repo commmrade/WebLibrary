@@ -13,7 +13,8 @@ class InsideView {
 private:
     const Map& m_headers;
 public:
-    explicit InsideView(const Map& m_headers) : m_headers(m_headers) {}
+    InsideView(const Map& m_headers) : m_headers(m_headers) {}
+
     using iter_type = typename Map::const_iterator;
 
     [[nodiscard]]

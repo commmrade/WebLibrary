@@ -16,12 +16,11 @@
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
-#include "weblib/server/Utils.hpp"
-
 
 class HttpHeaders {
 private:
     std::unordered_map<std::string, std::string> m_headers;
+    std::unordered_map<std::string, Cookie> m_cookies;
     void extract_headers_from_str(const std::string& request_str);
 public:
     HttpHeaders() = default;
@@ -39,13 +38,25 @@ public:
     auto get_headers() const -> HeaderView {
         return HeaderView{m_headers};
     }
+
+    void set_header(const std::string &name, std::string_view value) {
+        m_headers[name] = value;
+    }
+
+    [[nodiscard]]
+    auto get_cookie(const std::string &name) const -> std::optional<Cookie>;
+
+    [[nodiscard]] 
+    auto get_cookies() const -> CookieView {
+        return CookieView{m_cookies};
+        // return m_headers.get_headers();
+    }
 };
 
 
 class HttpRequest {
 public:
     explicit HttpRequest(std::string request_str, std::string endpoint_name_str, std::span<const std::string> pnames = {});
-    explicit HttpRequest(std::string request_str); // For parsing only headers
 
     [[nodiscard]]
     auto get_query(const std::string& query_name) const -> Query;
@@ -59,7 +70,7 @@ public:
     auto get_header(const std::string &header_name) const -> std::optional<std::string>;
     [[nodiscard]]
     auto get_headers() const -> HeaderView {
-        return HeaderView{m_headers};
+        return m_headers.get_headers();
     }
 
     [[nodiscard]]
@@ -67,7 +78,7 @@ public:
 
     [[nodiscard]] 
     auto get_cookies() const -> CookieView {
-        return CookieView{m_cookies};
+        return m_headers.get_cookies();
     }
 
     [[nodiscard]]
@@ -89,14 +100,14 @@ public:
         return line.substr(line.find_last_of('/') + 1);
     }
 
-    void add_header(const std::string &name, std::string_view value) const {
-        m_headers[name] = value;
+    void set_header(const std::string &name, std::string_view value) {
+        // m_headers[name] = value;
+        m_headers.set_header(name, value);
     }
 private:
     std::string m_request;
     std::unordered_map<std::string, std::string> m_parameters;
-    mutable std::unordered_map<std::string, std::string> m_headers;
-    std::unordered_map<std::string, Cookie> m_cookies;
+    HttpHeaders m_headers;
     std::unordered_map<int, std::string> m_path_params;
 
     std::vector<std::string> m_param_names;

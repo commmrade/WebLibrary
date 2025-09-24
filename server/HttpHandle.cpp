@@ -34,5 +34,5 @@ auto HttpHandle::pass_middlewares(const HttpRequest& request) const -> bool {
 
 
 void HttpHandle::set_endpoint_name_str(std::string ep_name) {
-    m_endpoint_name_str = std::move(ep_name);
+    m_path = std::move(ep_name);
 }

@@ -74,7 +74,6 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
             request_string.append(buffer.data(), rd_bytes); // This way to need for some resizing logic
             // Body parsing
             if (!in_body && (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos) { // Store header_end_pos, so no need to calculate it in b_in_body branch
-                // HttpRequest req{request_string}; // TODO: Just parse headers, this will be faster
                 auto headers_start = request_string.find("\r\n") + 2;
                 auto header_string = request_string.substr(headers_start, header_end_pos - headers_start);
                 HttpHeaders headers{std::move(header_string)};

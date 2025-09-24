@@ -34,7 +34,7 @@ public:
     }
 
     void set_endpoint_name_str(std::string ep_name);
-    [[nodiscard]] auto get_endpoint_name_str() const -> std::string { return m_endpoint_name_str; }
+    [[nodiscard]] auto get_path() const -> std::string { return m_path; }
 
     void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
 
@@ -42,6 +42,6 @@ private:
     std::vector<RequestType> m_methods;
     std::vector<Filter> m_filters;
     std::vector<std::string> m_parameter_names;
-    std::string m_endpoint_name_str;
+    std::string m_path;
     Handler m_handle;
 };

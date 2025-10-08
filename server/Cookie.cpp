@@ -7,32 +7,32 @@ auto Cookie::to_string() const -> std::string
     {
         throw std::runtime_error("Cookie is not properly set up");
     }
-    std::string cookie_str = m_name + "=" + m_value;
+    std::string cookie = m_name + "=" + m_value;
     if (!m_response_cookie)
     {
         return m_name + "=" + m_value;
     }
 
-    cookie_str += "; ";
+    cookie += "; ";
     if (m_max_age)
     {
-        cookie_str += "Max-Age=" + std::to_string(m_max_age.value()) + "; ";
+        cookie += "Max-Age=" + std::to_string(m_max_age.value()) + "; ";
     }
     if (m_secure)
     {
-        cookie_str += "Secure; ";
+        cookie += "Secure; ";
     }
     if (m_httpOnly)
     {
-        cookie_str += "HttpOnly; ";
+        cookie += "HttpOnly; ";
     }
     if (!m_path.empty())
     {
-        cookie_str += "Path=" + m_path + "; ";
+        cookie += "Path=" + m_path + "; ";
     }
     if (!m_domain.empty())
     {
-        cookie_str += "Domain=" + m_domain + "; ";
+        cookie += "Domain=" + m_domain + "; ";
     }
     {
         using std::string_literals::operator""s;
@@ -40,28 +40,28 @@ auto Cookie::to_string() const -> std::string
         {
         case SameSite::Lax:
         {
-            cookie_str += "SameSite=" + "Lax"s;
+            cookie += "SameSite=" + "Lax"s;
             break;
         }
         case SameSite::Strict:
         {
-            cookie_str += "SameSite=" + "Strict"s;
+            cookie += "SameSite=" + "Strict"s;
             break;
         }
         default:
         {
-            cookie_str += "SameSite=" + "None"s;
+            cookie += "SameSite=" + "None"s;
             break;
         }
         }
-        cookie_str += "; ";
+        cookie += "; ";
     }
 
-    if (cookie_str.find_last_of(';') >= cookie_str.size() - 2)
+    if (cookie.find_last_of(';') >= cookie.size() - 2)
     { // If there is ";" at the end, truncate "; "
-        cookie_str.resize(cookie_str.size() - 2);
+        cookie.resize(cookie.size() - 2);
     }
-    return cookie_str;
+    return cookie;
 }
 
 void Cookie::set_name(std::string_view new_name) { m_name = new_name; }

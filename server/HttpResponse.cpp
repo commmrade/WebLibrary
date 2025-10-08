@@ -25,7 +25,7 @@ auto HttpResponse::to_string() const -> std::string
     return response;
 }
 
-void HttpResponse::set_header_raw(const std::string &name, std::string_view value)
+void HttpResponse::set_header(const std::string &name, std::string_view value)
 {
     if (name == "Set-Cookie")
     {

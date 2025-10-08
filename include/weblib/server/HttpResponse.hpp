@@ -55,7 +55,7 @@ class HttpResponse
     [[nodiscard]]
     auto to_string() const -> std::string;
 
-    void set_header_raw(const std::string &name, std::string_view value);
+    void set_header(const std::string &name, std::string_view value);
     void set_header(HeaderType header_type, std::string_view value);
     void remove_header(const std::string &name);
     void set_content_type(ContentType type);

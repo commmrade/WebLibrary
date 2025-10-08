@@ -11,9 +11,9 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         return;
     }
 
-    auto param_name_iter =
+    auto param_iter =
         parameters.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
-    if (param_name_iter == parameters.end())
+    if (param_iter == parameters.end())
     {
         throw std::runtime_error("Malformed http m_request");
     }
@@ -62,12 +62,12 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     {
         if (pattern_arg.contains('{'))
         { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == parameters.end())
+            if (param_iter == parameters.end())
             {
                 throw std::runtime_error("Malformed http m_request");
             }
-            m_parameters.emplace(*param_name_iter, path_arg);
-            ++param_name_iter;
+            m_parameters.emplace(*param_iter, path_arg);
+            ++param_iter;
         }
     }
 
@@ -124,15 +124,15 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     for (const auto &&[t_path_kv, path_kv] : std::views::zip(t_path_query_params, path_query_params))
     {
         auto [t_path_name, t_path_value] = split_kv_query(t_path_kv);
-        auto [path_name, path_value]       = split_kv_query(path_kv);
+        auto [path_name, path_value]     = split_kv_query(path_kv);
         if (t_path_value.contains('{'))
-        { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == parameters.end())
+        { // '{' means Template param
+            if (param_iter == parameters.end())
             {
                 throw std::runtime_error("Malformed http m_request");
             }
-            m_parameters.emplace(*param_name_iter, path_value);
-            ++param_name_iter;
+            m_parameters.emplace(*param_iter, path_value);
+            ++param_iter;
         }
         else
         { // Means a static query parameter, not dynamic

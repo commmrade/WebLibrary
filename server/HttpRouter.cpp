@@ -41,35 +41,35 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
         // Do not destroy, since it is stored inside HttpBinder
         if (handle != nullptr)
         {
-            HttpRequest const request(
+            HttpRequest const req(
                 std::string{raw_http}, handle->get_path(),
                 handle->get_parameters()); // Passing param names to then process query part
-            if (!handle->pass_middlewares(request))
+            if (!handle->pass_middlewares(req))
             {
                 debug::log_warn("Filtering not passed");
-                auto resp_ =
+                auto res =
                     HttpResponseBuilder()
                         .set_status(403)
                         .set_body_json(utils::error_response("Middleware", "Access denied"))
                         .set_content_type(ContentType::TEXT)
                         .build();
-                resp.respond(resp_);
+                resp.respond(res);
                 return;
             }
             debug::log_info("Proceeding to the endpoint ");
-            (*handle)(request,
+            (*handle)(req,
                       resp); // Proceeding to endpoint if all middlewares were passed successfuly
         }
         else
         { // Endpoint was not found
             debug::log_info("Endpoint not found");
-            auto resp_ = HttpResponseBuilder()
+            auto res = HttpResponseBuilder()
                              .set_status(404)
                              // .set_body_str("Not found")
                              .set_body_json(utils::error_response("Not found", "No such handle"))
                              .set_content_type(ContentType::TEXT)
                              .build();
-            resp.respond(resp_);
+            resp.respond(res);
         }
     }
     catch (const std::exception &ex)
@@ -96,12 +96,12 @@ void HttpRouter::process_request(int sock, std::string_view raw_http)
     auto method_and_path_opt = HttpRouter::parse_request_line(raw_http);
     if (!method_and_path_opt.has_value())
     {
-        auto resp_ = HttpResponseBuilder()
+        auto res = HttpResponseBuilder()
                          .set_status(400)
                          .set_body_str("Malformed request")
                          .set_content_type(ContentType::TEXT)
                          .build();
-        response.respond(resp_);
+        response.respond(res);
     }
     auto &[method, path]           = method_and_path_opt.value();
     RequestType const request_type = req_type_from_str(method);

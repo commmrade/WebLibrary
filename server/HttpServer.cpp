@@ -61,33 +61,35 @@ void HttpServer::server_setup(int port)
 
 auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
 {
-    std::string request_string;
+    std::string raw_http;
 
     int  content_length{-1};
-    int  current_body_read{0};
-    bool in_body{false};
+    int  body_bytes_rd{0};
+    bool is_in_body{false};
 
     size_t header_end_pos = 0;
+    constexpr int headers_end_len = 4;
+    constexpr int header_end_len = 2;
     while (true)
     {
-        std::array<char, 4096> buffer{};
-        ssize_t                rd_bytes = read(client_socket, buffer.data(), 4096);
+        std::array<char, 4096> buf{};
+
+        ssize_t rd_bytes = read(client_socket, buf.data(), buf.size());
         if (rd_bytes == 0)
-        { // CLient disconnected
+        {
             debug::log_info("Client has disconnected");
             return std::nullopt;
         }
         if (rd_bytes > 0)
-        { // If something to read...
-            request_string.append(buffer.data(),
-                                  rd_bytes); // This way to need for some resizing logic
-            // Body parsing
-            if (!in_body &&
-                (header_end_pos = request_string.find(HEADERS_END)) != std::string::npos)
+        {
+            raw_http.append(buf.data(),
+                                  rd_bytes);
+            if (!is_in_body &&
+                (header_end_pos = raw_http.find(HEADERS_END)) != std::string::npos)
             { // Store header_end_pos, so no need to calculate it in b_in_body branch
-                auto headers_start = request_string.find("\r\n") + 2;
+                auto headers_start = raw_http.find("\r\n") + header_end_len;
                 auto header_string =
-                    request_string.substr(headers_start, header_end_pos - headers_start);
+                    raw_http.substr(headers_start, header_end_pos - headers_start);
                 HttpHeaders headers{std::move(header_string)};
 
                 try
@@ -95,29 +97,29 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
                     content_length = std::stoi(
                         headers.get_header("Content-Length")
                             .value_or(
-                                "0")); // If no header set length to 0 (For example in GET requests)
+                                "0"));
                 }
                 catch (const std::invalid_argument &ex)
                 {
                     debug::log_warn("Could not parse content-length: ", ex.what());
-                    content_length = 0; // We don't care what exception it is just set c-l to 0
+                    content_length = 0;
                 }
-                in_body = true;
+                is_in_body = true;
             }
-            if (in_body)
-            { // If parsing the body
-                current_body_read = std::distance(
-                    request_string.begin() + header_end_pos + 4,
-                    request_string.end()); // Cheap because its a random access iterator
-                if (current_body_read >= content_length)
-                { // Finished reading body, if body is empty it will still be true, since default
-                  // content-length value is 0 and current_body_read is 0 by default
-                    return request_string;
+            else if (is_in_body)
+            {
+                body_bytes_rd = std::distance(
+                    raw_http.begin() + header_end_pos + headers_end_len,
+                    raw_http.end()); // Cheap because its a random access iterator
+                if (body_bytes_rd >= content_length)
+                {
+                    return raw_http;
                 }
             }
         }
         else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN))
         {
+            // TODO: Tf is this?
             pollfd client{};
             client.fd       = client_socket;
             client.events   = POLLIN;

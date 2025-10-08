@@ -48,17 +48,17 @@ auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value>
 }
 
 void HttpRequest::extract_queries(const std::string           &raw_http,
-                                  const std::string           &endpoint_name_str,
+                                  const std::string           &path,
                                   std::span<const std::string> pnames)
 {
     auto params = std::vector<std::string>{pnames.begin(), pnames.end()};
-    m_query.parse_from_string(raw_http, params, endpoint_name_str);
+    m_query.parse_from_string(raw_http, params, path);
 }
 
 void HttpRequest::extract_headers(const std::string &raw_http)
 {
-    auto header_start_pos = raw_http.find("\r\n") + 2;
-    auto header_end_pos   = raw_http.find("\r\n\r\n");
+    auto header_start_pos = raw_http.find(CRNL) + 2;
+    auto header_end_pos   = raw_http.find(CRCRNLNL);
     auto headers_section  = raw_http.substr(header_start_pos, header_end_pos - header_start_pos);
     m_headers.parse_from_string(headers_section);
 }

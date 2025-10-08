@@ -12,7 +12,6 @@ option(BUILD_SHARED_LIBS "Build shared library" ON)
 
 # Dependencies
 include(FetchContent)
-include_directories(include)
 
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
@@ -21,9 +20,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
-
+# Find jsoncpp with fallback to pkg-config
+find_package(jsoncpp CONFIG QUIET)
+if(jsoncpp_FOUND)
+    message(STATUS "Found jsoncpp via find_package")
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP jsoncpp REQUIRED)
+    message(STATUS "Found jsoncpp via pkg-config")
+endif()
 
 # Library
 add_library(weblib
@@ -42,19 +47,15 @@ add_library(weblib
     server/HttpHeaders.cpp
 )
 
-if(JSONCPP_FOUND)
-    message(STATUS "jsoncpp include dirs: ${JSONCPP_INCLUDE_DIRS}")
-    message(STATUS "jsoncpp libs: ${JSONCPP_LIBRARIES}")
-
+if(jsoncpp_FOUND)
+    target_link_libraries(weblib PRIVATE jsoncpp_lib)
+elseif(JSONCPP_FOUND)
     target_include_directories(weblib PRIVATE ${JSONCPP_INCLUDE_DIRS})
     target_link_libraries(weblib PRIVATE ${JSONCPP_LIBRARIES})
-else()
-    message(FATAL_ERROR "jsoncpp not found via pkg-config")
 endif()
 
-
 target_include_directories(weblib PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/weblib>
 )
 
@@ -82,7 +83,7 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_INSTALL_INCLUDEDIR "include/weblib" CACHE PATH "")
 endif()
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/include/"
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 install(TARGETS weblib
@@ -115,16 +116,18 @@ install(FILES
 )
 
 # Tests
-file(GLOB TEST_SOURCES
-    tests/*.cpp
-    server/*.cpp
-)
-
 enable_testing()
+file(GLOB TEST_SOURCES tests/*.cpp)
 if(TEST_SOURCES)
     add_executable(tests ${TEST_SOURCES})
-    target_link_libraries(tests PRIVATE weblib gtest_main ${JSONCPP_LIBRARIES})
-    target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+    target_link_libraries(tests PRIVATE weblib GTest::gtest_main)
+    if(JSONCPP_FOUND)
+        target_include_directories(tests PRIVATE ${JSONCPP_INCLUDE_DIRS})
+        target_link_libraries(tests PRIVATE ${JSONCPP_LIBRARIES})
+    elseif(jsoncpp_FOUND)
+        target_link_libraries(tests PRIVATE jsoncpp_lib)
+    endif()
+    target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     include(GoogleTest)
     gtest_discover_tests(tests)
 else()

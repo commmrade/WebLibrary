@@ -32,10 +32,6 @@ endif()
 
 # Library
 add_library(weblib
-    requests/client.cpp
-    requests/request.cpp
-    requests/response.cpp
-
     server/Cookie.cpp
     server/HttpHandle.cpp
     server/HttpRequest.cpp

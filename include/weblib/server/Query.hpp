@@ -8,31 +8,36 @@
 class HttpRequest;
 class HttpQuery;
 
-class Query {
-private:
+class Query
+{
+  private:
     std::string m_content{};
     friend HttpRequest;
     friend HttpQuery;
 
-    Query() = default;    
-public:
+    Query() = default;
+
+  public:
     [[nodiscard]]
-    auto as_str() -> std::string {
+    auto as_str() -> std::string
+    {
         return m_content;
     }
 
     template <typename T>
     [[nodiscard]]
-    auto as() const -> T {
+    auto as() const -> T
+    {
         return m_content;
-    } 
-
+    }
 };
 
 template <>
 [[nodiscard]]
-inline auto Query::as<float>() const -> float {
-    if (m_content.empty()) {
+inline auto Query::as<float>() const -> float
+{
+    if (m_content.empty())
+    {
         throw std::invalid_argument("Could not be converted");
     }
 
@@ -41,8 +46,10 @@ inline auto Query::as<float>() const -> float {
 }
 template <>
 [[nodiscard]]
-inline auto Query::as<int>() const -> int {
-    if (m_content.empty()) {
+inline auto Query::as<int>() const -> int
+{
+    if (m_content.empty())
+    {
         throw std::invalid_argument("Could not be converted");
     }
 
@@ -51,8 +58,10 @@ inline auto Query::as<int>() const -> int {
 }
 template <>
 [[nodiscard]]
-inline auto Query::as<int64_t>() const -> int64_t {
-    if (m_content.empty()) {
+inline auto Query::as<int64_t>() const -> int64_t
+{
+    if (m_content.empty())
+    {
         throw std::invalid_argument("Could not be converted");
     }
 
@@ -61,16 +70,19 @@ inline auto Query::as<int64_t>() const -> int64_t {
 }
 template <>
 [[nodiscard]]
-inline auto Query::as<double>() const -> double {
-    if (m_content.empty()) {
+inline auto Query::as<double>() const -> double
+{
+    if (m_content.empty())
+    {
         throw std::invalid_argument("Could not be converted");
     }
 
     auto converted_val = std::stod(m_content);
     return converted_val;
 }
-template<>
+template <>
 [[nodiscard]]
-inline auto Query::as<const char*>() const -> const char* {
+inline auto Query::as<const char *>() const -> const char *
+{
     return m_content.c_str();
 }

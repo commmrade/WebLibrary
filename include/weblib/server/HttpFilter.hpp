@@ -7,24 +7,28 @@
 #include "weblib/server/HttpRouter.hpp"
 
 #define mv(X) std::move(X)
-#define REG_FILTER(NAME, FUNCTION) HttpFilter::register_filter(NAME, [this] (const HttpRequest &req) { return FUNCTION((req)); }) // Macro to register filter
+#define REG_FILTER(NAME, FUNCTION)                                                                 \
+    HttpFilter::register_filter(NAME, [this](const HttpRequest &req)                               \
+                                { return FUNCTION((req)); }) // Macro to register filter
 
-template<typename Derived> // CRTP needed to avoid dynamic dispatching
-class HttpFilter {
-public:
-    HttpFilter() = default;
-    HttpFilter(const HttpFilter&) = delete;
-    HttpFilter(HttpFilter &&) = delete;
-    HttpFilter& operator=(const HttpFilter&) = delete;
-    HttpFilter& operator=(HttpFilter&&) = delete;
+template <typename Derived> // CRTP needed to avoid dynamic dispatching
+class HttpFilter
+{
+  public:
+    HttpFilter()                              = default;
+    HttpFilter(const HttpFilter &)            = delete;
+    HttpFilter(HttpFilter &&)                 = delete;
+    HttpFilter &operator=(const HttpFilter &) = delete;
+    HttpFilter &operator=(HttpFilter &&)      = delete;
 
-    [[nodiscard]] auto do_filter(const HttpRequest &req) -> bool {
-        return static_cast<Derived*>(this)->doFilter(req);
+    [[nodiscard]] auto do_filter(const HttpRequest &req) -> bool
+    {
+        return static_cast<Derived *>(this)->doFilter(req);
     }
 
-    static void register_filter(std::string_view route, Filter&& filter) {
+    static void register_filter(std::string_view route, Filter &&filter)
+    {
         debug::log_info("Registering a filter");
         HttpBinder::instance().register_filter(route, std::move(filter));
     }
-
 };

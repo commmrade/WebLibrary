@@ -11,37 +11,37 @@
 
 class HttpRequest;
 
-class HttpHandle { // HttpHandle data class
-public:
+class HttpHandle
+{ // HttpHandle data class
+  public:
     HttpHandle() = default;
 
-
     void add_filter(Filter &&filter);
-    void set_handle_method(Handler&& handle);
+    void set_handle_method(Handler &&handle);
     void add_http_method(RequestType method);
 
-    [[nodiscard]] auto pass_middlewares(const HttpRequest& request) const -> bool;
-    auto has_method(RequestType type) -> bool {
-        return std::ranges::any_of(m_methods, [type](auto _type) {
-            return _type == type;
-        });
+    [[nodiscard]] auto pass_middlewares(const HttpRequest &request) const -> bool;
+    auto               has_method(RequestType type) -> bool
+    {
+        return std::ranges::any_of(m_methods, [type](auto _type) { return _type == type; });
     }
 
-    void set_param_names(std::vector<std::string>&& vec);
+    void set_param_names(std::vector<std::string> &&vec);
     [[nodiscard]]
-    auto get_param_names() const -> std::span<const std::string> {
+    auto get_param_names() const -> std::span<const std::string>
+    {
         return m_parameter_names;
     }
 
-    void set_endpoint_name_str(std::string ep_name);
+    void               set_endpoint_name_str(std::string ep_name);
     [[nodiscard]] auto get_path() const -> std::string { return m_path; }
 
-    void operator()(const HttpRequest& req, HttpResponseWriter& resp) const;
+    void operator()(const HttpRequest &req, HttpResponseWriter &resp) const;
 
-private:
+  private:
     std::vector<RequestType> m_methods;
-    std::vector<Filter> m_filters;
+    std::vector<Filter>      m_filters;
     std::vector<std::string> m_parameter_names;
-    std::string m_path;
-    Handler m_handle;
+    std::string              m_path;
+    Handler                  m_handle;
 };

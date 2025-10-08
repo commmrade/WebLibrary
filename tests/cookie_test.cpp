@@ -2,28 +2,32 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 
-TEST(CookieRequestTest, NoTrailingSemicolon) {
+TEST(CookieRequestTest, NoTrailingSemicolon)
+{
     Cookie cookie;
     cookie.set_name("Session-id");
     cookie.set_value("23472347234723");
     ASSERT_EQ(cookie.to_string(), "Session-id=23472347234723");
 }
 
-TEST(CookieRequestTest, ThrowsOnEmptyToString) {
+TEST(CookieRequestTest, ThrowsOnEmptyToString)
+{
     Cookie cookie;
     cookie.set_value("cock");
     std::string a;
     ASSERT_THROW((a = cookie.to_string()), std::runtime_error);
 }
 
-TEST(CookieResponseTest, NoTrailingSemicolon) {
+TEST(CookieResponseTest, NoTrailingSemicolon)
+{
     {
         Cookie cookie;
         cookie.set_name("Session-id");
         cookie.set_value("23472347234723");
         cookie.set_httponly(true);
         cookie.set_path("/cock");
-        ASSERT_EQ(cookie.to_string(), "Session-id=23472347234723; HttpOnly; Path=/cock; SameSite=None");
+        ASSERT_EQ(cookie.to_string(),
+                  "Session-id=23472347234723; HttpOnly; Path=/cock; SameSite=None");
     }
     {
         Cookie cookie;

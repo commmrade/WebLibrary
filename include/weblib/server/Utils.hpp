@@ -2,19 +2,16 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
-
 #include "weblib/server/RequestType.hpp"
 #include <json/value.h>
 #include <string>
 #include <vector>
 
-
-
-namespace utils {
+namespace utils
+{
 auto req_type_from_str(std::string_view str) -> RequestType;
 
 auto process_url_str(std::string_view url) -> std::string;
-
 
 auto error_response(std::string_view type, std::string_view message) -> Json::Value;
 
@@ -26,4 +23,4 @@ void trim_r(std::string &str);
 void trim_l(std::string &str);
 void trim(std::string &str);
 
-}
+} // namespace utils

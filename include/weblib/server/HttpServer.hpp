@@ -8,25 +8,26 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <poll.h>
-#include<fcntl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include "ThreadPool.hpp"
 
-class HttpServer {
-private:
-   
-    int m_serv_socket;
+class HttpServer
+{
+  private:
+    int         m_serv_socket;
     sockaddr_in m_serv_addr;
 
     std::unique_ptr<ThreadPool<>> m_thread_pool;
-public: 
 
-    HttpServer(const HttpServer&) = delete;
-    HttpServer(HttpServer &&) = delete;
-    HttpServer& operator=(const HttpServer&) = delete;
-    HttpServer& operator=(HttpServer&&) = delete;
+  public:
+    HttpServer(const HttpServer &)            = delete;
+    HttpServer(HttpServer &&)                 = delete;
+    HttpServer &operator=(const HttpServer &) = delete;
+    HttpServer &operator=(HttpServer &&)      = delete;
 
-    static auto instance() -> HttpServer& {
+    static auto instance() -> HttpServer &
+    {
         static HttpServer serv;
         return serv;
     }
@@ -34,7 +35,7 @@ public:
     void listen_start(int port = 8080);
     void stop_server();
 
-private:
+  private:
     HttpServer();
     ~HttpServer();
 

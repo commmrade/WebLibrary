@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(weblib VERSION 0.1.0 LANGUAGES CXX)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
@@ -128,4 +128,36 @@ if(TEST_SOURCES)
     gtest_discover_tests(tests)
 else()
     message(WARNING "No tests found in tests/ directory")
+endif()
+
+# clang tidy stuff
+find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy)
+if(CLANG_TIDY_EXECUTABLE)
+    message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXECUTABLE}")
+    # Collect all source and header files for clang-tidy using non-recursive GLOB for compatibility
+    set(CLANG_TIDY_SOURCES)
+    # C++ sources from known directories
+    file(GLOB _sources "${CMAKE_CURRENT_SOURCE_DIR}/requests/*.cpp")
+    list(APPEND CLANG_TIDY_SOURCES ${_sources})
+    file(GLOB _sources "${CMAKE_CURRENT_SOURCE_DIR}/server/*.cpp")
+    list(APPEND CLANG_TIDY_SOURCES ${_sources})
+    file(GLOB _sources "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
+    list(APPEND CLANG_TIDY_SOURCES ${_sources})
+    # Headers from include (up to one sub-level for common structures like include/weblib/*.h)
+    file(GLOB _headers "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+    list(APPEND CLANG_TIDY_SOURCES ${_headers})
+    file(GLOB _headers "${CMAKE_CURRENT_SOURCE_DIR}/include/*/*.h")
+    list(APPEND CLANG_TIDY_SOURCES ${_headers})
+    # Create custom target for clang-tidy
+    add_custom_target(clang-tidy
+        COMMAND ${CLANG_TIDY_EXECUTABLE}
+            -p=${CMAKE_BINARY_DIR}
+            --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+            ${CLANG_TIDY_SOURCES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy on source files"
+        VERBATIM
+    )
+else()
+    message(WARNING "clang-tidy not found. Skipping clang-tidy target.")
 endif()

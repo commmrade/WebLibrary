@@ -30,8 +30,8 @@ void HttpServer::server_setup(int port) {
     m_serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0); // Creating a socket that can be connected to
     if (m_serv_socket < 0) {
         debug::log_error("Socket error");
-        throw std::system_error{std::error_code{}, "Could not create a socket"}; // Since socket() interfaces with the OS, throw system_error 
-    }   
+        throw std::system_error{std::error_code{}, "Could not create a socket"}; // Since socket() interfaces with the OS, throw system_error
+    }
     int flags = fcntl(m_serv_socket, F_GETFL, 0);
     if (flags < 0 || fcntl(m_serv_socket, F_SETFL, flags | O_NONBLOCK) < 0) { // Setting non-blocking mode for better handling of requests
         throw std::system_error(std::error_code{}, "Could not set flags for client socket");
@@ -52,11 +52,11 @@ void HttpServer::server_setup(int port) {
     if (bind(m_serv_socket, (sockaddr*)&m_serv_addr, sizeof(m_serv_addr)) < 0) { // Binding socket
         debug::log_error("Binding socket error");
         throw std::system_error(std::error_code{}, "Could not bind the server socket");
-    } 
+    }
 }
 
 auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
-    std::string request_string; 
+    std::string request_string;
 
     int content_length{-1};
     int current_body_read{0};
@@ -77,7 +77,7 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
                 auto headers_start = request_string.find("\r\n") + 2;
                 auto header_string = request_string.substr(headers_start, header_end_pos - headers_start);
                 HttpHeaders headers{std::move(header_string)};
-           
+
                 try {
                     content_length = std::stoi(headers.get_header("Content-Length").value_or("0")); // If no header set length to 0 (For example in GET requests)
                 } catch (const std::invalid_argument& ex) {
@@ -85,7 +85,7 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string> {
                     content_length = 0; // We don't care what exception it is just set c-l to 0
                 }
                 in_body = true;
-            } 
+            }
             if (in_body) { // If parsing the body
                 current_body_read = std::distance(request_string.begin() + header_end_pos + 4, request_string.end()); // Cheap because its a random access iterator
                 if (current_body_read >= content_length) { // Finished reading body, if body is empty it will still be true, since default content-length value is 0 and current_body_read is 0 by default
@@ -116,14 +116,14 @@ void HttpServer::handle_incoming_request(int client_socket) {
             if (!request_str) {
                 break;
             }
-            
+
             HttpRouter::instance().process_request(client_socket, request_str.value());
         }
         close(client_socket);
     } catch (const std::exception& ex) {
         close(client_socket);
     }
-    
+
 }
 
 
@@ -139,7 +139,7 @@ void HttpServer::listen_start(int port) {
     polls_fd.push_back({m_serv_socket, POLLIN, 0}); // Setting server socket
     while (true) {
         int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
-        
+
         if (poll_result < 0) {
             debug::log_error("Polling error"); // Critical error
             throw std::runtime_error("");
@@ -161,13 +161,13 @@ void HttpServer::listen_start(int port) {
                     int client_socket = polls_fd[i].fd;
 
                     m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this, client_socket);
-                    
+
                     polls_fd.erase(polls_fd.begin() + i);
                     i--;
                 }
             }
         }
-        
+
     }
 }
 void HttpServer::stop_server() {

@@ -25,7 +25,7 @@ void HttpRouter::handle_request(HttpResponseWriter& resp, std::string_view path,
     try {
         const HttpHandle* handle = HttpBinder::instance().find_handle(path,request_type);
         // Do not destroy, since it is stored inside HttpBinder
-        if (handle != nullptr) {  
+        if (handle != nullptr) {
             HttpRequest const request(std::string{request_string}, handle->get_path(), handle->get_param_names()); // Passing param names to then process query part
             if (!handle->pass_middlewares(request)) {
                 debug::log_warn("Filtering not passed");

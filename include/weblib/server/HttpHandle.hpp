@@ -14,7 +14,7 @@ class HttpRequest;
 class HttpHandle { // HttpHandle data class
 public:
     HttpHandle() = default;
- 
+
 
     void add_filter(Filter &&filter);
     void set_handle_method(Handler&& handle);
@@ -25,7 +25,7 @@ public:
         return std::ranges::any_of(m_methods, [type](auto _type) {
             return _type == type;
         });
-    } 
+    }
 
     void set_param_names(std::vector<std::string>&& vec);
     [[nodiscard]]

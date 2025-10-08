@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
-#include <server/HttpServer.hpp>
+#include "weblib/server/HttpServer.hpp"
 #include <debug.hpp>
 #include <signal.h>
 

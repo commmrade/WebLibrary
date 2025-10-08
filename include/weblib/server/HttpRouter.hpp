@@ -18,7 +18,7 @@ public:
     HttpRouter(const HttpRouter&) = delete;
     HttpRouter(HttpRouter &&) = delete;
     HttpRouter& operator=(const HttpRouter&) = delete;
-    HttpRouter& operator=(HttpRouter&&) = delete;    
+    HttpRouter& operator=(HttpRouter&&) = delete;
 
     static auto instance() -> HttpRouter& { // Singleton
         static HttpRouter router{};

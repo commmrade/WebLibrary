@@ -9,7 +9,7 @@ auto Cookie::to_string() const -> std::string {
     std::string final_str = m_name + "=" + m_value;
     if (!m_response_cookie) {
         return m_name + "=" + m_value;
-    } 
+    }
 
     final_str += "; ";
     if (m_max_age) {
@@ -42,10 +42,10 @@ auto Cookie::to_string() const -> std::string {
                 final_str += "SameSite=" + "None"s;
                 break;
             }
-        }  
-        final_str += "; "; 
+        }
+        final_str += "; ";
     }
-    
+
     if (final_str.find_last_of(';') >= final_str.size() - 2) { // If there is ";" at the end, truncate "; "
         final_str.resize(final_str.size() - 2);
     }
@@ -55,7 +55,7 @@ auto Cookie::to_string() const -> std::string {
 
 void Cookie::set_name(std::string_view new_name) {
     m_name = new_name;
-} 
+}
 void Cookie::set_value(std::string_view new_val) {
     m_value = new_val;
 }

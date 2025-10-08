@@ -5,35 +5,35 @@
 #include <stdexcept>
 #include <ranges>
 
-void HttpHeaders::extract_headers_from_str(const std::string &request_str)
+void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
-    if (request_str.empty())
+    if (raw_headers.empty())
     {
         return; // Empty headers
     }
-    std::istringstream strm(request_str); // here
-    std::string        line;
-    while (std::getline(strm, line, '\n'))
-    {                      // Extracting headers one by one
-        utils::trim(line); // Get rid of spaces and carriage returns
+    std::istringstream strm(raw_headers); // here
+    std::string        header;
+    while (std::getline(strm, header, '\n'))
+    {
+        utils::trim(header); // get rid of carriage return
 
-        auto pos = line.find(':');
+        auto pos = header.find(':');
         if (pos == std::string::npos)
         {
             std::cerr << "Malformed http m_request: no colon\n";
             throw std::runtime_error("Malformed http m_request 1");
         }
 
-        auto name  = std::string(line.begin(),
-                                 line.begin() + static_cast<std::string::difference_type>(pos));
-        auto value = std::string(line.begin() + static_cast<std::string::difference_type>(pos) + 2,
-                                 line.end());
+        auto name  = std::string(header.begin(),
+                                 header.begin() + static_cast<std::string::difference_type>(pos));
+        auto value = std::string(header.begin() + static_cast<std::string::difference_type>(pos) + 2,
+                                 header.end());
         utils::trim(value);
 
-        auto lowercase_name = utils::to_lowercase_str(name);
-        if (lowercase_name != "cookie")
+        auto lc_name = utils::to_lowercase_str(name);
+        if (lc_name != "cookie")
         {
-            m_headers.emplace(lowercase_name, std::move(value)); // Add header
+            m_headers.emplace(lc_name, std::move(value)); // Add header
         }
         else
         {
@@ -55,11 +55,11 @@ void HttpHeaders::extract_headers_from_str(const std::string &request_str)
                                       {
                                           throw std::runtime_error("Malformed http m_request");
                                       }
-                                      auto const name_cookie  = std::move(name_value.front());
-                                      auto const value_cookie = std::move(name_value.back());
+                                      auto const name  = std::move(name_value.front());
+                                      auto const value = std::move(name_value.back());
                                       m_cookies.emplace(
-                                          utils::to_lowercase_str(name_cookie),
-                                          Cookie{std::move(name_cookie), std::move(value_cookie)});
+                                          utils::to_lowercase_str(name),
+                                          Cookie{std::move(name), std::move(value)});
                                   });
         }
     }

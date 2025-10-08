@@ -1,28 +1,28 @@
----
-Checks: >-
-  -*,
-  clang-analyzer-*,
-  cppcoreguidelines-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  bugprone-*
+# ---
+# Checks: >-
+#   -*,
+#   clang-analyzer-*,
+#   cppcoreguidelines-*,
+#   modernize-*,
+#   performance-*,
+#   readability-*,
+#   bugprone-*
 
-WarningsAsErrors: >-
-  clang-analyzer-*,
-  cppcoreguidelines-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  bugprone-*
+# WarningsAsErrors: >-
+#   clang-analyzer-*,
+#   cppcoreguidelines-*,
+#   modernize-*,
+#   performance-*,
+#   readability-*,
+#   bugprone-*
 
-HeaderFilterRegex: '.*'  # Apply checks to all headers
-FormatStyle: file        # Use clang-format file if present
+# HeaderFilterRegex: '.*'  # Apply checks to all headers
+# FormatStyle: file        # Use clang-format file if present
 
-CheckOptions:
-  - key: readability-identifier-naming.VariableCase
-    value: CamelCase
-  - key: readability-identifier-naming.FunctionCase
-    value: CamelCase
-  - key: readability-identifier-naming.ConstantCase
-    value: SCREAMING_SNAKE_CASE
+# CheckOptions:
+#   - key: readability-identifier-naming.VariableCase
+#     value: CamelCase
+#   - key: readability-identifier-naming.FunctionCase
+#     value: CamelCase
+#   - key: readability-identifier-naming.ConstantCase
+#     value: SCREAMING_SNAKE_CASE

@@ -26,14 +26,14 @@ class HttpHandle
         return std::ranges::any_of(m_methods, [type](auto _type) { return _type == type; });
     }
 
-    void set_param_names(std::vector<std::string> &&vec);
+    void set_parameters(std::vector<std::string> &&vec);
     [[nodiscard]]
-    auto get_param_names() const -> std::span<const std::string>
+    auto get_parameters() const -> std::span<const std::string>
     {
         return m_parameter_names;
     }
 
-    void               set_endpoint_name_str(std::string ep_name);
+    void               set_path(std::string ep_name);
     [[nodiscard]] auto get_path() const -> std::string { return m_path; }
 
     void operator()(const HttpRequest &req, HttpResponseWriter &resp) const;

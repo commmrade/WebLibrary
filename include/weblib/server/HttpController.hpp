@@ -4,7 +4,7 @@
 
 #include <cstdarg>
 #include <utility>
-#include "debug.hpp"
+#include "weblib/debug.hpp"
 #include "weblib/server/HttpBinder.hpp"
 
 #define mv(X) std::move(X)
@@ -24,11 +24,11 @@ class HttpController
     HttpController &operator=(HttpController &&)      = delete;
 
     template <typename... RequestTypes>
-    static void register_method(const std::string &endpoint_name, Handler &&handler,
+    static void register_method(const std::string &path, Handler &&handler,
                                 RequestTypes &&...types)
     {
         debug::log_info("Registering a handler");
-        HttpBinder::instance().register_handler(endpoint_name, std::move(handler),
+        HttpBinder::instance().register_handler(path, std::move(handler),
                                                 std::forward<RequestTypes>(types)...);
     }
 };

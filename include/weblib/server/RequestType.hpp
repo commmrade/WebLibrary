@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 #include <string_view>
+#include <string>
 
 enum class RequestType : std::uint8_t
 {
@@ -12,6 +13,34 @@ enum class RequestType : std::uint8_t
     DELETE,
     OPTIONS,
 };
+
+inline auto req_type_to_str(RequestType req) -> std::string 
+{
+    if (req == RequestType::GET)
+    {
+        return "GET";
+    }
+    else if (req == RequestType::POST)
+    {
+        return "POST";
+    }
+    else if (req == RequestType::OPTIONS)
+    {
+        return "OPTIONS";
+    }
+    else if (req == RequestType::PUT)
+    {
+        return "PUT";
+    }
+    else if (req == RequestType::DELETE)
+    {
+        return "DELETE";
+    }
+    else
+    {
+        return "GET";
+    }
+}
 
 inline auto req_type_from_str(std::string_view str) -> RequestType
 {

@@ -23,7 +23,7 @@
 class HttpRequest
 {
   public:
-    explicit HttpRequest(std::string request_str, std::string endpoint_name_str,
+    explicit HttpRequest(std::string raw_http, std::string endpoint_name_str,
                          std::span<const std::string> pnames = {});
 
     [[nodiscard]]

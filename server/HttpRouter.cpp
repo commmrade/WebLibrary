@@ -3,32 +3,36 @@
 #include "weblib/server/HttpHandle.hpp"
 #include "weblib/server/HttpRequest.hpp"
 #include "weblib/server/HttpBinder.hpp"
-#include <expected>
 #include <exception>
+#include "weblib/server/RequestType.hpp"
 #include "weblib/server/Utils.hpp"
 #include "weblib/server/hash.hpp"
-#include <print>
 
-auto HttpRouter::parse_request_line(std::string_view request_string)
+auto HttpRouter::parse_request_line(std::string_view raw_http)
     -> std::optional<std::pair<std::string, std::string>>
 {
-    auto method_str   = request_string.substr(0, request_string.find(' '));
-    auto first_space  = request_string.find(' ');
-    auto second_space = request_string.find(' ', first_space + 1);
-    if (first_space == std::string_view::npos || second_space == std::string_view::npos)
+    auto space_after_method  = raw_http.find(' ');
+    if (space_after_method == std::string_view::npos)
     {
         return std::nullopt;
     }
-    std::string_view const endpoint_target =
-        request_string.substr(first_space + 1, second_space - first_space - 1);
+    auto method   = raw_http.substr(0, space_after_method);
+    
+    auto space_after_path = raw_http.find(' ', space_after_method + 1);
+    if (space_after_path == std::string_view::npos)
+    {
+        return std::nullopt;
+    }
 
-    return std::optional<std::pair<std::string, std::string>>{
-        std::pair{std::string{method_str}, std::string{endpoint_target}}
+    std::string_view const path =
+        raw_http.substr(space_after_method + 1, space_after_path - space_after_method - 1);
+    return {
+        std::pair{std::string{method}, std::string{path}}
     };
 }
 
 void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
-                                std::string_view request_string, std::string_view method,
+                                std::string_view raw_http,
                                 RequestType request_type)
 {
     try
@@ -38,8 +42,8 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
         if (handle != nullptr)
         {
             HttpRequest const request(
-                std::string{request_string}, handle->get_path(),
-                handle->get_param_names()); // Passing param names to then process query part
+                std::string{raw_http}, handle->get_path(),
+                handle->get_parameters()); // Passing param names to then process query part
             if (!handle->pass_middlewares(request))
             {
                 debug::log_warn("Filtering not passed");
@@ -70,7 +74,7 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
     }
     catch (const std::exception &ex)
     { // Server internal error 5xx
-        debug::log_error("Server internal error ", method, " ", ex.what());
+        debug::log_error("Server internal error ", req_type_to_str(request_type), " ", ex.what());
         auto resp_ = HttpResponseBuilder()
                          .set_status(500)
                          .set_body_json(utils::error_response(
@@ -81,25 +85,25 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
     }
 }
 
-void HttpRouter::process_request(int client_socket, std::string_view request_string)
+void HttpRouter::process_request(int sock, std::string_view raw_http)
 {
-    if (request_string.empty())
+    if (raw_http.empty())
     {
         return;
     }
-    HttpResponseWriter resp{client_socket};
 
-    auto val = HttpRouter::parse_request_line(request_string);
-    if (!val.has_value())
+    HttpResponseWriter response{sock};
+    auto method_and_path_opt = HttpRouter::parse_request_line(raw_http);
+    if (!method_and_path_opt.has_value())
     {
         auto resp_ = HttpResponseBuilder()
                          .set_status(400)
                          .set_body_str("Malformed request")
                          .set_content_type(ContentType::TEXT)
                          .build();
-        resp.respond(resp_);
+        response.respond(resp_);
     }
-    auto &[method, path]           = val.value();
+    auto &[method, path]           = method_and_path_opt.value();
     RequestType const request_type = req_type_from_str(method);
-    handle_request(resp, path, request_string, method, request_type);
+    handle_request(response, path, raw_http, request_type);
 }

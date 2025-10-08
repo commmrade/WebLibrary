@@ -15,8 +15,8 @@
 class HttpServer
 {
   private:
-    int         m_serv_socket;
-    sockaddr_in m_serv_addr;
+    int         m_listen_socket;
+    sockaddr_in m_listen_addr;
 
     std::unique_ptr<ThreadPool<>> m_thread_pool;
 

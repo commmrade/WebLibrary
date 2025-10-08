@@ -2,39 +2,38 @@
 #include "weblib/server/Utils.hpp"
 #include <ranges>
 
-void HttpQuery::parse_from_string(const std::string              &request_str,
-                                  const std::vector<std::string> &param_names,
-                                  const std::string              &serv_path)
+void HttpQuery::parse_from_string(const std::string              &raw_http,
+                                  const std::vector<std::string> &parameters,
+                                  std::string_view               template_path)
 {
-    if (param_names.empty())
+    if (parameters.empty())
     {
         return;
     }
 
     auto param_name_iter =
-        param_names.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
-    if (param_name_iter == param_names.end())
+        parameters.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
+    if (param_name_iter == parameters.end())
     {
         throw std::runtime_error("Malformed http m_request");
     }
 
-    size_t const endpoint_start = request_str.find('/');
+    size_t const endpoint_start = raw_http.find('/');
     if (endpoint_start == std::string::npos)
     {
         throw std::runtime_error("Wtf");
     }
-    std::string_view const path{request_str.data() + endpoint_start + 1,
-                                request_str.find("HTTP") - endpoint_start -
+    std::string_view const path{raw_http.data() + endpoint_start + 1,
+                                raw_http.find("HTTP") - endpoint_start -
                                     2}; // additional 1 taking a space into account
 
     // Slash handling
-    std::string_view pattern{serv_path};
-    pattern.remove_prefix(1);
+    template_path.remove_prefix(1);
 
     // Processing path arguments
-    auto pattern_slash = pattern.substr(0, pattern.find('?'));
-    auto pattern_slash_args =
-        pattern_slash | std::views::split('/') |
+    auto t_path_slash = template_path.substr(0, template_path.find('?'));
+    auto t_path_params =
+        t_path_slash | std::views::split('/') |
         std::views::transform(
             [](auto &&range)
             {
@@ -44,7 +43,7 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
         std::ranges::to<std::vector>();
 
     auto path_slash = path.substr(0, path.find('?'));
-    auto path_slash_args =
+    auto path_slash_params =
         path_slash | std::views::split('/') |
         std::views::transform(
             [](auto &&range)
@@ -53,17 +52,17 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
                                         static_cast<size_t>(std::ranges::distance(range))};
             }) |
         std::ranges::to<std::vector>();
-    if (pattern_slash_args.size() != path_slash_args.size())
+    if (t_path_params.size() != path_slash_params.size())
     {
-        throw std::runtime_error("Pattern slash args size != Path slash args size");
+        throw std::runtime_error("template_path slash args size != Path slash args size");
     }
 
     for (const auto &&[pattern_arg, path_arg] :
-         std::views::zip(pattern_slash_args, path_slash_args))
+         std::views::zip(t_path_params, path_slash_params))
     {
         if (pattern_arg.contains('{'))
         { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == param_names.end())
+            if (param_name_iter == parameters.end())
             {
                 throw std::runtime_error("Malformed http m_request");
             }
@@ -72,15 +71,17 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
         }
     }
 
-    auto pattern_question_pos = pattern.find('?');
+    
+    auto t_path_question_pos = template_path.find('?');
+    auto t_path_query        = template_path.substr(
+        t_path_question_pos == std::string::npos ? template_path.size() : t_path_question_pos + 1);
+
     auto path_question_pos    = path.find('?');
-    auto pattern_query        = pattern.substr(
-        pattern_question_pos == std::string::npos ? pattern.size() : pattern_question_pos + 1);
     auto path_query =
         path.substr(path_question_pos == std::string::npos ? path.size() : path_question_pos + 1);
 
-    auto pattern_query_args =
-        pattern_query | std::views::split('&') |
+    auto t_path_query_params =
+        t_path_query | std::views::split('&') |
         std::views::transform(
             [](auto &&range)
             {
@@ -88,7 +89,7 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
                                         static_cast<size_t>(std::ranges::distance(range))};
             }) |
         std::ranges::to<std::vector>();
-    auto path_query_args =
+    auto path_query_params =
         path_query | std::views::split('&') |
         std::views::transform(
             [](auto &&range)
@@ -97,9 +98,9 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
                                         static_cast<size_t>(std::ranges::distance(range))};
             }) |
         std::ranges::to<std::vector>();
-    if (pattern_query_args.size() != path_query_args.size())
+    if (t_path_query_params.size() != path_query_params.size())
     {
-        throw std::runtime_error("Pattern query args size != Path query args size");
+        throw std::runtime_error("template_path query args size != Path query args size");
     }
 
     auto split_kv_query =
@@ -120,13 +121,13 @@ void HttpQuery::parse_from_string(const std::string              &request_str,
         return {k_v.front(), k_v.back()};
     };
 
-    for (const auto &&[pattern_kv, path_kv] : std::views::zip(pattern_query_args, path_query_args))
+    for (const auto &&[t_path_kv, path_kv] : std::views::zip(t_path_query_params, path_query_params))
     {
-        auto [pattern_name, pattern_value] = split_kv_query(pattern_kv);
+        auto [t_path_name, t_path_value] = split_kv_query(t_path_kv);
         auto [path_name, path_value]       = split_kv_query(path_kv);
-        if (pattern_value.contains('{'))
+        if (t_path_value.contains('{'))
         { // Если есть скобка, значит параметр шаблонный
-            if (param_name_iter == param_names.end())
+            if (param_name_iter == parameters.end())
             {
                 throw std::runtime_error("Malformed http m_request");
             }

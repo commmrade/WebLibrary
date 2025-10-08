@@ -8,7 +8,7 @@ class HttpHeaders
   private:
     std::unordered_map<std::string, std::string> m_headers;
     std::unordered_map<std::string, Cookie>      m_cookies;
-    void extract_headers_from_str(const std::string &request_str);
+    void extract_headers_from_str(const std::string &raw_headers);
 
   public:
     HttpHeaders() = default;

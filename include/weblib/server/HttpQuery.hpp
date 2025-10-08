@@ -26,5 +26,5 @@ class HttpQuery
 
     void parse_from_string(const std::string              &request_str,
                            const std::vector<std::string> &param_names,
-                           const std::string              &serv_path);
+                           std::string_view template_path);
 };

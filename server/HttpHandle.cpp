@@ -7,7 +7,7 @@ void HttpHandle::set_handle_method(Handler &&handle) { m_handle = std::move(hand
 
 void HttpHandle::add_http_method(RequestType method) { m_methods.emplace_back(method); }
 
-void HttpHandle::set_param_names(std::vector<std::string> &&vec)
+void HttpHandle::set_parameters(std::vector<std::string> &&vec)
 {
     m_parameter_names = std::move(vec);
 }
@@ -26,4 +26,4 @@ auto HttpHandle::pass_middlewares(const HttpRequest &request) const -> bool
     return !std::ranges::any_of(m_filters, [&](auto &&filter) { return !filter(request); });
 }
 
-void HttpHandle::set_endpoint_name_str(std::string ep_name) { m_path = std::move(ep_name); }
+void HttpHandle::set_path(std::string ep_name) { m_path = std::move(ep_name); }

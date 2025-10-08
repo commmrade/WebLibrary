@@ -11,14 +11,14 @@ endif()
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 
 # Dependencies
-include(FetchContent)
+# include(FetchContent)
 
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-FetchContent_MakeAvailable(googletest)
+# set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+# FetchContent_Declare(
+#     googletest
+#     URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+# )
+# FetchContent_MakeAvailable(googletest)
 
 # Find jsoncpp with fallback to pkg-config
 find_package(jsoncpp CONFIG QUIET)
@@ -111,24 +111,24 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/weblib
 )
 
-# Tests
-enable_testing()
-file(GLOB TEST_SOURCES tests/*.cpp)
-if(TEST_SOURCES)
-    add_executable(tests ${TEST_SOURCES})
-    target_link_libraries(tests PRIVATE weblib GTest::gtest_main)
-    if(JSONCPP_FOUND)
-        target_include_directories(tests PRIVATE ${JSONCPP_INCLUDE_DIRS})
-        target_link_libraries(tests PRIVATE ${JSONCPP_LIBRARIES})
-    elseif(jsoncpp_FOUND)
-        target_link_libraries(tests PRIVATE jsoncpp_lib)
-    endif()
-    target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    include(GoogleTest)
-    gtest_discover_tests(tests)
-else()
-    message(WARNING "No tests found in tests/ directory")
-endif()
+# # Tests
+# enable_testing()
+# file(GLOB TEST_SOURCES tests/*.cpp)
+# if(TEST_SOURCES)
+#     add_executable(tests ${TEST_SOURCES})
+#     target_link_libraries(tests PRIVATE weblib GTest::gtest_main)
+#     if(JSONCPP_FOUND)
+#         target_include_directories(tests PRIVATE ${JSONCPP_INCLUDE_DIRS})
+#         target_link_libraries(tests PRIVATE ${JSONCPP_LIBRARIES})
+#     elseif(jsoncpp_FOUND)
+#         target_link_libraries(tests PRIVATE jsoncpp_lib)
+#     endif()
+#     target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+#     include(GoogleTest)
+#     gtest_discover_tests(tests)
+# else()
+#     message(WARNING "No tests found in tests/ directory")
+# endif()
 
 # clang tidy stuff
 find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy)

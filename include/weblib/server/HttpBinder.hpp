@@ -38,9 +38,9 @@ class HttpBinder
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(std::forward<Types>(types)), ...);
         handle_obj.set_handle_method(std::move(handler));
-        handle_obj.set_param_names(utils::extract_params(
+        handle_obj.set_parameters(utils::extract_params(
             endpoint_name)); // Extracting param names that are in {param_name}
-        handle_obj.set_endpoint_name_str(endpoint_name);
+        handle_obj.set_path(endpoint_name);
         // std::println("Extract: {}", utils::extract_params(endpoint_name));
         m_handles.emplace(utils::process_url_str(endpoint_name),
                           std::move(handle_obj)); // Turning route to name={} kinda

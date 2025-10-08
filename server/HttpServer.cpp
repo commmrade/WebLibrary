@@ -15,7 +15,7 @@
 #include <array>
 
 HttpServer::HttpServer() { m_thread_pool = std::make_unique<ThreadPool<>>(); }
-HttpServer::~HttpServer() { close(m_serv_socket); }
+HttpServer::~HttpServer() { close(m_listen_socket); }
 
 static constexpr std::string HEADERS_END = "\r\n\r\n";
 
@@ -24,35 +24,35 @@ void HttpServer::server_setup(int port)
     debug::log_info("Setting up server");
 
     debug::log_info("Creating a socket");
-    m_serv_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK,
+    m_listen_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK,
                            0); // Creating a socket that can be connected to
-    if (m_serv_socket < 0)
+    if (m_listen_socket < 0)
     {
         debug::log_error("Socket error");
         throw std::system_error{std::error_code{},
                                 "Could not create a socket"}; // Since socket() interfaces with the
                                                               // OS, throw system_error
     }
-    int flags = fcntl(m_serv_socket, F_GETFL, 0);
-    if (flags < 0 || fcntl(m_serv_socket, F_SETFL, flags | O_NONBLOCK) < 0)
+    int flags = fcntl(m_listen_socket, F_GETFL, 0);
+    if (flags < 0 || fcntl(m_listen_socket, F_SETFL, flags | O_NONBLOCK) < 0)
     { // Setting non-blocking mode for better handling of requests
         throw std::system_error(std::error_code{}, "Could not set flags for client socket");
     }
 
     int reuse  = 1;
-    int result = setsockopt(m_serv_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
+    int result = setsockopt(m_listen_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0)
     {
         debug::log_error("Could not set flags: ", strerror(errno));
         throw std::system_error{std::error_code{}, "Could not set flags"};
     }
 
-    m_serv_addr.sin_family      = AF_INET;
-    m_serv_addr.sin_port        = htons(port); // Settings app addres info
-    m_serv_addr.sin_addr.s_addr = INADDR_ANY;
+    m_listen_addr.sin_family      = AF_INET;
+    m_listen_addr.sin_port        = htons(port); // Settings app addres info
+    m_listen_addr.sin_addr.s_addr = INADDR_ANY;
 
     debug::log_info("Binding socket");
-    if (bind(m_serv_socket, (sockaddr *)&m_serv_addr, sizeof(m_serv_addr)) < 0)
+    if (bind(m_listen_socket, (sockaddr *)&m_listen_addr, sizeof(m_listen_addr)) < 0)
     { // Binding socket
         debug::log_error("Binding socket error");
         throw std::system_error(std::error_code{}, "Could not bind the server socket");
@@ -143,13 +143,13 @@ void HttpServer::handle_incoming_request(int client_socket)
     {
         while (true)
         {
-            auto request_str = read_request(client_socket);
-            if (!request_str)
+            auto raw_http = read_request(client_socket);
+            if (!raw_http)
             {
                 break;
             }
 
-            HttpRouter::instance().process_request(client_socket, request_str.value());
+            HttpRouter::instance().process_request(client_socket, raw_http.value());
         }
         close(client_socket);
     }
@@ -164,53 +164,54 @@ void HttpServer::listen_start(int port)
     server_setup(port);
 
     debug::log_info("Starting listening for incoming requests");
-    if (listen(m_serv_socket, SOMAXCONN) < 0)
-    { // Listening for incoming requests
+    if (listen(m_listen_socket, SOMAXCONN) < 0)
+    {
         debug::log_error("Listening error");
         throw std::runtime_error("");
     }
-    std::vector<pollfd> polls_fd;
-    polls_fd.push_back({m_serv_socket, POLLIN, 0}); // Setting server socket
+    std::vector<pollfd> poll_fds;
+    poll_fds.push_back({m_listen_socket, POLLIN, 0}); // Setting server socket
     while (true)
     {
-        int poll_result = poll(polls_fd.data(), polls_fd.size(), -1); // Polling for inf time
+        int poll_result = poll(poll_fds.data(), poll_fds.size(), -1); // Polling for inf time
 
         if (poll_result < 0)
         {
             debug::log_error("Polling error"); // Critical error
             throw std::runtime_error("");
         }
-        for (size_t i = 0; i < polls_fd.size(); i++)
+        for (size_t i = 0; i < poll_fds.size(); i++)
         {
-            if ((polls_fd[i].revents & POLLIN) == 1)
+            auto& cur_fd = poll_fds[i]; 
+            if ((cur_fd.revents & POLLIN) == 1)
             {
-                if (polls_fd[i].fd == m_serv_socket)
+                if (cur_fd.fd == m_listen_socket)
                 { // If server socket got something
-                    int client_socket = accept(m_serv_socket, nullptr, nullptr);
+                    int client_socket = accept(m_listen_socket, nullptr, nullptr);
                     if (client_socket < 0)
                     {
                         debug::log_error("Accepting user error");
-                        continue; // Moving on
+                        continue;
                     }
                     int flags = fcntl(client_socket, F_GETFL, 0);
                     if (flags < 0 || fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) < 0)
-                    { // Setting non-blocking mode for better handling of requests
+                    {
                         throw std::runtime_error("Could not set flags for client socket");
                     }
-                    polls_fd.push_back({client_socket, POLLIN, 0}); // Add new user
+                    poll_fds.push_back({client_socket, POLLIN, 0}); // Add new user
                 }
                 else
                 {
-                    int client_socket = polls_fd[i].fd;
+                    int sock = cur_fd.fd;
 
                     m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this,
-                                                  client_socket);
+                                                  sock);
 
-                    polls_fd.erase(polls_fd.begin() + i);
+                    poll_fds.erase(poll_fds.begin() + i);
                     i--;
                 }
             }
         }
     }
 }
-void HttpServer::stop_server() { close(m_serv_socket); }
+void HttpServer::stop_server() { close(m_listen_socket); }

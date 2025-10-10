@@ -15,7 +15,7 @@
 #include "weblib/server/RequestType.hpp"
 #include "weblib/server/HttpQuery.hpp"
 #include "weblib/server/HttpHeaders.hpp"
-
+namespace weblib {
 class HttpRequest
 {
   public:
@@ -89,3 +89,4 @@ class HttpRequest
                          std::span<const std::string> pnames);
     void extract_headers(const std::string &raw_http);
 };
+} // namespace weblib

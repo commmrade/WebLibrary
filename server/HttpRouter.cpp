@@ -7,7 +7,7 @@
 #include "weblib/server/RequestType.hpp"
 #include "weblib/utils.hpp"
 #include "weblib/server/hash.hpp"
-
+namespace weblib {
 auto HttpRouter::parse_request_line(std::string_view raw_http)
     -> std::optional<std::pair<std::string, std::string>>
 {
@@ -107,3 +107,4 @@ void HttpRouter::process_request(int sock, std::string_view raw_http)
     RequestType const request_type = req_type_from_str(method);
     handle_request(response, path, raw_http, request_type);
 }
+} // namespace weblib

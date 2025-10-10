@@ -1,7 +1,7 @@
 #include "weblib/server/HttpHandle.hpp"
 #include <algorithm>
 #include "weblib/exceptions.hpp"
-
+namespace weblib {
 void HttpHandle::add_filter(Filter &&filter) { m_filters.emplace_back(std::move(filter)); }
 
 void HttpHandle::set_handle_method(Handler &&handle) { m_handle = std::move(handle); }
@@ -28,3 +28,4 @@ auto HttpHandle::pass_middlewares(const HttpRequest &request) const -> bool
 }
 
 void HttpHandle::set_path(std::string ep_name) { m_path = std::move(ep_name); }
+} // namespace weblib

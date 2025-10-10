@@ -13,7 +13,7 @@
 #include <string_view>
 #include "weblib/server/HeaderView.hpp"
 #include "types.hpp"
-
+namespace weblib {
 class HttpResponseBuilder;
 enum class HeaderType : std::uint8_t;
 enum class ResponseType : std::uint8_t;
@@ -121,3 +121,4 @@ class HttpResponseBuilder
 
     [[nodiscard]] auto build() -> HttpResponse { return std::move(resp); }
 };
+} // namespace weblib

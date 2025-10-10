@@ -2,6 +2,9 @@
 
 #include <exception>
 #include <stdexcept>
+
+namespace weblib {
+
 struct empty_cookie : public std::exception {
     virtual const char*
     what() const noexcept {
@@ -69,3 +72,4 @@ struct reading_socket_error : public std::exception {
         return "Reading from socket failed";
     }
 };
+} // namespace weblib;

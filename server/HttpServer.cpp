@@ -12,7 +12,7 @@
 #include "weblib/debug.hpp"
 #include "weblib/server/HttpRequest.hpp"
 #include <array>
-
+namespace weblib {
 HttpServer::HttpServer() { m_thread_pool = std::make_unique<ThreadPool<>>(); }
 HttpServer::~HttpServer() { close(m_listen_socket); }
 
@@ -214,3 +214,5 @@ void HttpServer::listen_start(int port)
     }
 }
 void HttpServer::stop_server() { close(m_listen_socket); }
+
+} // namespace weblib

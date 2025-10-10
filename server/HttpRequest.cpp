@@ -5,7 +5,7 @@
 #include <print>
 #include <ranges>
 #include "weblib/consts.hpp"
-
+namespace weblib {
 HttpRequest::HttpRequest(std::string raw_http, std::string path,
                          std::span<const std::string> pnames)
 {
@@ -60,3 +60,4 @@ void HttpRequest::extract_headers(const std::string &raw_http)
     auto headers_section  = raw_http.substr(header_start_pos, header_end_pos - header_start_pos);
     m_headers.parse_from_string(headers_section);
 }
+} // namespace weblib

@@ -4,6 +4,9 @@
 #include <debug.hpp>
 #include <signal.h>
 
+
+namespace weblib {
+
 static auto app() -> HttpServer &;
 
 static void sigint_handler([[maybe_unused]] int signal)
@@ -19,3 +22,4 @@ static auto app() -> HttpServer &
     signal(SIGINT, sigint_handler);
     return HttpServer::instance();
 }
+} // namespace weblib

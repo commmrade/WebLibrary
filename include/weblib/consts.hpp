@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-
+namespace weblib {
 struct HttpConsts {
     static constexpr std::string_view HTTP = "HTTP";
     static constexpr std::string_view CRNL = "\r\n";
@@ -73,3 +73,4 @@ struct CookieConsts {
 
     
 };
+} // namespace weblib;

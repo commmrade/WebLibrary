@@ -6,7 +6,7 @@
 #include <json/value.h>
 #include <string>
 #include <vector>
-
+namespace weblib {
 namespace utils
 {
 auto req_type_from_str(std::string_view str) -> RequestType;
@@ -24,3 +24,4 @@ void trim_l(std::string &str);
 void trim(std::string &str);
 
 } // namespace utils
+} // namespace weblib

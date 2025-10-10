@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
-
+namespace weblib {
 class HttpRequest;
 class HttpQuery;
 
@@ -86,3 +86,4 @@ inline auto Query::as<const char *>() const -> const char *
 {
     return m_content.c_str();
 }
+} // namespace weblib

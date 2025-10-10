@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <ranges>
 #include "weblib/consts.hpp"
-
+namespace weblib {
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
     if (raw_headers.empty())
@@ -84,4 +84,5 @@ auto HttpHeaders::get_header(const std::string &header_name) const -> std::optio
         return std::optional<std::string>{pos->second};
     }
     return std::nullopt;
-}
+}}
+ // namespace weblib}

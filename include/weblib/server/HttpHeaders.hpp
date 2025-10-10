@@ -3,6 +3,8 @@
 #include "Cookie.hpp"
 #include "HeaderView.hpp"
 
+namespace weblib {
+
 class HttpHeaders
 {
   private:
@@ -39,3 +41,4 @@ class HttpHeaders
         // return m_headers.get_headers();
     }
 };
+} // namespace weblib

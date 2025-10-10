@@ -4,6 +4,9 @@
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
 
+namespace weblib {
+
+
 void HttpQuery::parse_from_string(const std::string              &raw_http,
                                   const std::vector<std::string> &parameters,
                                   std::string_view               template_path)
@@ -152,3 +155,5 @@ auto HttpQuery::get_query(const std::string &query_name) const -> Query
     }
     return query;
 }
+
+} // namespace weblib

@@ -8,7 +8,7 @@
 #include <sys/poll.h>
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
-
+namespace weblib {
 auto HttpResponse::to_string() const -> std::string
 {
     std::string response =
@@ -299,3 +299,5 @@ void HttpResponseWriter::respond(HttpResponse &resp)
         write_total_size += bytes_sent;
     }
 }
+
+} // namespace weblib

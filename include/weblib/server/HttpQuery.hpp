@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace weblib {
+
 class HttpQuery
 {
   private:
@@ -28,3 +30,4 @@ class HttpQuery
                            const std::vector<std::string> &param_names,
                            std::string_view template_path);
 };
+} // namespace weblib

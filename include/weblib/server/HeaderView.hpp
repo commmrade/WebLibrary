@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 
+namespace weblib {
 template <typename Map>
 class InsideView
 {
@@ -56,3 +57,5 @@ class Cookie;
 using HeaderView = InsideView<std::unordered_map<std::string, std::string>>;
 using CookieView = InsideView<std::unordered_map<std::string, Cookie>>;
 using QueryView  = HeaderView;
+
+} // namespace weblib

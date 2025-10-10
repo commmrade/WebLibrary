@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
-
+namespace weblib {
 auto Cookie::to_string() const -> std::string
 {
     if (m_name.empty() || m_value.empty())
@@ -99,3 +99,4 @@ void Cookie::set_samesite(SameSite new_rule)
     m_response_cookie = true;
     m_samesite        = new_rule;
 }
+} // namespace weblib

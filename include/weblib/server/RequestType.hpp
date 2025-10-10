@@ -5,7 +5,7 @@
 #include <string_view>
 #include <string>
 #include "weblib/consts.hpp"
-
+namespace weblib {
 enum class RequestType : std::uint8_t
 {
     POST,
@@ -71,3 +71,4 @@ inline auto req_type_from_str(std::string_view str) -> RequestType
         return RequestType::GET;
     }
 }
+} // namespace weblib}

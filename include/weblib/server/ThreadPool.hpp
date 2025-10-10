@@ -13,7 +13,7 @@
 #include <thread>
 #include <mutex>
 #include <semaphore>
-
+namespace weblib {
 using default_func_type = std::move_only_function<void()>;
 template <typename FunctionType = default_func_type>
     requires std::invocable<FunctionType>
@@ -138,3 +138,4 @@ class ThreadPool
     std::condition_variable   m_condvar;
     mutable std::mutex        m_mutex;
 };
+} // namespace weblib

@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "ThreadPool.hpp"
-
+namespace weblib {
 class HttpServer
 {
   private:
@@ -43,3 +43,5 @@ class HttpServer
     void handle_incoming_request(int client_socket);
     auto read_request(int client_socket) -> std::optional<std::string>;
 };
+
+} // namespace weblib

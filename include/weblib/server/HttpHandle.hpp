@@ -9,6 +9,9 @@
 #include <vector>
 #include "funcs.hpp"
 
+
+namespace weblib {
+
 class HttpRequest;
 
 class HttpHandle
@@ -45,3 +48,4 @@ class HttpHandle
     std::string              m_path;
     Handler                  m_handle;
 };
+} // namespace weblib

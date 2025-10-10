@@ -4,7 +4,7 @@
 #include "weblib/utils.hpp"
 #include <cctype>
 #include <stdexcept>
-
+namespace weblib {
 namespace utils
 {
 auto process_url_str(std::string_view url) -> std::string
@@ -81,3 +81,5 @@ auto extract_params(std::string_view url) -> std::vector<std::string>
 }
 
 } // namespace utils
+
+} // namespace weblib

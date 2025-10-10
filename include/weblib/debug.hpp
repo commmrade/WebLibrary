@@ -2,7 +2,7 @@
 #ifdef DEBUG
 #include <iostream>
 #endif
-
+namespace weblib {
 namespace debug
 {
 
@@ -34,3 +34,4 @@ void log_error([[maybe_unused]] Args... args)
 }
 
 } // namespace debug
+} // namespace weblib

@@ -15,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+
+namespace weblib {
 class HttpBinder
 {
   private:
@@ -181,3 +183,5 @@ class HttpBinder
         return nullptr;
     }
 };
+
+} // namespace weblib

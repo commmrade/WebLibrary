@@ -5,7 +5,7 @@
 #include "weblib/server/HttpBinder.hpp"
 #include <exception>
 #include "weblib/server/RequestType.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include "weblib/server/hash.hpp"
 
 auto HttpRouter::parse_request_line(std::string_view raw_http)
@@ -43,7 +43,7 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
         {
             HttpRequest const req(
                 std::string{raw_http}, handle->get_path(),
-                handle->get_parameters()); // Passing param names to then process query part
+                handle->get_parameters());
             if (!handle->pass_middlewares(req))
             {
                 debug::log_warn("Filtering not passed");
@@ -58,10 +58,10 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
             }
             debug::log_info("Proceeding to the endpoint ");
             (*handle)(req,
-                      resp); // Proceeding to endpoint if all middlewares were passed successfuly
+                      resp);
         }
         else
-        { // Endpoint was not found
+        {
             debug::log_info("Endpoint not found");
             auto res = HttpResponseBuilder()
                              .set_status(404)
@@ -73,7 +73,7 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
         }
     }
     catch (const std::exception &ex)
-    { // Server internal error 5xx
+    {
         debug::log_error("Server internal error ", req_type_to_str(request_type), " ", ex.what());
         auto resp_ = HttpResponseBuilder()
                          .set_status(500)
@@ -103,7 +103,7 @@ void HttpRouter::process_request(int sock, std::string_view raw_http)
                          .build();
         response.respond(res);
     }
-    auto &[method, path]           = method_and_path_opt.value();
+    auto &[method, path] = method_and_path_opt.value();
     RequestType const request_type = req_type_from_str(method);
     handle_request(response, path, raw_http, request_type);
 }

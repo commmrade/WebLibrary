@@ -1,10 +1,10 @@
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include "weblib/server/HttpRequest.hpp"
 #include <algorithm>
 #include <iostream>
 #include <print>
 #include <ranges>
-#include "weblib/server/consts.hpp"
+#include "weblib/consts.hpp"
 
 HttpRequest::HttpRequest(std::string raw_http, std::string path,
                          std::span<const std::string> pnames)

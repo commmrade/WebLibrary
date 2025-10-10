@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string_view>
 #include <string>
+#include "weblib/consts.hpp"
 
 enum class RequestType : std::uint8_t
 {
@@ -14,53 +15,54 @@ enum class RequestType : std::uint8_t
     OPTIONS,
 };
 
+#define s(x) std::string{x}
 inline auto req_type_to_str(RequestType req) -> std::string 
 {
     if (req == RequestType::GET)
     {
-        return "GET";
+        return s(HttpConsts::METHOD_GET);
     }
     else if (req == RequestType::POST)
     {
-        return "POST";
+        return s(HttpConsts::METHOD_POST);
     }
     else if (req == RequestType::OPTIONS)
     {
-        return "OPTIONS";
+        return s(HttpConsts::METHOD_OPTIONS);
     }
     else if (req == RequestType::PUT)
     {
-        return "PUT";
+        return s(HttpConsts::METHOD_PUT);
     }
     else if (req == RequestType::DELETE)
     {
-        return "DELETE";
+        return s(HttpConsts::METHOD_DELETE);
     }
     else
     {
-        return "GET";
+        return s(HttpConsts::METHOD_GET);
     }
 }
 
 inline auto req_type_from_str(std::string_view str) -> RequestType
 {
-    if (str == "GET")
+    if (str == HttpConsts::METHOD_GET)
     {
         return RequestType::GET;
     }
-    else if (str == "POST")
+    else if (str == HttpConsts::METHOD_POST)
     {
         return RequestType::POST;
     }
-    else if (str == "OPTIONS")
+    else if (str == HttpConsts::METHOD_OPTIONS)
     {
         return RequestType::OPTIONS;
     }
-    else if (str == "PUT")
+    else if (str == HttpConsts::METHOD_PUT)
     {
         return RequestType::PUT;
     }
-    else if (str == "DELETE")
+    else if (str == HttpConsts::METHOD_DELETE)
     {
         return RequestType::DELETE;
     }

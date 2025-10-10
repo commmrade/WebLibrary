@@ -16,7 +16,7 @@
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include "weblib/server/HttpQuery.hpp"
 #include "weblib/server/HttpHeaders.hpp"
 

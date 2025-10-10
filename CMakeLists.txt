@@ -38,7 +38,7 @@ add_library(weblib
     server/HttpResponse.cpp
     server/HttpRouter.cpp
     server/HttpServer.cpp
-    server/Utils.cpp
+    server/utils.cpp
     server/HttpQuery.cpp
     server/HttpHeaders.cpp
 )

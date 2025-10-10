@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
+#include "weblib/debug.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -21,7 +22,7 @@ class ThreadPool
   public:
     ThreadPool(unsigned int threads_count = std::thread::hardware_concurrency())
     {
-        m_workers.reserve(threads_count); // Reserve space, avoid reallocations
+        m_workers.reserve(threads_count);
         for (unsigned int i = 0; i < threads_count; ++i)
         {
             m_workers.emplace_back(
@@ -37,15 +38,15 @@ class ThreadPool
                                                   !m_should_work.load(std::memory_order_acquire);
                                        });
                         if (!m_should_work.load(std::memory_order_acquire))
-                        { // If tasks must be finished, end the loop
+                        {
                             return;
                         }
 
-                        FunctionType task = std::move(m_tasks.front()); // Get task and run it
+                        FunctionType task = std::move(m_tasks.front()); 
                         m_tasks.pop_front();
-                        lock.unlock(); // Dont need lock anymore
+                        lock.unlock();
 
-                        task(); // Cant really be broken i suppose
+                        task();
                     }
                 });
         }
@@ -67,14 +68,14 @@ class ThreadPool
     {
         std::promise<ReturnT> promise;
         auto                  future =
-            promise.get_future(); // Make a promise which we will use to return value in a future
+            promise.get_future();
         enqueue_task(
             [function = std::forward<Function>(function), promise = std::move(promise),
              ... args = std::forward<Args>(args)]() mutable
             {
                 try
                 {
-                    if constexpr (std::is_same_v<void, std::invoke_result_t<Function, Args...>>)
+                    if constexpr (std::is_same_v<void, ReturnT>)
                     {
                         std::invoke(function, args...);
                     }
@@ -106,7 +107,7 @@ class ThreadPool
                 }
                 catch (const std::exception &ex)
                 {
-                    std::println("Exception in worker: {}", ex.what());
+                    debug::log_error(std::format("Exception in worker: {}", ex.what()));
                 }
             });
     }

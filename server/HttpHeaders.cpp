@@ -1,18 +1,19 @@
 #include "weblib/server/HttpHeaders.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/debug.hpp"
+#include "weblib/utils.hpp"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
 #include <ranges>
-#include "weblib/server/consts.hpp"
+#include "weblib/consts.hpp"
 
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
     if (raw_headers.empty())
     {
-        return; // Empty headers
+        return;
     }
-    std::istringstream strm(raw_headers); // here
+    std::istringstream strm(raw_headers); 
     std::string        header;
     while (std::getline(strm, header, '\n'))
     {
@@ -21,8 +22,8 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         auto pos = header.find(':');
         if (pos == std::string::npos)
         {
-            std::cerr << "Malformed http m_request: no colon\n";
-            throw std::runtime_error("Malformed http m_request 1");
+            debug::log_error("Could not find a ':' in the header");
+            throw std::runtime_error("Header is ill-formed");
         }
 
         auto name  = std::string(header.begin(),
@@ -32,9 +33,9 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         utils::trim(value);
 
         auto lc_name = utils::to_lowercase_str(name);
-        if (lc_name != HttpConsts::COOKIE_HEADER)
+        if (lc_name != HeaderConsts::COOKIE_HEADER)
         {
-            m_headers.emplace(lc_name, std::move(value)); // Add header
+            m_headers.emplace(lc_name, std::move(value));
         }
         else
         {
@@ -69,7 +70,7 @@ auto HttpHeaders::get_cookie(const std::string &name) const -> std::optional<Coo
 {
     auto pos = m_cookies.find(utils::to_lowercase_str(name));
     if (pos != m_cookies.end())
-    { // If header exists
+    {
         return std::optional<Cookie>{pos->second};
     }
     return std::nullopt;
@@ -79,7 +80,7 @@ auto HttpHeaders::get_header(const std::string &header_name) const -> std::optio
 {
     auto pos = m_headers.find(utils::to_lowercase_str(header_name));
     if (pos != m_headers.end())
-    { // If header exists
+    { 
         return std::optional<std::string>{pos->second};
     }
     return std::nullopt;

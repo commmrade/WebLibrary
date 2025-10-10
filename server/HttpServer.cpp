@@ -25,7 +25,7 @@ void HttpServer::server_setup(int port)
 
     debug::log_info("Creating a socket");
     m_listen_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK,
-                           0); // Creating a socket that can be connected to
+                           0);
     if (m_listen_socket < 0)
     {
         debug::log_error("Socket error");
@@ -35,7 +35,7 @@ void HttpServer::server_setup(int port)
     }
     int flags = fcntl(m_listen_socket, F_GETFL, 0);
     if (flags < 0 || fcntl(m_listen_socket, F_SETFL, flags | O_NONBLOCK) < 0)
-    { // Setting non-blocking mode for better handling of requests
+    { 
         throw std::system_error(std::error_code{}, "Could not set flags for client socket");
     }
 
@@ -48,7 +48,7 @@ void HttpServer::server_setup(int port)
     }
 
     m_listen_addr.sin_family      = AF_INET;
-    m_listen_addr.sin_port        = htons(port); // Settings app addres info
+    m_listen_addr.sin_port        = htons(port);
     m_listen_addr.sin_addr.s_addr = INADDR_ANY;
 
     debug::log_info("Binding socket");
@@ -86,7 +86,7 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
                                   rd_bytes);
             if (!is_in_body &&
                 (header_end_pos = raw_http.find(HEADERS_END)) != std::string::npos)
-            { // Store header_end_pos, so no need to calculate it in b_in_body branch
+            {
                 auto headers_start = raw_http.find("\r\n") + header_end_len;
                 auto header_string =
                     raw_http.substr(headers_start, header_end_pos - headers_start);

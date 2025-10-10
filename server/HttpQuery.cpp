@@ -1,7 +1,7 @@
 #include "weblib/server/HttpQuery.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include <ranges>
-#include "weblib/server/consts.hpp"
+#include "weblib/consts.hpp"
 
 void HttpQuery::parse_from_string(const std::string              &raw_http,
                                   const std::vector<std::string> &parameters,
@@ -28,9 +28,8 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
                                 raw_http.find(HttpConsts::HTTP) - endpoint_start -
                                     2}; // additional 1 taking a space into account
 
-    // Slash handling
-    template_path.remove_prefix(1);
 
+    template_path.remove_prefix(1);
     // Processing path arguments
     auto t_path_slash = template_path.substr(0, template_path.find('?'));
     auto t_path_params =

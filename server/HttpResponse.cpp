@@ -6,23 +6,22 @@
 #include <stdexcept>
 #include <string_view>
 #include <sys/poll.h>
-#include "weblib/server/consts.hpp"
+#include "weblib/consts.hpp"
 
 auto HttpResponse::to_string() const -> std::string
 {
     std::string response =
         std::format("{}/{} {} {}\r\n", HttpConsts::HTTP, m_http_version, m_status_code, m_status_message);
-    // Adding m_headers part
     for (const auto &[header_name, header_value] : m_headers)
     {
         response += std::format("{}: {}\r\n", header_name, header_value);
     }
     if (!m_headers.contains(HeaderConsts::CONTENT_LENGTH.data()))
-    { // Setting Content-Length if not already set
+    {
         response += std::format("{}: {}\r\n", HeaderConsts::CONTENT_LENGTH, m_body.size());
     }
-    response += HttpConsts::CRNL; // Separating m_headers and answer par
-    response += m_body; // Adding user text
+    response += HttpConsts::CRNL;
+    response += m_body;
     return response;
 }
 
@@ -265,7 +264,7 @@ void HttpResponse::set_status(int m_status_code)
 }
 
 void HttpResponseWriter::respond(HttpResponse &resp)
-{ // Sending response text to the requester
+{
     auto   response         = resp.to_string();
     size_t write_total_size = 0;
 

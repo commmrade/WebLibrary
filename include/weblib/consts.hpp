@@ -1,10 +1,17 @@
-
+#pragma once
 #include <string_view>
 
 struct HttpConsts {
     static constexpr std::string_view HTTP = "HTTP";
     static constexpr std::string_view CRNL = "\r\n";
     static constexpr std::string_view CRNLCRNL = "\r\n\r\n";
+
+    static constexpr std::string_view METHOD_GET     = "GET";
+    static constexpr std::string_view METHOD_POST    = "POST";
+    static constexpr std::string_view METHOD_OPTIONS = "OPTIONS";
+    static constexpr std::string_view METHOD_PUT     = "PUT";
+    static constexpr std::string_view METHOD_DELETE  = "DELETE";
+
 
     // Статусные сообщения
     static constexpr std::string_view STATUS_OK = "OK";

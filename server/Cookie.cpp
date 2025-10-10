@@ -1,7 +1,7 @@
 #include "weblib/server/Cookie.hpp"
 #include <format>
 #include <stdexcept>
-#include "weblib/server/consts.hpp"
+#include "weblib/consts.hpp"
 
 auto Cookie::to_string() const -> std::string
 {
@@ -9,7 +9,6 @@ auto Cookie::to_string() const -> std::string
     {
         throw std::runtime_error("Cookie is not properly set up");
     }
-    // std::string cookie = m_name + "=" + m_value;
     std::string cookie = std::format("{}={}", m_name, m_value);
     if (!m_response_cookie)
     {
@@ -58,11 +57,10 @@ auto Cookie::to_string() const -> std::string
         }
         cookie += "; ";
     }
-
+    
     if (auto col_pos = cookie.find_last_of(';'); col_pos >= cookie.size() - 2)
-    { // If there is ";" at the end, truncate "; "
-        auto size = cookie.size();
-        cookie.resize(size - (size - col_pos));
+    { // If ended with ; truncate it
+       cookie.erase(col_pos);
     }
     return cookie;
 }

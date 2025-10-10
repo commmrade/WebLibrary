@@ -3,20 +3,16 @@
 #pragma once
 
 #include "weblib/server/Cookie.hpp"
-#include <iostream>
 #include <json/reader.h>
 #include <json/value.h>
 #include <memory>
 #include <optional>
 #include <span>
-#include <unordered_map>
 #include <string>
 #include <json/json.h>
-#include <vector>
 #include "Query.hpp"
 #include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
-#include "weblib/utils.hpp"
 #include "weblib/server/HttpQuery.hpp"
 #include "weblib/server/HttpHeaders.hpp"
 
@@ -89,7 +85,7 @@ class HttpRequest
 
     std::string m_version;
 
-    void extract_queries(const std::string &request_str, const std::string &endpoint_name_str,
+    void extract_queries(const std::string &raw_http, const std::string &path,
                          std::span<const std::string> pnames);
-    void extract_headers(const std::string &request_str);
+    void extract_headers(const std::string &raw_http);
 };

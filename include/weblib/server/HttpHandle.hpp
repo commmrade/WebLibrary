@@ -30,7 +30,7 @@ class HttpHandle
     [[nodiscard]]
     auto get_parameters() const -> std::span<const std::string>
     {
-        return m_parameter_names;
+        return m_parameters;
     }
 
     void               set_path(std::string ep_name);
@@ -41,7 +41,7 @@ class HttpHandle
   private:
     std::vector<RequestType> m_methods;
     std::vector<Filter>      m_filters;
-    std::vector<std::string> m_parameter_names;
+    std::vector<std::string> m_parameters;
     std::string              m_path;
     Handler                  m_handle;
 };

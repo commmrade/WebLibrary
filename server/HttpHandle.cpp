@@ -8,9 +8,9 @@ void HttpHandle::set_handle_method(Handler &&handle) { m_handle = std::move(hand
 
 void HttpHandle::add_http_method(RequestType method) { m_methods.emplace_back(method); }
 
-void HttpHandle::set_parameters(std::vector<std::string> &&vec)
+void HttpHandle::set_parameters(std::vector<std::string> &&params)
 {
-    m_parameter_names = std::move(vec);
+    m_parameters = std::move(params);
 }
 
 void HttpHandle::operator()(const HttpRequest &req, HttpResponseWriter &resp) const

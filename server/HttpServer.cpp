@@ -11,8 +11,6 @@
 #include <sys/types.h>
 #include "weblib/debug.hpp"
 #include "weblib/server/HttpRequest.hpp"
-#include <print>
-#include <system_error>
 #include <array>
 
 HttpServer::HttpServer() { m_thread_pool = std::make_unique<ThreadPool<>>(); }

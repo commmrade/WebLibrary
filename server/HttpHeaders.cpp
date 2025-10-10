@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <ranges>
+#include "weblib/server/consts.hpp"
 
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
@@ -31,7 +32,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         utils::trim(value);
 
         auto lc_name = utils::to_lowercase_str(name);
-        if (lc_name != "cookie")
+        if (lc_name != HttpConsts::COOKIE_HEADER)
         {
             m_headers.emplace(lc_name, std::move(value)); // Add header
         }

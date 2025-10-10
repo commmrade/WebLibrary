@@ -6,28 +6,29 @@
 #include <stdexcept>
 #include <string_view>
 #include <sys/poll.h>
+#include "weblib/server/consts.hpp"
 
 auto HttpResponse::to_string() const -> std::string
 {
     std::string response =
-        std::format("HTTP/{} {} {}\r\n", m_http_version, m_status_code, m_status_message);
+        std::format("{}/{} {} {}\r\n", HttpConsts::HTTP, m_http_version, m_status_code, m_status_message);
     // Adding m_headers part
     for (const auto &[header_name, header_value] : m_headers)
     {
         response += std::format("{}: {}\r\n", header_name, header_value);
     }
-    if (!m_headers.contains("Content-Length"))
+    if (!m_headers.contains(HeaderConsts::CONTENT_LENGTH.data()))
     { // Setting Content-Length if not already set
-        response += std::format("Content-Length: {}\r\n", m_body.size());
+        response += std::format("{}: {}\r\n", HeaderConsts::CONTENT_LENGTH, m_body.size());
     }
-    response += "\r\n"; // Separating m_headers and answer par
+    response += HttpConsts::CRNL; // Separating m_headers and answer par
     response += m_body; // Adding user text
     return response;
 }
 
 void HttpResponse::set_header(const std::string &name, std::string_view value)
 {
-    if (name == "Set-Cookie")
+    if (name == HeaderConsts::SET_COOKIE)
     {
         throw std::runtime_error("Use add_cookie() instead!");
     }
@@ -37,7 +38,7 @@ void HttpResponse::set_header(const std::string &name, std::string_view value)
 void HttpResponse::set_cookie(const Cookie &cookie)
 {
     std::string const cookie_str = cookie.to_string();
-    m_headers["Set-Cookie"]      = cookie_str;
+    m_headers[std::string{HeaderConsts::SET_COOKIE}] = cookie_str;
 }
 
 void HttpResponse::set_header(HeaderType header_type, std::string_view value)
@@ -46,57 +47,57 @@ void HttpResponse::set_header(HeaderType header_type, std::string_view value)
     {
     case HeaderType::CONTENT_TYPE:
     {
-        m_headers["Content-Type"] = value;
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = value;
         break;
     }
     case HeaderType::CONTENT_LENGTH:
     {
-        m_headers["Content-Length"] = value;
+        m_headers[std::string{HeaderConsts::CONTENT_LENGTH}] = value;
         break;
     }
     case HeaderType::CACHE_CONTROL:
     {
-        m_headers["Cache-Control"] = value;
+        m_headers[std::string{HeaderConsts::CACHE_CONTROL}] = value;
         break;
     }
     case HeaderType::EXPIRES:
     {
-        m_headers["Expires"] = value;
+        m_headers[std::string{HeaderConsts::EXPIRES}] = value;
         break;
     }
     case HeaderType::SET_COOKIE:
     {
-        m_headers["Set-Cookie"] = value;
+        m_headers[std::string{HeaderConsts::SET_COOKIE}] = value;
         break;
     }
     case HeaderType::LOCATION:
     {
-        m_headers["Location"] = value;
+        m_headers[std::string{HeaderConsts::LOCATION}] = value;
         break;
     }
     case HeaderType::SERVER:
     {
-        m_headers["Server"] = value;
+        m_headers[std::string{HeaderConsts::SERVER}] = value;
         break;
     }
     case HeaderType::ACCEPT:
     {
-        m_headers["Accept"] = value;
+        m_headers[std::string{HeaderConsts::ACCEPT}] = value;
         break;
     }
     case HeaderType::USER_AGENT:
     {
-        m_headers["User-Agent"] = value;
+        m_headers[std::string{HeaderConsts::USER_AGENT}]= value;
         break;
     }
     case HeaderType::HOST:
     {
-        m_headers["Host"] = value;
+        m_headers[std::string{HeaderConsts::HOST}]= value;
         break;
     }
     case HeaderType::ACCEPT_LANGUAGE:
     {
-        m_headers["Accept-Language"] = value;
+        m_headers[std::string{HeaderConsts::ACCEPT_LANGUAGE}] = value;
         break;
     }
     default:
@@ -117,67 +118,67 @@ void HttpResponse::set_content_type(ContentType type)
     {
     case ContentType::HTML:
     {
-        m_headers["Content-Type"] = "text/html";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_HTML; 
         break;
     }
     case ContentType::JSON:
     {
-        m_headers["Content-Type"] = "application/json";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_JSON;
         break;
     }
     case ContentType::TEXT:
     {
-        m_headers["Content-Type"] = "text/plain";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_PLAIN; 
         break;
     }
     case ContentType::XML:
     {
-        m_headers["Content-Type"] = "application/xml";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_XML;
         break;
     }
     case ContentType::CSS:
     {
-        m_headers["Content-Type"] = "text/css";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_CSS; 
         break;
     }
     case ContentType::JS:
     {
-        m_headers["Content-Type"] = "application/javascript";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_JAVASCRIPT;
         break;
     }
     case ContentType::JPEG:
     {
-        m_headers["Content-Type"] = "image/jpeg";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_IMAGE_JPEG;
         break;
     }
     case ContentType::PNG:
     {
-        m_headers["Content-Type"] = "image/png";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_IMAGE_PNG;
         break;
     }
     case ContentType::GIF:
     {
-        m_headers["Content-Type"] = "image/gif";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_IMAGE_GIF;
         break;
     }
     case ContentType::PDF:
     {
-        m_headers["Content-Type"] = "application/pdf";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_PDF;
         break;
     }
     case ContentType::CSV:
     {
-        m_headers["Content-Type"] = "text/csv";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_CSV;
         break;
     }
     case ContentType::FORM:
     {
-        m_headers["Content-Type"] = "application/x-www-form-urlencoded";
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_ENCODED; 
         break;
     }
     default:
     {
-        m_headers["Content-Type"] = "text/plain"; // Default case
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_PLAIN; // Default case
         break;
     }
     }
@@ -196,67 +197,67 @@ void HttpResponse::set_status(int m_status_code)
     {
     case OK:
     {
-        m_status_message = "OK";
+        m_status_message = HttpConsts::STATUS_OK;
         break;
     }
     case CREATED:
     {
-        m_status_message = "Created";
+        m_status_message = HttpConsts::STATUS_CREATED;
         break;
     }
     case NO_CONTENT:
     {
-        m_status_message = "No Content";
+        m_status_message = HttpConsts::STATUS_NO_CONTENT;
         break;
     }
     case BAD_REQUEST:
     {
-        m_status_message = "Bad Request";
+        m_status_message = HttpConsts::STATUS_BAD_REQUEST;
         break;
     }
     case UNAUTHORIZED:
     {
-        m_status_message = "Unauthorized";
+        m_status_message = HttpConsts::STATUS_UNAUTHORIZED;
         break;
     }
     case FORBIDDEN:
     {
-        m_status_message = "Forbidden";
+        m_status_message = HttpConsts::STATUS_FORBIDDEN;
         break;
     }
     case NOT_FOUND:
     {
-        m_status_message = "Not Found";
+        m_status_message = HttpConsts::STATUS_NOT_FOUND;
         break;
     }
     case METHOD_NOT_ALLOWED:
     {
-        m_status_message = "Method Not Allowed";
+        m_status_message = HttpConsts::STATUS_METHOD_NOT_ALLOWED;
         break;
     }
     case INTERNAL_SERVER_ERROR:
     {
-        m_status_message = "Internal Server Error";
+        m_status_message = HttpConsts::STATUS_INTERNAL_SERVER_ERROR;
         break;
     }
     case BAD_GATEWAY:
     {
-        m_status_message = "Bad Gateway";
+        m_status_message = HttpConsts::STATUS_BAD_GATEWAY;
         break;
     }
     case SERVICE_UNAVAILABLE:
     {
-        m_status_message = "Service Unavailable";
+        m_status_message = HttpConsts::STATUS_SERVICE_UNAVAILABLE;
         break;
     }
     case GATEWAY_TIMEOUT:
     {
-        m_status_message = "Gateway Timeout";
+        m_status_message = HttpConsts::STATUS_GATEWAY_TIMEOUT;
         break;
     }
     default:
     {
-        m_status_message = "Unknown status code, set msg manually";
+        m_status_message = "Unknown";
         break;
     }
     }

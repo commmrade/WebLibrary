@@ -1,5 +1,7 @@
 #include "weblib/server/Cookie.hpp"
+#include <format>
 #include <stdexcept>
+#include "weblib/server/consts.hpp"
 
 auto Cookie::to_string() const -> std::string
 {
@@ -7,59 +9,60 @@ auto Cookie::to_string() const -> std::string
     {
         throw std::runtime_error("Cookie is not properly set up");
     }
-    std::string cookie = m_name + "=" + m_value;
+    // std::string cookie = m_name + "=" + m_value;
+    std::string cookie = std::format("{}={}", m_name, m_value);
     if (!m_response_cookie)
     {
-        return m_name + "=" + m_value;
+        return cookie;
     }
 
     cookie += "; ";
     if (m_max_age)
     {
-        cookie += "Max-Age=" + std::to_string(m_max_age.value()) + "; ";
+        cookie += std::format("{}={}; ", CookieConsts::MAX_AGE, std::to_string(m_max_age.value()));
     }
     if (m_secure)
     {
-        cookie += "Secure; ";
+        cookie += std::format("{}; ", CookieConsts::SECURE);
     }
     if (m_httpOnly)
     {
-        cookie += "HttpOnly; ";
+        cookie += std::format("{}; ", CookieConsts::HTTP_ONLY);
     }
     if (!m_path.empty())
     {
-        cookie += "Path=" + m_path + "; ";
+        cookie += std::format("{}={}; ", CookieConsts::PATH, m_path);
     }
     if (!m_domain.empty())
     {
-        cookie += "Domain=" + m_domain + "; ";
+        cookie += std::format("{}={}; ", CookieConsts::DOMAIN, m_domain);
     }
     {
-        using std::string_literals::operator""s;
         switch (m_samesite)
         {
         case SameSite::Lax:
         {
-            cookie += "SameSite=" + "Lax"s;
+            cookie += std::format("{}={}", CookieConsts::SAME_SITE, CookieConsts::SAME_SITE_LAX);
             break;
         }
         case SameSite::Strict:
         {
-            cookie += "SameSite=" + "Strict"s;
+            cookie += std::format("{}={}", CookieConsts::SAME_SITE, CookieConsts::SAME_SITE_STRICT);
             break;
         }
         default:
         {
-            cookie += "SameSite=" + "None"s;
+            cookie += std::format("{}={}", CookieConsts::SAME_SITE, CookieConsts::SAME_SITE_NONE);
             break;
         }
         }
         cookie += "; ";
     }
 
-    if (cookie.find_last_of(';') >= cookie.size() - 2)
+    if (auto col_pos = cookie.find_last_of(';'); col_pos >= cookie.size() - 2)
     { // If there is ";" at the end, truncate "; "
-        cookie.resize(cookie.size() - 2);
+        auto size = cookie.size();
+        cookie.resize(size - (size - col_pos));
     }
     return cookie;
 }

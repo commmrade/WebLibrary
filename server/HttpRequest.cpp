@@ -4,9 +4,7 @@
 #include <iostream>
 #include <print>
 #include <ranges>
-
-static inline constexpr const char* const CRCRNLNL = "\r\n\r\n"; 
-static inline constexpr const char* const CRNL = "\r\n";
+#include "weblib/server/consts.hpp"
 
 HttpRequest::HttpRequest(std::string raw_http, std::string path,
                          std::span<const std::string> pnames)
@@ -15,9 +13,9 @@ HttpRequest::HttpRequest(std::string raw_http, std::string path,
     extract_queries(raw_http, path, pnames);
 
     m_method = raw_http.substr(0, raw_http.find(' '));
-    m_body   = raw_http.substr(raw_http.find(CRCRNLNL) + 4);
+    m_body   = raw_http.substr(raw_http.find(HttpConsts::CRNLCRNL) + HttpConsts::CRNLCRNL.size());
 
-    auto line = raw_http.substr(0, raw_http.find(CRNL));
+    auto line = raw_http.substr(0, raw_http.find(HttpConsts::CRNL));
     m_version = line.substr(line.find_last_of('/') + 1);
 }
 
@@ -57,8 +55,8 @@ void HttpRequest::extract_queries(const std::string           &raw_http,
 
 void HttpRequest::extract_headers(const std::string &raw_http)
 {
-    auto header_start_pos = raw_http.find(CRNL) + 2;
-    auto header_end_pos   = raw_http.find(CRCRNLNL);
+    auto header_start_pos = raw_http.find(HttpConsts::CRNL) + HttpConsts::CRNL.size();
+    auto header_end_pos   = raw_http.find(HttpConsts::CRNLCRNL);
     auto headers_section  = raw_http.substr(header_start_pos, header_end_pos - header_start_pos);
     m_headers.parse_from_string(headers_section);
 }

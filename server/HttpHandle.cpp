@@ -1,5 +1,6 @@
 #include "weblib/server/HttpHandle.hpp"
 #include <algorithm>
+#include "weblib/exceptions.hpp"
 
 void HttpHandle::add_filter(Filter &&filter) { m_filters.emplace_back(std::move(filter)); }
 
@@ -16,7 +17,7 @@ void HttpHandle::operator()(const HttpRequest &req, HttpResponseWriter &resp) co
 {
     if (!m_handle)
     {
-        throw std::runtime_error("Handle is not set");
+        throw handle_not_set{};
     }
     m_handle(req, resp);
 }

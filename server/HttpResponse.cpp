@@ -7,6 +7,7 @@
 #include <string_view>
 #include <sys/poll.h>
 #include "weblib/consts.hpp"
+#include "weblib/exceptions.hpp"
 
 auto HttpResponse::to_string() const -> std::string
 {
@@ -101,7 +102,7 @@ void HttpResponse::set_header(HeaderType header_type, std::string_view value)
     }
     default:
     {
-        throw std::runtime_error("Header type is not implemented > todo!");
+        throw std::runtime_error("Use set_header(string)");
     }
     }
 }
@@ -293,7 +294,7 @@ void HttpResponseWriter::respond(HttpResponse &resp)
         else if (bytes_sent < 0)
         { // <= because bytes_sent == 0 is kind of weird and possibly wrong but idfc
             debug::log_error("Sending failed");
-            throw std::runtime_error("Sending failed");
+            throw writing_socket_error{};
         }
         write_total_size += bytes_sent;
     }

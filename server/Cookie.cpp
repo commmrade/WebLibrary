@@ -2,12 +2,13 @@
 #include <format>
 #include <stdexcept>
 #include "weblib/consts.hpp"
+#include "weblib/exceptions.hpp"
 
 auto Cookie::to_string() const -> std::string
 {
     if (m_name.empty() || m_value.empty())
     {
-        throw std::runtime_error("Cookie is not properly set up");
+        throw empty_cookie{};
     }
     std::string cookie = std::format("{}={}", m_name, m_value);
     if (!m_response_cookie)

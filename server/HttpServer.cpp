@@ -4,6 +4,7 @@
 #include <exception>
 #include <iterator>
 #include <optional>
+#include "weblib/exceptions.hpp"
 #include "weblib/server/HttpRouter.hpp"
 #include <stdexcept>
 #include <sys/poll.h>
@@ -29,14 +30,12 @@ void HttpServer::server_setup(int port)
     if (m_listen_socket < 0)
     {
         debug::log_error("Socket error");
-        throw std::system_error{std::error_code{},
-                                "Could not create a socket"}; // Since socket() interfaces with the
-                                                              // OS, throw system_error
+        throw socket_creation_error{};
     }
     int flags = fcntl(m_listen_socket, F_GETFL, 0);
     if (flags < 0 || fcntl(m_listen_socket, F_SETFL, flags | O_NONBLOCK) < 0)
-    { 
-        throw std::system_error(std::error_code{}, "Could not set flags for client socket");
+    {
+        throw socket_flags_error{}; 
     }
 
     int reuse  = 1;
@@ -44,7 +43,7 @@ void HttpServer::server_setup(int port)
     if (result < 0)
     {
         debug::log_error("Could not set flags: ", strerror(errno));
-        throw std::system_error{std::error_code{}, "Could not set flags"};
+        throw socket_flags_error{};
     }
 
     m_listen_addr.sin_family      = AF_INET;
@@ -55,7 +54,7 @@ void HttpServer::server_setup(int port)
     if (bind(m_listen_socket, (sockaddr *)&m_listen_addr, sizeof(m_listen_addr)) < 0)
     { // Binding socket
         debug::log_error("Binding socket error");
-        throw std::system_error(std::error_code{}, "Could not bind the server socket");
+        throw socket_bind_error{};
     }
 }
 
@@ -133,7 +132,7 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
         else
         {
             debug::log_error("Fatal error when reading");
-            throw std::runtime_error("Fatal error reading");
+            throw reading_socket_error{};
         }
     }
 }
@@ -198,7 +197,7 @@ void HttpServer::listen_start(int port)
                     int flags = fcntl(client_socket, F_GETFL, 0);
                     if (flags < 0 || fcntl(client_socket, F_SETFL, flags | O_NONBLOCK) < 0)
                     {
-                        throw std::runtime_error("Could not set flags for client socket");
+                        throw socket_flags_error{};
                     }
                     poll_fds.push_back({client_socket, POLLIN, 0}); // Add new user
                 }

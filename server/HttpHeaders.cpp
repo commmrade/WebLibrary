@@ -1,8 +1,8 @@
 #include "weblib/server/HttpHeaders.hpp"
 #include "weblib/debug.hpp"
+#include "weblib/exceptions.hpp"
 #include "weblib/utils.hpp"
 #include <algorithm>
-#include <iostream>
 #include <stdexcept>
 #include <ranges>
 #include "weblib/consts.hpp"
@@ -23,7 +23,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         if (pos == std::string::npos)
         {
             debug::log_error("Could not find a ':' in the header");
-            throw std::runtime_error("Header is ill-formed");
+            throw header_parsing_error{};
         }
 
         auto name  = std::string(header.begin(),
@@ -55,7 +55,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
                                                         std::ranges::to<std::vector<std::string>>();
                                       if (name_value.size() != 2)
                                       {
-                                          throw std::runtime_error("Malformed http m_request");
+                                          throw header_parsing_error{};
                                       }
                                       auto const name  = std::move(name_value.front());
                                       auto const value = std::move(name_value.back());

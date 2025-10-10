@@ -21,7 +21,7 @@ auto process_url_str(std::string_view url) -> std::string
             auto end_bracket_pos = url.find('}', idx + 1);
             if (end_bracket_pos == std::string::npos)
             {
-                throw std::runtime_error("Malformed template path");
+                throw std::runtime_error("Ill-formed template path");
             }
             idx = end_bracket_pos + 1;
             result += "{}";

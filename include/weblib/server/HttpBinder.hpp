@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
+#include "weblib/exceptions.hpp"
 #include "weblib/server/HttpHandle.hpp"
 #include "weblib/server/RequestType.hpp"
 #include "weblib/utils.hpp"
@@ -32,7 +33,7 @@ class HttpBinder
         auto handle = m_handles.find(endpoint_name);
         if (handle != m_handles.end())
         {
-            throw std::runtime_error("Endpoint is already set!");
+            throw endpoint_already_set{};
         }
 
         HttpHandle handle_obj{};
@@ -51,8 +52,8 @@ class HttpBinder
     {
         const auto handle = m_handles.find(utils::process_url_str(route));
         if (handle == m_handles.end())
-        {
-            throw std::runtime_error("Please, set controllers before filters");
+        {   
+            throw filter_before_controller{}; 
         }
 
         handle->second.add_filter(std::move(filter));

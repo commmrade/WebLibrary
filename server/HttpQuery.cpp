@@ -2,6 +2,7 @@
 #include "weblib/utils.hpp"
 #include <ranges>
 #include "weblib/consts.hpp"
+#include "weblib/exceptions.hpp"
 
 void HttpQuery::parse_from_string(const std::string              &raw_http,
                                   const std::vector<std::string> &parameters,
@@ -22,7 +23,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     size_t const endpoint_start = raw_http.find('/');
     if (endpoint_start == std::string::npos)
     {
-        throw std::runtime_error("Wtf");
+        throw query_parsing_error{};
     }
     std::string_view const path{raw_http.data() + endpoint_start + 1,
                                 raw_http.find(HttpConsts::HTTP) - endpoint_start -
@@ -54,7 +55,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         std::ranges::to<std::vector>();
     if (t_path_params.size() != path_slash_params.size())
     {
-        throw std::runtime_error("template_path slash args size != Path slash args size");
+        throw query_parsing_error{"Template path does not match the actual path"};
     }
 
     for (const auto &&[pattern_arg, path_arg] :
@@ -64,7 +65,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         { // Если есть скобка, значит параметр шаблонный
             if (param_iter == parameters.end())
             {
-                throw std::runtime_error("Malformed http m_request");
+                throw query_parsing_error{};
             }
             m_parameters.emplace(*param_iter, path_arg);
             ++param_iter;
@@ -100,7 +101,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         std::ranges::to<std::vector>();
     if (t_path_query_params.size() != path_query_params.size())
     {
-        throw std::runtime_error("template_path query args size != Path query args size");
+        throw query_parsing_error{"Template path does not match the actual path"};
     }
 
     auto split_kv_query =
@@ -116,7 +117,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
                    std::ranges::to<std::vector>();
         if (k_v.size() != 2)
         {
-            throw std::runtime_error("Ill-formed m_request");
+            throw query_parsing_error{};
         }
         return {k_v.front(), k_v.back()};
     };
@@ -129,7 +130,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         { // '{' means Template param
             if (param_iter == parameters.end())
             {
-                throw std::runtime_error("Malformed http m_request");
+                throw query_parsing_error{};
             }
             m_parameters.emplace(*param_iter, path_value);
             ++param_iter;

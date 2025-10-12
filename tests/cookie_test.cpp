@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 
+using namespace weblib;
+
 TEST(CookieRequestTest, NoTrailingSemicolon)
 {
     Cookie cookie;

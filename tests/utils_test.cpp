@@ -1,7 +1,7 @@
-#include <weblib/server/Utils.hpp>
+#include <weblib/utils.hpp>
 #include <gtest/gtest.h>
 #include <string>
-
+using namespace weblib;
 TEST(Utils, ProcessUrlStrTest)
 {
     std::string target        = "/smth/{id}?name=pidor";

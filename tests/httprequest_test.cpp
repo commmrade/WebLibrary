@@ -6,6 +6,8 @@
 #include <vector>
 
 #include <print>
+
+using namespace weblib;
 TEST(HttpRequestParsing, GetRequestQueries)
 {
     std::string request_str =

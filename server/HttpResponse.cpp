@@ -186,13 +186,14 @@ void HttpResponse::set_content_type(ContentType type)
 
 void HttpResponse::set_body_json(const Json::Value &json_obj)
 {
-    Json::StreamWriterBuilder w;
+    Json::StreamWriterBuilder const w;
     std::string               s = Json::writeString(w, json_obj);
     m_body                      = std::move(s);
 }
 
-void HttpResponse::set_status(int m_status_code)
+void HttpResponse::set_status(const int status_code)
 {
+    m_status_code = status_code;
     switch (m_status_code)
     {
     case OK:
@@ -261,7 +262,6 @@ void HttpResponse::set_status(int m_status_code)
         break;
     }
     }
-    this->m_status_code = m_status_code;
 }
 
 void HttpResponseWriter::respond(HttpResponse &resp)

@@ -66,17 +66,17 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
     bool is_in_body{false};
 
     size_t header_end_pos = 0;
-    // constexpr int headers_end_len = 4;
-    // constexpr int header_end_len = 2;
     while (true)
     {
         std::array<char, 4096> buf{};
         ssize_t rd_bytes = read(client_socket, buf.data(), buf.size());
-        if (rd_bytes == 0)
-        {
-            debug::log_info("Client has disconnected");
-            return std::nullopt;
-        }
+        // if (rd_bytes == 0)
+        // {
+        //     debug::log_info("Client has disconnected");
+        //     return std::nullopt;
+        // }
+        
+
 
         if (rd_bytes > 0)
         {

@@ -78,7 +78,12 @@ auto HttpServer::read_request(Client &client) -> Client::State
     if (!client.is_in_body &&
         (client.header_end_pos = client.raw_http.find(HttpConsts::CRNLCRNL)) != std::string::npos)
     {
-        auto headers_start_pos = client.raw_http.find(HttpConsts::CRNL) + HttpConsts::CRNL.size();
+        auto sline_end_pos = client.raw_http.find(HttpConsts::CRNL);
+        if (sline_end_pos == std::string::npos) {
+            throw std::runtime_error("Http request is ill formed");
+        }
+
+        auto headers_start_pos = sline_end_pos + HttpConsts::CRNL.size();
         std::string headers_s =
             client.raw_http.substr(headers_start_pos, client.header_end_pos - headers_start_pos);
         HttpHeaders headers{std::move(headers_s)};

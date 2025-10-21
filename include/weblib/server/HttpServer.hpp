@@ -39,6 +39,7 @@ struct Client {
   private:
     int         m_listen_socket;
     sockaddr_in m_listen_addr;
+    bool is_running{};
 
     std::unique_ptr<ThreadPool<>> m_thread_pool;
 

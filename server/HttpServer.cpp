@@ -31,12 +31,7 @@ void HttpServer::server_setup(int port)
         debug::log_error("Socket error");
         throw socket_creation_error{};
     }
-    int flags = fcntl(m_listen_socket, F_GETFL, 0);
-    if (flags < 0 || fcntl(m_listen_socket, F_SETFL, flags | O_NONBLOCK) < 0)
-    {
-        throw socket_flags_error{}; 
-    }
-
+  
     int reuse  = 1;
     int result = setsockopt(m_listen_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0)
@@ -45,16 +40,18 @@ void HttpServer::server_setup(int port)
         throw socket_flags_error{};
     }
 
-    m_listen_addr.sin_family      = AF_INET;
+    m_listen_addr.sin_family      = AF_INET; // TOOD: Support ipv6?
     m_listen_addr.sin_port        = htons(port);
     m_listen_addr.sin_addr.s_addr = INADDR_ANY;
 
     debug::log_info("Binding socket");
-    if (bind(m_listen_socket, (sockaddr *)&m_listen_addr, sizeof(m_listen_addr)) < 0)
+    result = bind(m_listen_socket, (sockaddr *)&m_listen_addr, sizeof(m_listen_addr));
+    if (result < 0)
     { // Binding socket
         debug::log_error("Binding socket error");
         throw socket_bind_error{};
     }
+    is_running = true;
 }
 
 auto HttpServer::read_request(Client& client) -> Client::State {
@@ -109,8 +106,13 @@ auto HttpServer::read_request(Client& client) -> Client::State {
 
 
 void HttpServer::handle_incoming_request(int client_socket) {
-    Client& client = m_active_clients[client_socket];
-    HttpRouter::instance().process_request(client_socket, client.raw_http);
+    try {
+        Client& client = m_active_clients[client_socket];
+        HttpRouter::instance().process_request(client_socket, client.raw_http);
+    } catch (const std::exception& ex) {
+        debug::log_error("Could not handle client, because ", ex.what());
+    }
+    close(client_socket);
 }
 
 void HttpServer::listen_start(int port)
@@ -125,7 +127,7 @@ void HttpServer::listen_start(int port)
     }
     std::vector<pollfd> poll_fds;
     poll_fds.push_back({m_listen_socket, POLLIN, 0}); // Setting server socket
-    while (true)
+    while (is_running)
     {
         int poll_result = poll(poll_fds.data(), poll_fds.size(), -1); // Polling for inf time
 
@@ -140,7 +142,7 @@ void HttpServer::listen_start(int port)
             if (cur_fd.revents & POLLIN)
             {
                 if (cur_fd.fd == m_listen_socket)
-                { // If server socket got something
+                {
                     int client_socket = accept(m_listen_socket, nullptr, nullptr);
                     if (client_socket < 0)
                     {
@@ -152,12 +154,11 @@ void HttpServer::listen_start(int port)
                     {
                         throw socket_flags_error{};
                     }
-                    poll_fds.push_back({client_socket, POLLIN, 0}); // Add new user
-                    m_active_clients.emplace(client_socket, Client{client_socket, {}, -1, {}, false, {}});
+                    poll_fds.push_back({client_socket, POLLIN, 0});
+                    m_active_clients.emplace(client_socket, Client{client_socket, {}, -1, 0, false, 0});
                 }
                 else
                 {
-                    // int sock = cur_fd.fd;
                     Client& client = m_active_clients[cur_fd.fd];
                     Client::State r = read_request(client);
                     switch (r) {
@@ -183,6 +184,6 @@ void HttpServer::listen_start(int port)
 }
 
 
-void HttpServer::stop_server() { close(m_listen_socket); }
+void HttpServer::stop_server() { close(m_listen_socket); is_running = false; }
 
 } // namespace weblib

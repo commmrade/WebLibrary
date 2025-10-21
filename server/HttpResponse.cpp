@@ -282,7 +282,7 @@ void HttpResponseWriter::respond(HttpResponse &resp)
             int const poll_result = poll(&client, 1, MAX_WAIT);
             if (poll_result <= 0)
             {
-                debug::log_error("Connection is lost");
+                debug::log_error("Connection is lost when writing");
                 return;
             }
             continue;

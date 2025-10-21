@@ -17,7 +17,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     }
 
     auto param_iter =
-        parameters.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
+        parameters.begin(); // parameters stores id, user from api/{id}/{user} (example)
     if (param_iter == parameters.end())
     {
         throw std::runtime_error("Malformed http m_request");

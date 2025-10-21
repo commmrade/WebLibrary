@@ -13,10 +13,10 @@ class HttpQuery
 
   public:
     HttpQuery() = default;
-    explicit HttpQuery(const std::string &request_str, const std::vector<std::string> &param_names,
+    explicit HttpQuery(const std::string &raw_http, const std::vector<std::string> &parameters,
                        const std::string &serv_path)
     {
-        parse_from_string(request_str, param_names, serv_path);
+        parse_from_string(raw_http, parameters, serv_path);
     }
 
     auto get_query(const std::string &query_name) const -> Query;
@@ -26,8 +26,8 @@ class HttpQuery
         return QueryView{m_parameters};
     }
 
-    void parse_from_string(const std::string              &request_str,
-                           const std::vector<std::string> &param_names,
+    void parse_from_string(const std::string              &raw_http,
+                           const std::vector<std::string> &parameters,
                            std::string_view template_path);
 };
 } // namespace weblib

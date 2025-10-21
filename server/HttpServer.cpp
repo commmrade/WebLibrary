@@ -12,11 +12,12 @@
 #include "weblib/debug.hpp"
 #include "weblib/server/HttpRequest.hpp"
 #include <array>
+#include "weblib/consts.hpp"
+
+
 namespace weblib {
 HttpServer::HttpServer() { m_thread_pool = std::make_unique<ThreadPool<>>(); }
 HttpServer::~HttpServer() { close(m_listen_socket); }
-
-static constexpr std::string HEADERS_END = "\r\n\r\n";
 
 void HttpServer::server_setup(int port)
 {
@@ -65,26 +66,26 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
     bool is_in_body{false};
 
     size_t header_end_pos = 0;
-    constexpr int headers_end_len = 4;
-    constexpr int header_end_len = 2;
+    // constexpr int headers_end_len = 4;
+    // constexpr int header_end_len = 2;
     while (true)
     {
         std::array<char, 4096> buf{};
-
         ssize_t rd_bytes = read(client_socket, buf.data(), buf.size());
         if (rd_bytes == 0)
         {
             debug::log_info("Client has disconnected");
             return std::nullopt;
         }
+
         if (rd_bytes > 0)
         {
             raw_http.append(buf.data(),
                                   rd_bytes);
             if (!is_in_body &&
-                (header_end_pos = raw_http.find(HEADERS_END)) != std::string::npos)
+                (header_end_pos = raw_http.find(HttpConsts::CRNLCRNL)) != std::string::npos)
             {
-                auto headers_start = raw_http.find("\r\n") + header_end_len;
+                auto headers_start = raw_http.find(HttpConsts::CRNL) + HttpConsts::CRNL.size();
                 auto header_string =
                     raw_http.substr(headers_start, header_end_pos - headers_start);
                 HttpHeaders headers{std::move(header_string)};
@@ -101,12 +102,17 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
                     debug::log_warn("Could not parse content-length: ", ex.what());
                     content_length = 0;
                 }
+
+                if (content_length == 0) { // No body request
+                    return raw_http;
+                }
+
                 is_in_body = true;
             }
             else if (is_in_body)
             {
                 body_bytes_rd = std::distance(
-                    raw_http.begin() + header_end_pos + headers_end_len,
+                    raw_http.begin() + header_end_pos + HttpConsts::CRNLCRNL.size(),
                     raw_http.end()); // Cheap because its a random access iterator
                 if (body_bytes_rd >= content_length)
                 {
@@ -116,16 +122,7 @@ auto HttpServer::read_request(int client_socket) -> std::optional<std::string>
         }
         else if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN))
         {
-            // TODO: Tf is this?
-            pollfd client{};
-            client.fd       = client_socket;
-            client.events   = POLLIN;
-            int poll_result = poll(&client, 1, 5000);
-            if (poll_result <= 0)
-            { // Probably means connection is kinda lost
-                debug::log_error("Connection is lost");
-                return std::nullopt;
-            }
+            continue;
         }
         else
         {
@@ -182,7 +179,7 @@ void HttpServer::listen_start(int port)
         for (size_t i = 0; i < poll_fds.size(); i++)
         {
             auto& cur_fd = poll_fds[i]; 
-            if ((cur_fd.revents & POLLIN) == 1)
+            if (cur_fd.revents & POLLIN)
             {
                 if (cur_fd.fd == m_listen_socket)
                 { // If server socket got something

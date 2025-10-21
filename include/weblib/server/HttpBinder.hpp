@@ -38,6 +38,8 @@ class HttpBinder
             throw endpoint_already_set{};
         }
 
+        std::println("{} {}", endpoint_name, utils::extract_params(endpoint_name));
+
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(std::forward<Types>(types)), ...);
         handle_obj.set_handle_method(std::move(handler));

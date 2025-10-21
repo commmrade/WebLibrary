@@ -4,12 +4,12 @@
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
 
-namespace weblib {
-
+namespace weblib
+{
 
 void HttpQuery::parse_from_string(const std::string              &raw_http,
                                   const std::vector<std::string> &parameters,
-                                  std::string_view               template_path)
+                                  std::string_view                template_path)
 {
     if (parameters.empty())
     {
@@ -31,7 +31,6 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     std::string_view const path{raw_http.data() + endpoint_start + 1,
                                 raw_http.find(HttpConsts::HTTP) - endpoint_start -
                                     2}; // additional 1 taking a space into account
-
 
     template_path.remove_prefix(1);
     // Processing path arguments
@@ -61,8 +60,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         throw query_parsing_error{"Template path does not match the actual path"};
     }
 
-    for (const auto &&[pattern_arg, path_arg] :
-         std::views::zip(t_path_params, path_slash_params))
+    for (const auto &&[pattern_arg, path_arg] : std::views::zip(t_path_params, path_slash_params))
     {
         if (pattern_arg.contains('{'))
         { // Если есть скобка, значит параметр шаблонный
@@ -75,12 +73,11 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         }
     }
 
-    
     auto t_path_question_pos = template_path.find('?');
     auto t_path_query        = template_path.substr(
         t_path_question_pos == std::string::npos ? template_path.size() : t_path_question_pos + 1);
 
-    auto path_question_pos    = path.find('?');
+    auto path_question_pos = path.find('?');
     auto path_query =
         path.substr(path_question_pos == std::string::npos ? path.size() : path_question_pos + 1);
 
@@ -125,7 +122,8 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         return {k_v.front(), k_v.back()};
     };
 
-    for (const auto &&[t_path_kv, path_kv] : std::views::zip(t_path_query_params, path_query_params))
+    for (const auto &&[t_path_kv, path_kv] :
+         std::views::zip(t_path_query_params, path_query_params))
     {
         auto [t_path_name, t_path_value] = split_kv_query(t_path_kv);
         auto [path_name, path_value]     = split_kv_query(path_kv);

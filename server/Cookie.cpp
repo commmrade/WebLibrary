@@ -3,7 +3,8 @@
 #include <stdexcept>
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
-namespace weblib {
+namespace weblib
+{
 auto Cookie::to_string() const -> std::string
 {
     if (m_name.empty() || m_value.empty())
@@ -58,10 +59,10 @@ auto Cookie::to_string() const -> std::string
         }
         cookie += "; ";
     }
-    
+
     if (auto col_pos = cookie.find_last_of(';'); col_pos >= cookie.size() - 2)
     { // If ended with ; truncate it
-       cookie.erase(col_pos);
+        cookie.erase(col_pos);
     }
     return cookie;
 }

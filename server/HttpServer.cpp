@@ -14,8 +14,8 @@
 #include <array>
 #include "weblib/consts.hpp"
 
-
-namespace weblib {
+namespace weblib
+{
 HttpServer::HttpServer() { m_thread_pool = std::make_unique<ThreadPool<>>(); }
 HttpServer::~HttpServer() { close(m_listen_socket); }
 
@@ -24,16 +24,16 @@ void HttpServer::server_setup(int port)
     debug::log_info("Setting up server");
 
     debug::log_info("Creating a socket");
-    m_listen_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK,
-                           0);
+    m_listen_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (m_listen_socket < 0)
     {
         debug::log_error("Socket error");
         throw socket_creation_error{};
     }
-  
-    int reuse  = 1;
-    int result = setsockopt(m_listen_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
+
+    int reuse = 1;
+    int result =
+        setsockopt(m_listen_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(reuse));
     if (result < 0)
     {
         debug::log_error("Could not set flags: ", strerror(errno));
@@ -54,32 +54,38 @@ void HttpServer::server_setup(int port)
     is_running = true;
 }
 
-auto HttpServer::read_request(Client& client) -> Client::State {
+auto HttpServer::read_request(Client &client) -> Client::State
+{
     std::array<char, 4096> buf{};
-    ssize_t rd_bytes = read(client.fd, buf.data(), buf.size());
-    if (rd_bytes == 0) {
+    ssize_t                rd_bytes = read(client.fd, buf.data(), buf.size());
+    if (rd_bytes == 0)
+    {
         debug::log_info("Client has disconnected");
         return Client::State::CONNECTION_ABORTED;
     }
 
-    if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN)) {
+    if (rd_bytes < 0 && (errno == EWOULDBLOCK || errno == EAGAIN))
+    {
         return Client::State::READ_MORE;
-    } else if (rd_bytes < 0) {
+    }
+    else if (rd_bytes < 0)
+    {
         return Client::State::CONNECTION_ERROR;
     }
 
     client.raw_http.append(buf.data(), rd_bytes);
-    if (!client.is_in_body && (client.header_end_pos = client.raw_http.find(HttpConsts::CRNLCRNL)) != std::string::npos) {
-        auto headers_start = client.raw_http.find(HttpConsts::CRNL) + HttpConsts::CRNL.size();
-        auto header_string = client.raw_http.substr(headers_start, client.header_end_pos - headers_start);
-        HttpHeaders headers{std::move(header_string)};
+
+    if (!client.is_in_body &&
+        (client.header_end_pos = client.raw_http.find(HttpConsts::CRNLCRNL)) != std::string::npos)
+    {
+        auto headers_start_pos = client.raw_http.find(HttpConsts::CRNL) + HttpConsts::CRNL.size();
+        std::string headers_s =
+            client.raw_http.substr(headers_start_pos, client.header_end_pos - headers_start_pos);
+        HttpHeaders headers{std::move(headers_s)};
 
         try
         {
-            client.content_length = std::stoi(
-                headers.get_header("Content-Length")
-                    .value_or(
-                        "0"));
+            client.content_length = std::stoi(headers.get_header("Content-Length").value_or("0"));
         }
         catch (const std::invalid_argument &ex)
         {
@@ -87,12 +93,14 @@ auto HttpServer::read_request(Client& client) -> Client::State {
             client.content_length = 0;
         }
 
-        if (client.content_length == 0) {
+        if (client.content_length == 0)
+        {
             return Client::State::END_OF_CONNECTION;
         }
-
         client.is_in_body = true;
-    } else if (client.is_in_body) {
+    }
+    else if (client.is_in_body)
+    {
         client.body_bytes_rd = std::distance(
             client.raw_http.begin() + client.header_end_pos + HttpConsts::CRNLCRNL.size(),
             client.raw_http.end()); // Cheap because its a random access iterator
@@ -104,12 +112,15 @@ auto HttpServer::read_request(Client& client) -> Client::State {
     return Client::State::READ_MORE;
 }
 
-
-void HttpServer::handle_incoming_request(int client_socket) {
-    try {
-        Client& client = m_active_clients[client_socket];
-        HttpRouter::instance().process_request(client_socket, client.raw_http);
-    } catch (const std::exception& ex) {
+void HttpServer::handle_incoming_request(int client_socket)
+{
+    try
+    {
+        Client &client = m_active_clients[client_socket];
+        HttpRouter::instance().process_request(client.fd, client.raw_http);
+    }
+    catch (const std::exception &ex)
+    {
         debug::log_error("Could not handle client, because ", ex.what());
     }
     close(client_socket);
@@ -138,7 +149,7 @@ void HttpServer::listen_start(int port)
         }
         for (size_t i = 0; i < poll_fds.size(); i++)
         {
-            auto& cur_fd = poll_fds[i]; 
+            auto &cur_fd = poll_fds[i];
             if (cur_fd.revents & POLLIN)
             {
                 if (cur_fd.fd == m_listen_socket)
@@ -155,23 +166,28 @@ void HttpServer::listen_start(int port)
                         throw socket_flags_error{};
                     }
                     poll_fds.push_back({client_socket, POLLIN, 0});
-                    m_active_clients.emplace(client_socket, Client{client_socket, {}, -1, 0, false, 0});
+                    m_active_clients.emplace(client_socket,
+                                             Client{client_socket, {}, -1, 0, false, 0});
                 }
                 else
                 {
-                    Client& client = m_active_clients[cur_fd.fd];
-                    Client::State r = read_request(client);
-                    switch (r) {
-                        case Client::State::READ_MORE: {
+                    Client       &client = m_active_clients[cur_fd.fd];
+                    Client::State r      = read_request(client);
+                    switch (r)
+                    {
+                        case Client::State::READ_MORE:
+                        {
                             continue;
                         }
-                        case Client::State::END_OF_CONNECTION: {
+                        case Client::State::END_OF_CONNECTION:
+                        {
                             m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this,
-                                                  client.fd);
+                                                        client.fd);
                             break;
                         }
                         case Client::State::CONNECTION_ABORTED:
-                        case Client::State::CONNECTION_ERROR: {
+                        case Client::State::CONNECTION_ERROR:
+                        {
                             poll_fds.erase(poll_fds.begin() + i);
                             m_active_clients.erase(client.fd);
                             i--;
@@ -183,7 +199,10 @@ void HttpServer::listen_start(int port)
     }
 }
 
-
-void HttpServer::stop_server() { close(m_listen_socket); is_running = false; }
+void HttpServer::stop_server()
+{
+    close(m_listen_socket);
+    is_running = false;
+}
 
 } // namespace weblib

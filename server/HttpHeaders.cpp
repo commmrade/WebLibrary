@@ -6,14 +6,15 @@
 #include <stdexcept>
 #include <ranges>
 #include "weblib/consts.hpp"
-namespace weblib {
+namespace weblib
+{
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
     if (raw_headers.empty())
     {
         return;
     }
-    std::istringstream strm(raw_headers); 
+    std::istringstream strm(raw_headers);
     std::string        header;
     while (std::getline(strm, header, '\n'))
     {
@@ -28,8 +29,8 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 
         auto name  = std::string(header.begin(),
                                  header.begin() + static_cast<std::string::difference_type>(pos));
-        auto value = std::string(header.begin() + static_cast<std::string::difference_type>(pos) + 2,
-                                 header.end());
+        auto value = std::string(
+            header.begin() + static_cast<std::string::difference_type>(pos) + 2, header.end());
         utils::trim(value);
 
         auto lc_name = utils::to_lowercase_str(name);
@@ -59,9 +60,8 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
                                       }
                                       auto const name  = std::move(name_value.front());
                                       auto const value = std::move(name_value.back());
-                                      m_cookies.emplace(
-                                          utils::to_lowercase_str(name),
-                                          Cookie{std::move(name), std::move(value)});
+                                      m_cookies.emplace(utils::to_lowercase_str(name),
+                                                        Cookie{std::move(name), std::move(value)});
                                   });
         }
     }
@@ -80,9 +80,10 @@ auto HttpHeaders::get_header(const std::string &header_name) const -> std::optio
 {
     auto pos = m_headers.find(utils::to_lowercase_str(header_name));
     if (pos != m_headers.end())
-    { 
+    {
         return std::optional<std::string>{pos->second};
     }
     return std::nullopt;
-}}
- // namespace weblib}
+}
+} // namespace weblib
+  // namespace weblib}

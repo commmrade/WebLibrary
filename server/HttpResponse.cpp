@@ -8,11 +8,12 @@
 #include <sys/poll.h>
 #include "weblib/consts.hpp"
 #include "weblib/exceptions.hpp"
-namespace weblib {
+namespace weblib
+{
 auto HttpResponse::to_string() const -> std::string
 {
-    std::string response =
-        std::format("{}/{} {} {}\r\n", HttpConsts::HTTP, m_http_version, m_status_code, m_status_message);
+    std::string response = std::format("{}/{} {} {}\r\n", HttpConsts::HTTP, m_http_version,
+                                       m_status_code, m_status_message);
     for (const auto &[header_name, header_value] : m_headers)
     {
         response += std::format("{}: {}\r\n", header_name, header_value);
@@ -37,7 +38,7 @@ void HttpResponse::set_header(const std::string &name, std::string_view value)
 
 void HttpResponse::set_cookie(const Cookie &cookie)
 {
-    std::string const cookie_str = cookie.to_string();
+    std::string const cookie_str                     = cookie.to_string();
     m_headers[std::string{HeaderConsts::SET_COOKIE}] = cookie_str;
 }
 
@@ -87,12 +88,12 @@ void HttpResponse::set_header(HeaderType header_type, std::string_view value)
     }
     case HeaderType::USER_AGENT:
     {
-        m_headers[std::string{HeaderConsts::USER_AGENT}]= value;
+        m_headers[std::string{HeaderConsts::USER_AGENT}] = value;
         break;
     }
     case HeaderType::HOST:
     {
-        m_headers[std::string{HeaderConsts::HOST}]= value;
+        m_headers[std::string{HeaderConsts::HOST}] = value;
         break;
     }
     case HeaderType::ACCEPT_LANGUAGE:
@@ -118,7 +119,7 @@ void HttpResponse::set_content_type(ContentType type)
     {
     case ContentType::HTML:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_HTML; 
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_HTML;
         break;
     }
     case ContentType::JSON:
@@ -128,7 +129,7 @@ void HttpResponse::set_content_type(ContentType type)
     }
     case ContentType::TEXT:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_PLAIN; 
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_PLAIN;
         break;
     }
     case ContentType::XML:
@@ -138,12 +139,13 @@ void HttpResponse::set_content_type(ContentType type)
     }
     case ContentType::CSS:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_CSS; 
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_CSS;
         break;
     }
     case ContentType::JS:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_JAVASCRIPT;
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] =
+            HeaderConsts::CONTENT_TYPE_APP_JAVASCRIPT;
         break;
     }
     case ContentType::JPEG:
@@ -173,12 +175,13 @@ void HttpResponse::set_content_type(ContentType type)
     }
     case ContentType::FORM:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_ENCODED; 
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_APP_ENCODED;
         break;
     }
     default:
     {
-        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] = HeaderConsts::CONTENT_TYPE_TEXT_PLAIN; // Default case
+        m_headers[std::string{HeaderConsts::CONTENT_TYPE}] =
+            HeaderConsts::CONTENT_TYPE_TEXT_PLAIN; // Default case
         break;
     }
     }
@@ -187,8 +190,8 @@ void HttpResponse::set_content_type(ContentType type)
 void HttpResponse::set_body_json(const Json::Value &json_obj)
 {
     Json::StreamWriterBuilder const w;
-    std::string               s = Json::writeString(w, json_obj);
-    m_body                      = std::move(s);
+    std::string                     s = Json::writeString(w, json_obj);
+    m_body                            = std::move(s);
 }
 
 void HttpResponse::set_status(const int status_code)

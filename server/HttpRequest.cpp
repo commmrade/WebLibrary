@@ -5,7 +5,8 @@
 #include <print>
 #include <ranges>
 #include "weblib/consts.hpp"
-namespace weblib {
+namespace weblib
+{
 HttpRequest::HttpRequest(std::string raw_http, std::string path,
                          std::span<const std::string> pnames)
 {
@@ -45,8 +46,7 @@ auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value>
     return std::make_unique<Json::Value>(std::move(json_obj));
 }
 
-void HttpRequest::extract_queries(const std::string           &raw_http,
-                                  const std::string           &path,
+void HttpRequest::extract_queries(const std::string &raw_http, const std::string &path,
                                   std::span<const std::string> pnames)
 {
     auto params = std::vector<std::string>{pnames.begin(), pnames.end()};

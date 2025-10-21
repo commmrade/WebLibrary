@@ -14,11 +14,11 @@ class HttpHeaders
 
   public:
     HttpHeaders() = default;
-    explicit HttpHeaders(const std::string &request_str) { extract_headers_from_str(request_str); }
+    explicit HttpHeaders(const std::string &raw_http) { extract_headers_from_str(raw_http); }
 
-    void parse_from_string(const std::string &request_str)
+    void parse_from_string(const std::string &raw_http)
     {
-        extract_headers_from_str(request_str);
+        extract_headers_from_str(raw_http);
     }
 
     [[nodiscard]]

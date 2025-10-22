@@ -125,7 +125,7 @@ void HttpServer::handle_incoming_request(int client_socket)
         if (client.raw_http.empty()) {
             throw std::runtime_error("Request is empty");
         }
-        HttpRouter::instance().process_request(client.fd, client.raw_http);
+        m_router.process_request(client.fd, client.raw_http);
     }
     catch (const std::exception &ex)
     {

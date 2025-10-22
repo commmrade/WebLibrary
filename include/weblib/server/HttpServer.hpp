@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include "ThreadPool.hpp"
+#include "weblib/server/HttpRouter.hpp"
 namespace weblib {
 
 
@@ -44,6 +45,8 @@ struct Client {
     std::unique_ptr<ThreadPool<>> m_thread_pool;
 
     std::unordered_map<int, Client> m_active_clients;
+
+    HttpRouter m_router;
   public:
     HttpServer(const HttpServer &)            = delete;
     HttpServer(HttpServer &&)                 = delete;

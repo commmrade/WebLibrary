@@ -122,7 +122,7 @@ void HttpServer::handle_incoming_request(int client_socket)
     try
     {
         Client &client = m_active_clients[client_socket];
-        if (client.raw_http.empty()) {
+        if (client.raw_http.empty()) [[unlikely]] {
             throw std::runtime_error("Request is empty");
         }
         m_router.process_request(client.fd, client.raw_http);

@@ -19,7 +19,7 @@ namespace weblib {
 class HttpRequest
 {
   public:
-    explicit HttpRequest(std::string raw_http, std::string endpoint_name_str,
+    explicit HttpRequest(std::string raw_http, std::string path,
                          std::span<const std::string> pnames = {});
 
     [[nodiscard]]

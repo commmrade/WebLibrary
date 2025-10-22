@@ -23,5 +23,7 @@ void trim_r(std::string &str);
 void trim_l(std::string &str);
 void trim(std::string &str);
 
+auto parse_request_line(std::string_view raw_http) -> std::pair<std::string, std::string>;
+
 } // namespace utils
 } // namespace weblib

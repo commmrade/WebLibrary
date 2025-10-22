@@ -81,6 +81,26 @@ auto extract_params(std::string_view url) -> std::vector<std::string>
     return key_names;
 }
 
+
+auto parse_request_line(std::string_view raw_http) -> std::pair<std::string, std::string> {
+    auto space_after_method  = raw_http.find(' ');
+    if (space_after_method == std::string_view::npos)
+    {
+        throw std::runtime_error("HTTP request is ill-formed");
+    }
+    auto method   = raw_http.substr(0, space_after_method);
+    
+    auto space_after_path = raw_http.find(' ', space_after_method + 1);
+    if (space_after_path == std::string_view::npos)
+    {
+        throw std::runtime_error("HTTP request is ill-formed");
+    }
+    
+    std::string_view const path =
+        raw_http.substr(space_after_method + 1, space_after_path - space_after_method - 1);
+    return std::pair{std::string{method}, std::string{path}};
+}
+
 } // namespace utils
 
 } // namespace weblib

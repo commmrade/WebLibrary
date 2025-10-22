@@ -9,28 +9,6 @@
 #include "weblib/server/hash.hpp"
 namespace weblib
 {
-auto HttpRouter::parse_request_line(std::string_view raw_http)
-    -> std::optional<std::pair<std::string, std::string>>
-{
-    auto space_after_method = raw_http.find(' ');
-    if (space_after_method == std::string_view::npos)
-    {
-        return std::nullopt;
-    }
-    auto method = raw_http.substr(0, space_after_method);
-
-    auto space_after_path = raw_http.find(' ', space_after_method + 1);
-    if (space_after_path == std::string_view::npos)
-    {
-        return std::nullopt;
-    }
-
-    std::string_view const path =
-        raw_http.substr(space_after_method + 1, space_after_path - space_after_method - 1);
-    return {
-        std::pair{std::string{method}, std::string{path}}
-    };
-}
 
 void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
                                 std::string_view raw_http, RequestType request_type)
@@ -84,24 +62,10 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
 
 void HttpRouter::process_request(int sock, std::string_view raw_http)
 {
-    if (raw_http.empty())
-    {
-        return;
-    }
-
     HttpResponseWriter response{sock};
-    auto               method_and_path_opt = HttpRouter::parse_request_line(raw_http);
-    if (!method_and_path_opt.has_value())
-    {
-        auto res = HttpResponseBuilder()
-                       .set_status(400)
-                       .set_body_str("Malformed request")
-                       .set_content_type(ContentType::TEXT)
-                       .build();
-        response.respond(res);
-    }
-    auto &[method, path]           = method_and_path_opt.value();
+    auto [method, path] = utils::parse_request_line(raw_http);
     RequestType const request_type = req_type_from_str(method);
+    
     handle_request(response, path, raw_http, request_type);
 }
 } // namespace weblib

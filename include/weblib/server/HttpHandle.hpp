@@ -24,7 +24,8 @@ class HttpHandle
     void add_http_method(RequestType method);
 
     [[nodiscard]] auto pass_middlewares(const HttpRequest &request) const -> bool;
-    auto               has_method(RequestType type) -> bool
+
+    auto has_method(RequestType type) const -> bool
     {
         return std::ranges::any_of(m_methods, [type](auto _type) { return _type == type; });
     }

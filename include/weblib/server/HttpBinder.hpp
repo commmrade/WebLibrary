@@ -169,7 +169,7 @@ class HttpBinder
         return true;
     }
 
-    auto find_handle(std::string_view path, RequestType type) -> const HttpHandle *
+    auto find_handle(std::string_view path, RequestType type) const -> const HttpHandle *
     {
         for (auto &[pattern, handle] : m_handles)
         {

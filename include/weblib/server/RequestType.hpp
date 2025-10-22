@@ -71,4 +71,4 @@ inline auto req_type_from_str(std::string_view str) -> RequestType
         return RequestType::GET;
     }
 }
-} // namespace weblib}
+} // namespace weblib

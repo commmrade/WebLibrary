@@ -62,7 +62,8 @@ struct Client {
   private:
     HttpServer();
     ~HttpServer();
-
+  private:
+    void event_loop();
     void server_setup(int port);
     void handle_incoming_request(int client_socket);
     // auto read_request(int client_socket) -> std::optional<std::string>;

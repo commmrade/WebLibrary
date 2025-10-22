@@ -131,16 +131,7 @@ void HttpServer::handle_incoming_request(int client_socket)
     close(client_socket);
 }
 
-void HttpServer::listen_start(int port)
-{
-    server_setup(port);
-
-    debug::log_info("Starting listening for incoming requests");
-    if (listen(m_listen_socket, SOMAXCONN) < 0)
-    {
-        debug::log_error("Listening error");
-        throw std::runtime_error("");
-    }
+void HttpServer::event_loop() {
     std::vector<pollfd> poll_fds;
     poll_fds.push_back({m_listen_socket, POLLIN, 0}); // Setting server socket
     while (is_running)
@@ -202,6 +193,18 @@ void HttpServer::listen_start(int port)
             }
         }
     }
+}
+
+void HttpServer::listen_start(int port)
+{
+    server_setup(port);
+    debug::log_info("Starting listening for incoming requests");
+    if (listen(m_listen_socket, SOMAXCONN) < 0)
+    {
+        debug::log_error("Listening error");
+        throw std::runtime_error("");
+    }
+    event_loop();
 }
 
 void HttpServer::stop_server()

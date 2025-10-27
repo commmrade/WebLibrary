@@ -8,10 +8,11 @@
 
 #define mv(X) std::move(X)
 #define REG_FILTER(NAME, FUNCTION)                                                                 \
-    HttpFilter::register_filter(NAME, [this](const weblib::HttpRequest &req)                               \
+    HttpFilter::register_filter(NAME, [this](const weblib::HttpRequest &req)                       \
                                 { return FUNCTION((req)); }) // Macro to register filter
 
-namespace weblib {
+namespace weblib
+{
 template <typename Derived> // CRTP needed to avoid dynamic dispatching
 class HttpFilter
 {

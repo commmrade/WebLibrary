@@ -9,8 +9,8 @@
 #include <vector>
 #include "funcs.hpp"
 
-
-namespace weblib {
+namespace weblib
+{
 
 class HttpRequest;
 

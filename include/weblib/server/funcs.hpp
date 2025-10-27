@@ -3,7 +3,8 @@
 
 #pragma once
 #include <functional>
-namespace weblib {
+namespace weblib
+{
 class HttpRequest;
 class HttpResponseWriter;
 using Handler = std::function<void(const HttpRequest &, HttpResponseWriter &)>;

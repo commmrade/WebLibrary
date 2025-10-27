@@ -63,9 +63,9 @@ void HttpRouter::handle_request(HttpResponseWriter &resp, std::string_view path,
 void HttpRouter::process_request(int sock, std::string_view raw_http)
 {
     HttpResponseWriter response{sock};
-    auto [method, path] = utils::parse_request_line(raw_http);
+    auto [method, path]            = utils::parse_request_line(raw_http);
     RequestType const request_type = req_type_from_str(method);
-    
+
     handle_request(response, path, raw_http, request_type);
 }
 } // namespace weblib

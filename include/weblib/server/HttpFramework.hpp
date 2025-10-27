@@ -4,8 +4,8 @@
 #include <debug.hpp>
 #include <signal.h>
 
-
-namespace weblib {
+namespace weblib
+{
 
 static auto app() -> HttpServer &;
 

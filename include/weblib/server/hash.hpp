@@ -6,7 +6,8 @@
 #include <string>
 #include <utility>
 
-namespace weblib {
+namespace weblib
+{
 enum class RequestType : std::uint8_t;
 
 template <class T>
@@ -15,7 +16,7 @@ void hash_combine(std::size_t &s, const T &v)
     std::hash<T> h;
     s ^= h(v) + 0x9e3779b9 + (s << 6) + (s >> 2); // I am not even gonna try to explain it
 }
-}
+} // namespace weblib
 
 namespace std
 {
@@ -41,4 +42,4 @@ struct hash<weblib::RequestType>
         return hash;
     }
 };
-} // namespace st
+} // namespace std

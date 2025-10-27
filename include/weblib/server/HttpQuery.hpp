@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 
-namespace weblib {
+namespace weblib
+{
 
 class HttpQuery
 {
@@ -20,13 +21,12 @@ class HttpQuery
 
     auto get_query(const std::string &query_name) const -> Query;
     [[nodiscard]]
-    auto get_queries() const -> const std::unordered_map<std::string, std::string>&
+    auto get_queries() const -> const std::unordered_map<std::string, std::string> &
     {
         return m_parameters;
     }
 
-    void parse_from_string(const std::string              &raw_http,
-                           const std::vector<std::string> &parameters,
+    void parse_from_string(const std::string &raw_http, const std::vector<std::string> &parameters,
                            std::string_view template_path);
 };
 } // namespace weblib

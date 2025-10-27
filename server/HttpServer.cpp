@@ -79,11 +79,12 @@ auto HttpServer::read_request(Client &client) -> Client::State
         (client.header_end_pos = client.raw_http.find(HttpConsts::CRNLCRNL)) != std::string::npos)
     {
         auto sline_end_pos = client.raw_http.find(HttpConsts::CRNL);
-        if (sline_end_pos == std::string::npos) {
+        if (sline_end_pos == std::string::npos)
+        {
             throw std::runtime_error("Http request is ill formed");
         }
 
-        auto headers_start_pos = sline_end_pos + HttpConsts::CRNL.size();
+        auto        headers_start_pos = sline_end_pos + HttpConsts::CRNL.size();
         std::string headers_s =
             client.raw_http.substr(headers_start_pos, client.header_end_pos - headers_start_pos);
         HttpHeaders headers{std::move(headers_s)};
@@ -122,7 +123,8 @@ void HttpServer::handle_incoming_request(int client_socket)
     try
     {
         Client &client = m_active_clients[client_socket];
-        if (client.raw_http.empty()) [[unlikely]] {
+        if (client.raw_http.empty()) [[unlikely]]
+        {
             throw std::runtime_error("Request is empty");
         }
         m_router.process_request(client.fd, client.raw_http);
@@ -134,7 +136,8 @@ void HttpServer::handle_incoming_request(int client_socket)
     close(client_socket);
 }
 
-void HttpServer::event_loop() {
+void HttpServer::event_loop()
+{
     std::vector<pollfd> poll_fds;
     poll_fds.push_back({m_listen_socket, POLLIN, 0}); // Setting server socket
     while (is_running)
@@ -174,23 +177,23 @@ void HttpServer::event_loop() {
                     Client::State r      = read_request(client);
                     switch (r)
                     {
-                        case Client::State::READ_MORE:
-                        {
-                            continue;
-                        }
-                        case Client::State::END_OF_CONNECTION:
-                        {
-                            m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this,
-                                                        client.fd);
-                            break;
-                        }
-                        case Client::State::CONNECTION_ABORTED:
-                        case Client::State::CONNECTION_ERROR:
-                        {
-                            poll_fds.erase(poll_fds.begin() + i);
-                            m_active_clients.erase(client.fd);
-                            i--;
-                        }
+                    case Client::State::READ_MORE:
+                    {
+                        continue;
+                    }
+                    case Client::State::END_OF_CONNECTION:
+                    {
+                        m_thread_pool->enqueue_detach(&HttpServer::handle_incoming_request, this,
+                                                      client.fd);
+                        break;
+                    }
+                    case Client::State::CONNECTION_ABORTED:
+                    case Client::State::CONNECTION_ERROR:
+                    {
+                        poll_fds.erase(poll_fds.begin() + i);
+                        m_active_clients.erase(client.fd);
+                        i--;
+                    }
                     }
                 }
             }

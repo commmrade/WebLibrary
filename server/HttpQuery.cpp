@@ -36,7 +36,8 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     // Processing path arguments
 
     auto t_ques_mark = template_path.find('?');
-    if (t_ques_mark == std::string::npos) {
+    if (t_ques_mark == std::string::npos)
+    {
         throw query_parsing_error{};
     }
     auto t_path_slash = template_path.substr(0, t_ques_mark);
@@ -51,7 +52,8 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         std::ranges::to<std::vector>();
 
     auto ques_mark = path.find('?');
-    if (ques_mark == std::string::npos) {
+    if (ques_mark == std::string::npos)
+    {
         throw query_parsing_error{};
     }
     auto path_slash = path.substr(0, ques_mark);
@@ -83,14 +85,16 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     }
 
     auto t_path_question_pos = template_path.find('?');
-    if (t_path_question_pos == std::string::npos) {
+    if (t_path_question_pos == std::string::npos)
+    {
         throw query_parsing_error{};
     }
-    auto t_path_query        = template_path.substr(
+    auto t_path_query = template_path.substr(
         t_path_question_pos == std::string::npos ? template_path.size() : t_path_question_pos + 1);
 
     auto path_question_pos = path.find('?');
-    if (path_question_pos == std::string::npos) {
+    if (path_question_pos == std::string::npos)
+    {
         throw query_parsing_error{};
     }
     auto path_query =

@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-
-namespace weblib {
+namespace weblib
+{
 class HttpBinder
 {
   private:
@@ -56,8 +56,8 @@ class HttpBinder
     {
         const auto handle = m_handles.find(utils::process_url_str(route));
         if (handle == m_handles.end())
-        {   
-            throw filter_before_controller{}; 
+        {
+            throw filter_before_controller{};
         }
 
         handle->second.add_filter(std::move(filter));

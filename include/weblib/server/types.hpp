@@ -2,7 +2,8 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 #include <cstdint>
-namespace weblib {
+namespace weblib
+{
 enum class HeaderType : std::uint8_t
 {
     CONTENT_TYPE,   // Indicates the media type of the resource
@@ -33,4 +34,4 @@ enum class ContentType : std::uint8_t
     CSV,
     FORM,
 };
-} // namespace weblib;
+} // namespace weblib

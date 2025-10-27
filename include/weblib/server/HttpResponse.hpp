@@ -10,7 +10,8 @@
 #include <json/json.h>
 #include <string_view>
 #include "types.hpp"
-namespace weblib {
+namespace weblib
+{
 class HttpResponseBuilder;
 enum class HeaderType : std::uint8_t;
 enum class ResponseType : std::uint8_t;

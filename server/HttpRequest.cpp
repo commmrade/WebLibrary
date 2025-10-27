@@ -41,16 +41,19 @@ auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Coo
 
 auto HttpRequest::body_as_json() const -> std::optional<Json::Value>
 {
-    auto has_json = m_headers.get_headers().contains(std::string{HeaderConsts::CONTENT_TYPE_APP_JSON});
-    if (!has_json) {
+    auto has_json =
+        m_headers.get_headers().contains(std::string{HeaderConsts::CONTENT_TYPE_APP_JSON});
+    if (!has_json)
+    {
         return std::nullopt;
     }
 
-    Json::CharReaderBuilder builder;
-    Json::Value obj;
+    Json::CharReaderBuilder                 builder;
+    Json::Value                             obj;
     const std::unique_ptr<Json::CharReader> reader{builder.newCharReader()};
-    JSONCPP_STRING err;
-    if (!reader->parse(m_body.c_str(), m_body.c_str() + m_body.size(), &obj, &err)) {
+    JSONCPP_STRING                          err;
+    if (!reader->parse(m_body.c_str(), m_body.c_str() + m_body.size(), &obj, &err))
+    {
         debug::log_error("Could not parse json, because ", err);
         return std::nullopt;
     }

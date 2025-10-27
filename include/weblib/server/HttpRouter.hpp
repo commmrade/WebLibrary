@@ -7,7 +7,8 @@
 #include "weblib/debug.hpp"
 #include <expected>
 #include <string_view>
-namespace weblib {
+namespace weblib
+{
 enum class RequestType : std::uint8_t;
 
 class HttpResponseWriter;
@@ -18,8 +19,7 @@ class HttpRouter
     void process_request(int              sock,
                          std::string_view raw_http); // Processes string and etc
   private:
-    void handle_request(HttpResponseWriter &resp, std::string_view path,
-                        std::string_view raw_http,
+    void handle_request(HttpResponseWriter &resp, std::string_view path, std::string_view raw_http,
                         RequestType request_type); // Calls handlers and filters
 };
 } // namespace weblib

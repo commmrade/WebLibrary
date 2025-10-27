@@ -10,32 +10,34 @@
 namespace weblib
 {
 
-
-void HttpHeaders::parse_cookie(std::string_view cookie) {
+void HttpHeaders::parse_cookie(std::string_view cookie)
+{
     auto kv_pairs = cookie | std::views::split(';') |
-                          std::views::transform(
-                              [](auto &&range)
+                    std::views::transform(
+                        [](auto &&range)
+                        {
+                            auto val = std::string{range.begin(), range.end()};
+                            utils::trim(val);
+                            return val;
+                        }) |
+                    std::ranges::to<std::vector<std::string>>();
+    std::ranges::for_each(kv_pairs,
+                          [&](auto &&cookie)
+                          {
+                              auto name_value = cookie | std::views::split('=') |
+                                                std::ranges::to<std::vector<std::string>>();
+                              if (name_value.size() == 2)
                               {
-                                  auto val = std::string{range.begin(), range.end()};
-                                  utils::trim(val);
-                                  return val;
-                              }) |
-                          std::ranges::to<std::vector<std::string>>();
-            std::ranges::for_each(kv_pairs,
-                                  [&](auto &&cookie)
-                                  {
-                                      auto name_value = cookie | std::views::split('=') |
-                                                        std::ranges::to<std::vector<std::string>>();
-                                      if (name_value.size() == 2)
-                                      {
-                                          auto const name  = std::move(name_value.front());
-                                          auto const value = std::move(name_value.back());
-                                          m_cookies.emplace(utils::to_lowercase_str(name),
-                                                            Cookie{std::move(name), std::move(value)});
-                                      } else {
-                                        debug::log_warn("Could not parse cookie: {}", name_value);
-                                      }
-                                  });
+                                  auto const name  = std::move(name_value.front());
+                                  auto const value = std::move(name_value.back());
+                                  m_cookies.emplace(utils::to_lowercase_str(name),
+                                                    Cookie{std::move(name), std::move(value)});
+                              }
+                              else
+                              {
+                                  debug::log_warn("Could not parse cookie: {}", name_value);
+                              }
+                          });
 }
 
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
@@ -70,7 +72,6 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         }
         else
         {
-            
         }
     }
 }

@@ -4,7 +4,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
-namespace weblib {
+namespace weblib
+{
 class HttpRequest;
 class HttpQuery;
 

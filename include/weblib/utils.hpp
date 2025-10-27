@@ -6,7 +6,8 @@
 #include <json/value.h>
 #include <string>
 #include <vector>
-namespace weblib {
+namespace weblib
+{
 namespace utils
 {
 auto req_type_from_str(std::string_view str) -> RequestType;

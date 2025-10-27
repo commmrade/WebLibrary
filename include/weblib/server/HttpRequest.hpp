@@ -15,7 +15,8 @@
 #include "weblib/server/RequestType.hpp"
 #include "weblib/server/HttpQuery.hpp"
 #include "weblib/server/HttpHeaders.hpp"
-namespace weblib {
+namespace weblib
+{
 class HttpRequest
 {
   public:
@@ -26,7 +27,7 @@ class HttpRequest
     auto get_query(const std::string &query_name) const -> Query;
 
     [[nodiscard]]
-    auto get_queries() const -> const std::unordered_map<std::string, std::string>&
+    auto get_queries() const -> const std::unordered_map<std::string, std::string> &
     {
         return m_query.get_queries();
     }
@@ -34,7 +35,7 @@ class HttpRequest
     [[nodiscard]]
     auto get_header(const std::string &header_name) const -> std::optional<std::string>;
     [[nodiscard]]
-    auto get_headers() const -> const std::unordered_map<std::string, std::string>&
+    auto get_headers() const -> const std::unordered_map<std::string, std::string> &
     {
         return m_headers.get_headers();
     }
@@ -43,7 +44,7 @@ class HttpRequest
     auto get_cookie(const std::string &name) const -> std::optional<Cookie>;
 
     [[nodiscard]]
-    auto get_cookies() const -> const std::unordered_map<std::string, Cookie>&
+    auto get_cookies() const -> const std::unordered_map<std::string, Cookie> &
     {
         return m_headers.get_cookies();
     }

@@ -5,7 +5,8 @@
 #include <string_view>
 #include <string>
 #include "weblib/consts.hpp"
-namespace weblib {
+namespace weblib
+{
 enum class RequestType : std::uint8_t
 {
     POST,
@@ -15,8 +16,9 @@ enum class RequestType : std::uint8_t
     OPTIONS,
 };
 
-#define s(x) std::string{x}
-inline auto req_type_to_str(RequestType req) -> std::string 
+#define s(x)                                                                                       \
+    std::string { x }
+inline auto req_type_to_str(RequestType req) -> std::string
 {
     if (req == RequestType::GET)
     {

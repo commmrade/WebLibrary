@@ -13,7 +13,8 @@
 #include <thread>
 #include <mutex>
 #include <semaphore>
-namespace weblib {
+namespace weblib
+{
 using default_func_type = std::move_only_function<void()>;
 template <typename FunctionType = default_func_type>
     requires std::invocable<FunctionType>
@@ -42,7 +43,7 @@ class ThreadPool
                             return;
                         }
 
-                        FunctionType task = std::move(m_tasks.front()); 
+                        FunctionType task = std::move(m_tasks.front());
                         m_tasks.pop_front();
                         lock.unlock();
 
@@ -67,8 +68,7 @@ class ThreadPool
     auto enqueue(Function &&function, Args &&...args) -> std::future<ReturnT>
     {
         std::promise<ReturnT> promise;
-        auto                  future =
-            promise.get_future();
+        auto                  future = promise.get_future();
         enqueue_task(
             [function = std::forward<Function>(function), promise = std::move(promise),
              ... args = std::forward<Args>(args)]() mutable

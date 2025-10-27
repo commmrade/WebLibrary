@@ -14,7 +14,7 @@ class MyController : public HttpController<MyController>
     MyController()
     {
         // REG_ENDPOINT(reg, "/reg", RequestType::POST, RequestType::OPTIONS);
-        
+
         REG_ENDPOINT(reg, "/courses", RequestType::GET, RequestType::OPTIONS);
         REG_ENDPOINT(test_r, "/courses/{course_id}?name={name}&age={age}", RequestType::GET,
                      RequestType::OPTIONS);

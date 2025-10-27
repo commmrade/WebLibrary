@@ -3,12 +3,13 @@
 #ifdef DEBUG
 #include <iostream>
 #endif
-namespace weblib {
+namespace weblib
+{
 namespace debug
 {
 
 template <typename... Args>
-void log_info([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
+void log_info([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args &&...args)
 {
 #ifdef DEBUG
     std::cout << "[INFO]: " << std::format(fmt_str, std::forward<Args>(args)...);
@@ -16,7 +17,7 @@ void log_info([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unus
 }
 
 template <typename... Args>
-void log_warn([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
+void log_warn([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args &&...args)
 {
 #ifdef DEBUG
     std::cout << "[WARNING]: " << std::format(fmt_str, std::forward<Args>(args)...);
@@ -24,7 +25,8 @@ void log_warn([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unus
 }
 
 template <typename... Args>
-void log_error([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
+void log_error([[maybe_unused]] std::format_string<Args...> fmt_str,
+               [[maybe_unused]] Args &&...args)
 {
 #ifdef DEBUG
     std::cout << "[ERROR]: " << std::format(fmt_str, std::forward<Args>(args)...);

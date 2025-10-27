@@ -7,7 +7,8 @@
 #include <optional>
 #include <string>
 
-namespace weblib {
+namespace weblib
+{
 enum class SameSite : std::uint8_t
 {
     None,

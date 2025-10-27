@@ -107,7 +107,7 @@ class ThreadPool
                 }
                 catch (const std::exception &ex)
                 {
-                    debug::log_error(std::format("Exception in worker: {}", ex.what()));
+                    debug::log_error("Exception in worker: {}", ex.what());
                 }
             });
     }

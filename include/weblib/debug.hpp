@@ -1,4 +1,5 @@
 #pragma once
+#include <format>
 #ifdef DEBUG
 #include <iostream>
 #endif
@@ -7,29 +8,26 @@ namespace debug
 {
 
 template <typename... Args>
-void log_info([[maybe_unused]] Args... args)
+void log_info([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
 {
 #ifdef DEBUG
-    std::cout << "[INFO]: ";
-    ((std::cout << args), ..., (std::cout << std::endl));
+    std::cout << "[INFO]: " << std::format(fmt_str, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-void log_warn([[maybe_unused]] Args... args)
+void log_warn([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
 {
 #ifdef DEBUG
-    std::cout << "[WARNING]: ";
-    ((std::cout << args), ..., (std::cout << std::endl));
+    std::cout << "[WARNING]: " << std::format(fmt_str, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-void log_error([[maybe_unused]] Args... args)
+void log_error([[maybe_unused]] std::format_string<Args...> fmt_str, [[maybe_unused]] Args&&... args)
 {
 #ifdef DEBUG
-    std::cout << "[ERROR]: ";
-    ((std::cout << args), ..., ((std::cout << std::flush), perror(" ")));
+    std::cout << "[ERROR]: " << std::format(fmt_str, std::forward<Args>(args)...);
 #endif
 }
 

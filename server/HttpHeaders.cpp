@@ -3,11 +3,41 @@
 #include "weblib/exceptions.hpp"
 #include "weblib/utils.hpp"
 #include <algorithm>
+#include <format>
 #include <stdexcept>
 #include <ranges>
 #include "weblib/consts.hpp"
 namespace weblib
 {
+
+
+void HttpHeaders::parse_cookie(std::string_view cookie) {
+    auto kv_pairs = cookie | std::views::split(';') |
+                          std::views::transform(
+                              [](auto &&range)
+                              {
+                                  auto val = std::string{range.begin(), range.end()};
+                                  utils::trim(val);
+                                  return val;
+                              }) |
+                          std::ranges::to<std::vector<std::string>>();
+            std::ranges::for_each(kv_pairs,
+                                  [&](auto &&cookie)
+                                  {
+                                      auto name_value = cookie | std::views::split('=') |
+                                                        std::ranges::to<std::vector<std::string>>();
+                                      if (name_value.size() == 2)
+                                      {
+                                          auto const name  = std::move(name_value.front());
+                                          auto const value = std::move(name_value.back());
+                                          m_cookies.emplace(utils::to_lowercase_str(name),
+                                                            Cookie{std::move(name), std::move(value)});
+                                      } else {
+                                        debug::log_warn("Could not parse cookie: {}", name_value);
+                                      }
+                                  });
+}
+
 void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
 {
     if (raw_headers.empty())
@@ -40,29 +70,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         }
         else
         {
-            auto kv_pairs = value | std::views::split(';') |
-                          std::views::transform(
-                              [](auto &&range)
-                              {
-                                  auto val = std::string{range.begin(), range.end()};
-                                  utils::trim(val);
-                                  return val;
-                              }) |
-                          std::ranges::to<std::vector<std::string>>();
-            std::ranges::for_each(kv_pairs,
-                                  [&](auto &&cookie)
-                                  {
-                                      auto name_value = cookie | std::views::split('=') |
-                                                        std::ranges::to<std::vector<std::string>>();
-                                      if (name_value.size() != 2)
-                                      {
-                                          throw header_parsing_error{};
-                                      }
-                                      auto const name  = std::move(name_value.front());
-                                      auto const value = std::move(name_value.back());
-                                      m_cookies.emplace(utils::to_lowercase_str(name),
-                                                        Cookie{std::move(name), std::move(value)});
-                                  });
+            
         }
     }
 }

@@ -43,6 +43,12 @@ add_library(weblib
     server/HttpHeaders.cpp
 )
 
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else ()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+endif ()
+
 if(jsoncpp_FOUND)
     target_link_libraries(weblib PRIVATE jsoncpp_lib)
 elseif(JSONCPP_FOUND)

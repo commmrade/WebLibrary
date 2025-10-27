@@ -5,6 +5,7 @@ namespace weblib
 struct HttpConsts
 {
     static constexpr std::string_view HTTP     = "HTTP";
+    static constexpr std::string_view HTTP_VERSION = "1.1";
     static constexpr std::string_view CRNL     = "\r\n";
     static constexpr std::string_view CRNLCRNL = "\r\n\r\n";
 

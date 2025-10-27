@@ -10,8 +10,8 @@
 #include <span>
 #include <string>
 #include <json/json.h>
+#include <unordered_map>
 #include "Query.hpp"
-#include "HeaderView.hpp"
 #include "weblib/server/RequestType.hpp"
 #include "weblib/server/HttpQuery.hpp"
 #include "weblib/server/HttpHeaders.hpp"
@@ -26,7 +26,7 @@ class HttpRequest
     auto get_query(const std::string &query_name) const -> Query;
 
     [[nodiscard]]
-    auto get_queries() const -> QueryView
+    auto get_queries() const -> const std::unordered_map<std::string, std::string>&
     {
         return m_query.get_queries();
     }
@@ -34,7 +34,7 @@ class HttpRequest
     [[nodiscard]]
     auto get_header(const std::string &header_name) const -> std::optional<std::string>;
     [[nodiscard]]
-    auto get_headers() const -> HeaderView
+    auto get_headers() const -> const std::unordered_map<std::string, std::string>&
     {
         return m_headers.get_headers();
     }
@@ -43,7 +43,7 @@ class HttpRequest
     auto get_cookie(const std::string &name) const -> std::optional<Cookie>;
 
     [[nodiscard]]
-    auto get_cookies() const -> CookieView
+    auto get_cookies() const -> const std::unordered_map<std::string, Cookie>&
     {
         return m_headers.get_cookies();
     }
@@ -54,8 +54,9 @@ class HttpRequest
         return m_body;
     }
 
+    // Expects 'application/json' header here
     [[nodiscard]]
-    auto body_as_json() const -> std::unique_ptr<Json::Value>;
+    auto body_as_json() const -> std::optional<Json::Value>;
 
     [[nodiscard]]
     auto get_method() const -> RequestType

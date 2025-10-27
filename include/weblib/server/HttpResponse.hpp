@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
 #pragma once
-#include "json/writer.h"
 #include <json/value.h>
 #include <sys/socket.h>
 #include <unordered_map>
@@ -9,9 +8,7 @@
 #include "Cookie.hpp"
 #include <json/json.h>
 #include <json/json.h>
-#include "weblib/debug.hpp"
 #include <string_view>
-#include "weblib/server/HeaderView.hpp"
 #include "types.hpp"
 namespace weblib {
 class HttpResponseBuilder;

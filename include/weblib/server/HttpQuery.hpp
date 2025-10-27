@@ -1,4 +1,3 @@
-#include "weblib/server/HeaderView.hpp"
 #include "weblib/server/Query.hpp"
 #include <unordered_map>
 #include <string>
@@ -21,9 +20,9 @@ class HttpQuery
 
     auto get_query(const std::string &query_name) const -> Query;
     [[nodiscard]]
-    auto get_queries() const -> QueryView
+    auto get_queries() const -> const std::unordered_map<std::string, std::string>&
     {
-        return QueryView{m_parameters};
+        return m_parameters;
     }
 
     void parse_from_string(const std::string              &raw_http,

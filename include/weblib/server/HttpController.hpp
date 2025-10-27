@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
-#include <cstdarg>
 #include <utility>
 #include "weblib/debug.hpp"
 #include "weblib/server/HttpBinder.hpp"

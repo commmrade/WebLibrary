@@ -2,8 +2,12 @@
 #include "weblib/server/HttpRequest.hpp"
 #include <algorithm>
 #include <iostream>
+#include <json/reader.h>
+#include <memory>
+#include <optional>
 #include <print>
 #include <ranges>
+#include "weblib/debug.hpp"
 #include "weblib/consts.hpp"
 namespace weblib
 {
@@ -35,15 +39,22 @@ auto HttpRequest::get_cookie(const std::string &name) const -> std::optional<Coo
     return m_headers.get_cookie(name);
 }
 
-auto HttpRequest::body_as_json() const -> std::unique_ptr<Json::Value>
+auto HttpRequest::body_as_json() const -> std::optional<Json::Value>
 {
-    Json::Value  json_obj{};
-    Json::Reader json_reader;
-    if (!json_reader.parse(m_body, json_obj))
-    {
-        return nullptr;
+    auto has_json = m_headers.get_headers().contains(std::string{HeaderConsts::CONTENT_TYPE_APP_JSON});
+    if (!has_json) {
+        return std::nullopt;
     }
-    return std::make_unique<Json::Value>(std::move(json_obj));
+
+    Json::CharReaderBuilder builder;
+    Json::Value obj;
+    const std::unique_ptr<Json::CharReader> reader{builder.newCharReader()};
+    JSONCPP_STRING err;
+    if (!reader->parse(m_body.c_str(), m_body.c_str() + m_body.size(), &obj, &err)) {
+        debug::log_error("Could not parse json, because ", err);
+        return std::nullopt;
+    }
+    return {obj};
 }
 
 void HttpRequest::extract_queries(const std::string &raw_http, const std::string &path,

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
 #pragma once
-
-#include <asm-generic/socket.h>
 #include <memory>
 #include <sys/poll.h>
 #include <sys/socket.h>

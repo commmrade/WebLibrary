@@ -1,7 +1,6 @@
 #include <unordered_map>
 #include <string>
 #include "Cookie.hpp"
-#include "HeaderView.hpp"
 
 namespace weblib {
 
@@ -24,9 +23,9 @@ class HttpHeaders
     [[nodiscard]]
     auto get_header(const std::string &header_name) const -> std::optional<std::string>;
     [[nodiscard]]
-    auto get_headers() const -> HeaderView
+    auto get_headers() const -> const std::unordered_map<std::string, std::string>&
     {
-        return HeaderView{m_headers};
+        return m_headers;
     }
 
     void set_header(const std::string &name, std::string_view value) { m_headers[name] = value; }
@@ -35,10 +34,9 @@ class HttpHeaders
     auto get_cookie(const std::string &name) const -> std::optional<Cookie>;
 
     [[nodiscard]]
-    auto get_cookies() const -> CookieView
+    auto get_cookies() const -> const std::unordered_map<std::string, Cookie>&
     {
-        return CookieView{m_cookies};
-        // return m_headers.get_headers();
+        return m_cookies;
     }
 };
 } // namespace weblib

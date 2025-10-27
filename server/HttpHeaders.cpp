@@ -40,7 +40,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
         }
         else
         {
-            auto values = value | std::views::split(';') |
+            auto kv_pairs = value | std::views::split(';') |
                           std::views::transform(
                               [](auto &&range)
                               {
@@ -49,7 +49,7 @@ void HttpHeaders::extract_headers_from_str(const std::string &raw_headers)
                                   return val;
                               }) |
                           std::ranges::to<std::vector<std::string>>();
-            std::ranges::for_each(values,
+            std::ranges::for_each(kv_pairs,
                                   [&](auto &&cookie)
                                   {
                                       auto name_value = cookie | std::views::split('=') |
@@ -86,4 +86,3 @@ auto HttpHeaders::get_header(const std::string &header_name) const -> std::optio
     return std::nullopt;
 }
 } // namespace weblib
-  // namespace weblib}

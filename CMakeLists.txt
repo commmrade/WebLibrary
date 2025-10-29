@@ -38,10 +38,16 @@ add_library(weblib
     server/HttpResponse.cpp
     server/HttpRouter.cpp
     server/HttpServer.cpp
-    server/Utils.cpp
+    server/utils.cpp
     server/HttpQuery.cpp
     server/HttpHeaders.cpp
 )
+
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else ()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+endif ()
 
 if(jsoncpp_FOUND)
     target_link_libraries(weblib PRIVATE jsoncpp_lib)

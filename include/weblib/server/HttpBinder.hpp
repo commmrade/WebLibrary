@@ -2,9 +2,10 @@
 // Copyright (c) 2025 Klewy
 #pragma once
 
+#include "weblib/exceptions.hpp"
 #include "weblib/server/HttpHandle.hpp"
 #include "weblib/server/RequestType.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include <algorithm>
 #include <string_view>
 #include <unordered_map>
@@ -14,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+namespace weblib
+{
 class HttpBinder
 {
   private:
@@ -32,8 +35,10 @@ class HttpBinder
         auto handle = m_handles.find(endpoint_name);
         if (handle != m_handles.end())
         {
-            throw std::runtime_error("Endpoint is already set!");
+            throw endpoint_already_set{};
         }
+
+        std::println("{} {}", endpoint_name, utils::extract_params(endpoint_name));
 
         HttpHandle handle_obj{};
         (handle_obj.add_http_method(std::forward<Types>(types)), ...);
@@ -52,7 +57,7 @@ class HttpBinder
         const auto handle = m_handles.find(utils::process_url_str(route));
         if (handle == m_handles.end())
         {
-            throw std::runtime_error("Please, set controllers before filters");
+            throw filter_before_controller{};
         }
 
         handle->second.add_filter(std::move(filter));
@@ -164,7 +169,7 @@ class HttpBinder
         return true;
     }
 
-    auto find_handle(std::string_view path, RequestType type) -> const HttpHandle *
+    auto find_handle(std::string_view path, RequestType type) const -> const HttpHandle *
     {
         for (auto &[pattern, handle] : m_handles)
         {
@@ -180,3 +185,5 @@ class HttpBinder
         return nullptr;
     }
 };
+
+} // namespace weblib

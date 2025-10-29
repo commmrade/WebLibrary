@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Klewy
 #pragma once
-#include "json/writer.h"
 #include <json/value.h>
 #include <sys/socket.h>
 #include <unordered_map>
@@ -9,11 +8,11 @@
 #include "Cookie.hpp"
 #include <json/json.h>
 #include <json/json.h>
-#include "weblib/debug.hpp"
 #include <string_view>
-#include "weblib/server/HeaderView.hpp"
 #include "types.hpp"
-
+#include "weblib/consts.hpp"
+namespace weblib
+{
 class HttpResponseBuilder;
 enum class HeaderType : std::uint8_t;
 enum class ResponseType : std::uint8_t;
@@ -40,15 +39,12 @@ class HttpResponse
 {
   private:
     std::unordered_map<std::string, std::string> m_headers{
-        {"Content-Type", "plain/text"}
+        std::pair<std::string, std::string>{HeaderConsts::CONTENT_TYPE, HeaderConsts::CONTENT_TYPE_TEXT_PLAIN}
     };
     std::string m_body{};
-    int         m_status_code{200};
-
-    std::string m_status_message{"OK"};
-
-    std::string m_http_version{"1.1"};
-
+    int         m_status_code{StatusCode::OK};
+    std::string m_status_message{HttpConsts::STATUS_OK};
+    std::string m_http_version{HttpConsts::HTTP_VERSION};
   public:
     HttpResponse() = default;
 
@@ -56,7 +52,7 @@ class HttpResponse
     auto to_string() const -> std::string;
 
     void set_header(const std::string &name, std::string_view value);
-    void set_header(HeaderType header_type, std::string_view value);
+    void set_header(HeaderType name, std::string_view value);
     void remove_header(const std::string &name);
     void set_content_type(ContentType type);
     void set_cookie(const Cookie &cookie);
@@ -79,7 +75,6 @@ class HttpResponseWriter
     HttpResponseWriter &operator=(const HttpResponseWriter &) = delete;
 
     void respond(HttpResponse &resp);
-
   private:
     int m_client_socket;
 };
@@ -121,3 +116,4 @@ class HttpResponseBuilder
 
     [[nodiscard]] auto build() -> HttpResponse { return std::move(resp); }
 };
+} // namespace weblib

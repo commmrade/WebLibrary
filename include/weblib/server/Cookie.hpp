@@ -7,6 +7,8 @@
 #include <optional>
 #include <string>
 
+namespace weblib
+{
 enum class SameSite : std::uint8_t
 {
     None,
@@ -129,3 +131,5 @@ class CookieBuilder
 
     auto build() -> Cookie { return std::move(m_cookie); }
 };
+
+} // namespace weblib

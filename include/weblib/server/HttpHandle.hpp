@@ -9,6 +9,9 @@
 #include <vector>
 #include "funcs.hpp"
 
+namespace weblib
+{
+
 class HttpRequest;
 
 class HttpHandle
@@ -21,7 +24,8 @@ class HttpHandle
     void add_http_method(RequestType method);
 
     [[nodiscard]] auto pass_middlewares(const HttpRequest &request) const -> bool;
-    auto               has_method(RequestType type) -> bool
+
+    auto has_method(RequestType type) const -> bool
     {
         return std::ranges::any_of(m_methods, [type](auto _type) { return _type == type; });
     }
@@ -30,7 +34,7 @@ class HttpHandle
     [[nodiscard]]
     auto get_parameters() const -> std::span<const std::string>
     {
-        return m_parameter_names;
+        return m_parameters;
     }
 
     void               set_path(std::string ep_name);
@@ -41,7 +45,8 @@ class HttpHandle
   private:
     std::vector<RequestType> m_methods;
     std::vector<Filter>      m_filters;
-    std::vector<std::string> m_parameter_names;
+    std::vector<std::string> m_parameters;
     std::string              m_path;
     Handler                  m_handle;
 };
+} // namespace weblib

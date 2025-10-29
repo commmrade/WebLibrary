@@ -1,10 +1,15 @@
 #include "weblib/server/HttpQuery.hpp"
-#include "weblib/server/Utils.hpp"
+#include "weblib/utils.hpp"
 #include <ranges>
+#include "weblib/consts.hpp"
+#include "weblib/exceptions.hpp"
+
+namespace weblib
+{
 
 void HttpQuery::parse_from_string(const std::string              &raw_http,
                                   const std::vector<std::string> &parameters,
-                                  std::string_view               template_path)
+                                  std::string_view                template_path)
 {
     if (parameters.empty())
     {
@@ -12,7 +17,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     }
 
     auto param_iter =
-        parameters.begin(); // m_param_names stores id, user from api/{id}/{user} (example)
+        parameters.begin(); // parameters stores id, user from api/{id}/{user} (example)
     if (param_iter == parameters.end())
     {
         throw std::runtime_error("Malformed http m_request");
@@ -21,17 +26,21 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
     size_t const endpoint_start = raw_http.find('/');
     if (endpoint_start == std::string::npos)
     {
-        throw std::runtime_error("Wtf");
+        throw query_parsing_error{};
     }
     std::string_view const path{raw_http.data() + endpoint_start + 1,
-                                raw_http.find("HTTP") - endpoint_start -
+                                raw_http.find(HttpConsts::HTTP) - endpoint_start -
                                     2}; // additional 1 taking a space into account
 
-    // Slash handling
     template_path.remove_prefix(1);
-
     // Processing path arguments
-    auto t_path_slash = template_path.substr(0, template_path.find('?'));
+
+    auto t_ques_mark = template_path.find('?');
+    if (t_ques_mark == std::string::npos)
+    {
+        throw query_parsing_error{};
+    }
+    auto t_path_slash = template_path.substr(0, t_ques_mark);
     auto t_path_params =
         t_path_slash | std::views::split('/') |
         std::views::transform(
@@ -42,7 +51,12 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
             }) |
         std::ranges::to<std::vector>();
 
-    auto path_slash = path.substr(0, path.find('?'));
+    auto ques_mark = path.find('?');
+    if (ques_mark == std::string::npos)
+    {
+        throw query_parsing_error{};
+    }
+    auto path_slash = path.substr(0, ques_mark);
     auto path_slash_params =
         path_slash | std::views::split('/') |
         std::views::transform(
@@ -54,29 +68,35 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         std::ranges::to<std::vector>();
     if (t_path_params.size() != path_slash_params.size())
     {
-        throw std::runtime_error("template_path slash args size != Path slash args size");
+        throw query_parsing_error{"Template path does not match the actual path"};
     }
 
-    for (const auto &&[pattern_arg, path_arg] :
-         std::views::zip(t_path_params, path_slash_params))
+    for (const auto &&[pattern_arg, path_arg] : std::views::zip(t_path_params, path_slash_params))
     {
         if (pattern_arg.contains('{'))
         { // Если есть скобка, значит параметр шаблонный
             if (param_iter == parameters.end())
             {
-                throw std::runtime_error("Malformed http m_request");
+                throw query_parsing_error{};
             }
             m_parameters.emplace(*param_iter, path_arg);
             ++param_iter;
         }
     }
 
-    
     auto t_path_question_pos = template_path.find('?');
-    auto t_path_query        = template_path.substr(
+    if (t_path_question_pos == std::string::npos)
+    {
+        throw query_parsing_error{};
+    }
+    auto t_path_query = template_path.substr(
         t_path_question_pos == std::string::npos ? template_path.size() : t_path_question_pos + 1);
 
-    auto path_question_pos    = path.find('?');
+    auto path_question_pos = path.find('?');
+    if (path_question_pos == std::string::npos)
+    {
+        throw query_parsing_error{};
+    }
     auto path_query =
         path.substr(path_question_pos == std::string::npos ? path.size() : path_question_pos + 1);
 
@@ -100,7 +120,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         std::ranges::to<std::vector>();
     if (t_path_query_params.size() != path_query_params.size())
     {
-        throw std::runtime_error("template_path query args size != Path query args size");
+        throw query_parsing_error{"Template path does not match the actual path"};
     }
 
     auto split_kv_query =
@@ -116,12 +136,13 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
                    std::ranges::to<std::vector>();
         if (k_v.size() != 2)
         {
-            throw std::runtime_error("Ill-formed m_request");
+            throw query_parsing_error{};
         }
         return {k_v.front(), k_v.back()};
     };
 
-    for (const auto &&[t_path_kv, path_kv] : std::views::zip(t_path_query_params, path_query_params))
+    for (const auto &&[t_path_kv, path_kv] :
+         std::views::zip(t_path_query_params, path_query_params))
     {
         auto [t_path_name, t_path_value] = split_kv_query(t_path_kv);
         auto [path_name, path_value]     = split_kv_query(path_kv);
@@ -129,7 +150,7 @@ void HttpQuery::parse_from_string(const std::string              &raw_http,
         { // '{' means Template param
             if (param_iter == parameters.end())
             {
-                throw std::runtime_error("Malformed http m_request");
+                throw query_parsing_error{};
             }
             m_parameters.emplace(*param_iter, path_value);
             ++param_iter;
@@ -151,3 +172,5 @@ auto HttpQuery::get_query(const std::string &query_name) const -> Query
     }
     return query;
 }
+
+} // namespace weblib
